@@ -262,6 +262,39 @@ body::before{
   margin-top:0!important;
 }
 
+
+/* Strafrechner + kopierfertige Aktenvorlage */
+.calc-layout{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(270px,.7fr);gap:16px;margin-top:22px}
+.ranger-card{padding:22px!important;border-radius:12px!important}
+.calc-head{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:18px}
+.calc-head h2{margin:3px 0 0;font-family:Georgia,serif;font-size:25px;color:#f4f0e6}
+.r-input{width:100%;box-sizing:border-box;background:rgba(2,7,5,.72);border:1px solid rgba(239,191,97,.28);color:#fff;border-radius:7px;padding:11px 12px;outline:none;font:inherit}
+.r-input:focus{border-color:rgba(239,191,97,.78);box-shadow:0 0 0 3px rgba(239,191,97,.08)}
+.search{max-width:310px}
+.offense-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;max-height:350px;overflow:auto;padding-right:4px}
+.offense{display:flex;gap:12px;align-items:center;padding:12px;border:1px solid rgba(239,191,97,.18);border-radius:8px;background:rgba(5,10,7,.55);cursor:pointer}
+.offense:hover{border-color:rgba(239,191,97,.48)}
+.offense input{accent-color:#efbf61;width:18px;height:18px}
+.offense span{display:flex;flex-direction:column;gap:3px;min-width:0}
+.offense small,.catalog-note,.limit-note{color:rgba(255,255,255,.58);font-size:12px}
+.catalog-note{margin-top:12px}
+.summary-card{align-self:start}
+.sum-row{display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-bottom:1px solid rgba(239,191,97,.13)}
+.sum-row strong{font-size:20px;color:#f8d889}
+.sum-row.important strong{color:#6ee58f;font-size:24px}
+.limit-note{margin:10px 0 15px}
+.btn.wide{width:100%}
+.record-form,.preview-card{margin-top:16px}
+.auto-badge{font-size:10px;letter-spacing:.12em;color:#6ee58f;border:1px solid rgba(110,229,143,.35);padding:7px 9px;border-radius:999px}
+.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px 16px}
+.form-grid label{display:flex;flex-direction:column;gap:7px;color:#e8d9b7;font-size:12px;font-weight:700;letter-spacing:.04em}
+.form-grid .span2{grid-column:1/-1}
+textarea.r-input{resize:vertical;min-height:76px}
+.record-preview{white-space:pre-wrap;overflow-wrap:anywhere;margin:0;background:rgba(1,5,3,.72);border:1px solid rgba(239,191,97,.18);border-radius:8px;padding:20px;color:#f7f5ef;line-height:1.55;font-family:"Segoe UI",Arial,sans-serif;font-size:14px;max-height:520px;overflow:auto}
+.copy-btn{min-width:170px}
+.copy-status{min-height:20px;margin-top:10px;color:#6ee58f;font-size:12px}
+@media(max-width:1000px){.calc-layout,.form-grid{grid-template-columns:1fr}.form-grid .span2{grid-column:auto}.offense-list{grid-template-columns:1fr}.calc-head{align-items:flex-start;flex-direction:column}.search{max-width:none}}
+
 </style>
 </head>
 <body>
@@ -273,8 +306,7 @@ body::before{
   <button data-page="profil">◉　MEIN PROFIL</button>
   <button data-page="aktivitaet">▰　STREAM-AKTIVITÄT</button>
   <button data-page="termine">◷　DIENSTPLAN</button>
-  <button data-page="strafrechner">§　STRAFREGISTER</button>
-  <button data-page="akten">▤　AKTENARCHIV</button>
+  <button data-page="strafrechner">§　STRAFRECHNER</button>
   <button data-page="familien">◇　FAMILIEN</button>
   <button data-page="abstimmungen">●　RANGER-RAT</button>
   <button data-page="eid">★　RANGER-EID</button>
@@ -310,8 +342,76 @@ body::before{
   <section class="page inner" id="profil"><h1>Mein Profil</h1><div class="sub">Ranger-Profil und persönliche Übersicht.</div><div class="glass placeholder">Brownie · Ranger-Leitung</div></section>
   <section class="page inner" id="aktivitaet"><h1>Stream-Aktivität</h1><div class="sub">Später automatisch mit Twitch verbunden.</div><div class="glass placeholder">Streamzeit, letzter Stream und 7/30-Tage-Aktivität werden hier angezeigt.</div></section>
   <section class="page inner" id="termine"><h1>Dienstplan</h1><div class="sub">Termine und Ranger-Einsätze.</div><div class="glass placeholder" id="appointmentList"></div></section>
-  <section class="page inner" id="strafrechner"><h1>Strafregister</h1><div class="sub">Straftaten auswählen und Strafe berechnen.</div><div class="glass placeholder"><input id="offenseSearch" placeholder="Straftat suchen..."><div id="offenseList"></div><div id="penaltySummary"></div></div></section>
-  <section class="page inner" id="akten"><h1>Aktenarchiv</h1><div class="sub">Ranger-Akten und Verfahren.</div><div class="glass placeholder">Aktenverwaltung wird mit Supabase verbunden.</div></section>
+  
+<section class="page inner" id="strafrechner">
+  <h1>Strafrechner</h1>
+  <div class="sub">Straftaten auswählen, Strafe automatisch berechnen und eine kopierfertige Strafakte erstellen.</div>
+
+  <div class="calc-layout">
+    <div class="glass ranger-card">
+      <div class="calc-head">
+        <div>
+          <div class="label">STRAFTATEN</div>
+          <h2>Strafkatalog</h2>
+        </div>
+        <input id="offenseSearch" class="r-input search" placeholder="Straftat suchen...">
+      </div>
+
+      <div id="offenseList" class="offense-list">
+        <label class="offense"><input type="checkbox" data-name="Beispiel: Widerstand" data-money="15000" data-he="10"><span><b>Beispiel: Widerstand</b><small>15.000 $ · 10 HE</small></span></label>
+        <label class="offense"><input type="checkbox" data-name="Beispiel: Flucht" data-money="10000" data-he="8"><span><b>Beispiel: Flucht</b><small>10.000 $ · 8 HE</small></span></label>
+        <label class="offense"><input type="checkbox" data-name="Beispiel: Gefährdung" data-money="20000" data-he="15"><span><b>Beispiel: Gefährdung</b><small>20.000 $ · 15 HE</small></span></label>
+      </div>
+      <div class="catalog-note">Die Beispiel-Einträge werden anschließend durch euren vollständigen Strafkatalog aus Supabase ersetzt.</div>
+    </div>
+
+    <div class="glass ranger-card summary-card">
+      <div class="label">BERECHNUNG</div>
+      <div class="sum-row"><span>Ausgewählt</span><strong id="selectedCount">0</strong></div>
+      <div class="sum-row"><span>Geldstrafe</span><strong id="totalMoney">0 $</strong></div>
+      <div class="sum-row"><span>Berechnete HE</span><strong id="rawHE">0 HE</strong></div>
+      <div class="sum-row important"><span>Tatsächliche HE</span><strong id="finalHE">0 HE</strong></div>
+      <div class="limit-note">Ranger-Maximum: 40 HE</div>
+      <button type="button" class="btn wide" id="clearOffenses">Auswahl zurücksetzen</button>
+    </div>
+  </div>
+
+  <div class="glass ranger-card record-form">
+    <div class="calc-head">
+      <div><div class="label">STRAFAKTE / PROTOKOLL</div><h2>Angaben für die Vorlage</h2></div>
+      <div class="auto-badge">NICHT IM UCP GESPEICHERT</div>
+    </div>
+
+    <div class="form-grid">
+      <label>Datum / Zeit<input class="r-input" id="caseDateTime"></label>
+      <label>Ort<input class="r-input" id="casePlace" placeholder="Ort"></label>
+      <label>Name Tatverdächtige*r<input class="r-input" id="suspectName" placeholder="Name"></label>
+      <label>Geb.-Datum<input class="r-input" id="suspectDob" placeholder="Geburtsdatum"></label>
+      <label>Aufnehmende Person<input class="r-input" id="officerName" value="Brownie"></label>
+      <label>Zeugen<input class="r-input" id="witnesses" placeholder="Keine / Namen"></label>
+      <label class="span2">Sachverhalt (kurz)<textarea class="r-input" id="facts" rows="3" placeholder="Kurzer Sachverhalt"></textarea></label>
+      <label>Rechte verlesen<select class="r-input" id="rightsRead"><option>Ja</option><option>Nein</option></select></label>
+      <label>Rechte verstanden<select class="r-input" id="rightsUnderstood"><option>Ja</option><option>Nein</option></select></label>
+      <label>Rechteverlesung durch<input class="r-input" id="rightsBy" placeholder="Name"></label>
+      <label>Zeugen Rechteverlesung<input class="r-input" id="rightsWitness" placeholder="Keine / Namen"></label>
+      <label>Rückgabe<input class="r-input" id="returnedItems" placeholder="Keine / Gegenstände"></label>
+      <label>Beschlagnahmt<input class="r-input" id="seizedItems" placeholder="Keine / Gegenstände"></label>
+      <label class="span2">Bemerkungen<textarea class="r-input" id="notes" rows="3" placeholder="Keine / Bemerkungen"></textarea></label>
+      <label>Bearbeiter<input class="r-input" id="editorName" value="Brownie"></label>
+      <label>Abschlussdatum<input class="r-input" id="closingDate"></label>
+    </div>
+  </div>
+
+  <div class="glass ranger-card preview-card">
+    <div class="calc-head">
+      <div><div class="label">VORSCHAU</div><h2>Fertige Akte</h2></div>
+      <button type="button" class="btn copy-btn" id="copyRecord">▣ AKTE KOPIEREN</button>
+    </div>
+    <pre id="recordPreview" class="record-preview"></pre>
+    <div id="copyStatus" class="copy-status" aria-live="polite"></div>
+  </div>
+</section>
+
   <section class="page inner" id="familien"><h1>Familien</h1><div class="sub">Familien, Mitglieder und Standorte.</div><div class="glass placeholder">Familienübersicht</div></section>
   <section class="page inner" id="abstimmungen"><h1>Ranger-Rat</h1><div class="sub">Interne Entscheidungen und Abstimmungen.</div><div class="glass placeholder"><b>Soll Max Mustermann als Ranger aufgenommen werden?</b><p class="muted">Abstimmung läuft.</p><button class="btn">✓ JA</button> <button class="btn">× NEIN</button> <button class="btn">– ENTHALTUNG</button></div></section>
   <section class="page inner" id="eid"><h1>Ranger-Eid</h1><div class="sub">Interner Eid · Platzhalter bis zur finalen Fassung.</div><div class="glass placeholder">Der finale Ranger-Eid wird hier hinterlegt.</div></section>
@@ -331,5 +431,101 @@ function openPage(id){
  window.scrollTo({top:0,behavior:'smooth'});
 }
 document.querySelectorAll('.nav button').forEach(b=>b.addEventListener('click',()=>openPage(b.dataset.page)));
+
+const moneyFmt = new Intl.NumberFormat('de-DE');
+const q = id => document.getElementById(id);
+function field(id, fallback='xxxx'){ const el=q(id); const v=el ? el.value.trim() : ''; return v || fallback; }
+function selectedOffenses(){
+  return [...document.querySelectorAll('#offenseList input[type="checkbox"]:checked')].map(x=>({
+    name:x.dataset.name||'Straftat', money:Number(x.dataset.money)||0, he:Number(x.dataset.he)||0
+  }));
+}
+function updateRecord(){
+  const items=selectedOffenses();
+  const money=items.reduce((a,x)=>a+x.money,0);
+  const raw=items.reduce((a,x)=>a+x.he,0);
+  const actual=Math.min(raw,40);
+  if(q('selectedCount')) q('selectedCount').textContent=items.length;
+  if(q('totalMoney')) q('totalMoney').textContent=moneyFmt.format(money)+' $';
+  if(q('rawHE')) q('rawHE').textContent=raw+' HE';
+  if(q('finalHE')) q('finalHE').textContent=actual+' HE';
+
+  const crimes=items.length ? items.map(x=>'• '+x.name+' — '+moneyFmt.format(x.money)+' $ / '+x.he+' HE').join('\n') : 'Keine Straftat ausgewählt';
+  const penalty=items.length ? moneyFmt.format(money)+' $ | '+actual+' HE'+(raw>40?' (berechnet: '+raw+' HE, Ranger-Maximum 40 HE)':'') : '0 $ | 0 HE';
+
+  const text=`★ ═══════════════════════════════════════ ★
+RANGER DIVISION
+— OFFIZIELLE STRAFAKTE / PROTOKOLL —
+★ ═══════════════════════════════════════ ★
+
+𝗗𝗮𝘁𝘂𝗺/𝗭𝗲𝗶𝘁: ${field('caseDateTime','')}
+𝗢𝗿𝘁: ${field('casePlace')}
+
+𝗧𝗮𝘁𝘃𝗲𝗿𝗱𝗮̈𝗰𝗵𝘁𝗶𝗴𝗲*𝗿
+𝗡𝗮𝗺𝗲: ${field('suspectName')}
+𝗚𝗲𝗯.-𝗗𝗮𝘁𝘂𝗺: ${field('suspectDob')}
+
+𝗕𝗲𝘁𝗲𝗶𝗹𝗶𝗴𝘁𝗲
+𝗔𝘂𝗳𝗻𝗲𝗵𝗺𝗲𝗻𝗱𝗲 𝗣𝗲𝗿𝘀𝗼𝗻: ${field('officerName','Brownie')}
+𝗭𝗲𝘂𝗴𝗲𝗻: ${field('witnesses')}
+
+𝗦𝘁𝗿𝗮𝗳𝘁𝗮𝘁𝗲𝗻
+${crimes}
+
+𝗦𝘁𝗿𝗮𝗳𝗲
+${penalty}
+
+𝗦𝗮𝗰𝗵𝘃𝗲𝗿𝗵𝗮𝗹𝘁 (𝗸𝘂𝗿𝘇)
+${field('facts')}
+
+𝗥𝗲𝗰𝗵𝘁𝗲𝘃𝗲𝗿𝗹𝗲𝘀𝘂𝗻𝗴
+𝗩𝗲𝗿𝗹𝗲𝘀𝗲𝗻: ${field('rightsRead','Ja')} | 𝗩𝗲𝗿𝘀𝘁𝗮𝗻𝗱𝗲𝗻: ${field('rightsUnderstood','Ja')}
+𝗗𝘂𝗿𝗰𝗵: ${field('rightsBy')}
+𝗭𝗲𝘂𝗴𝗲𝗻: ${field('rightsWitness')}
+
+𝗚𝗲𝗴𝗲𝗻𝘀𝘁𝗮̈𝗻𝗱𝗲
+𝗥𝘂̈𝗰𝗸𝗴𝗮𝗯𝗲: ${field('returnedItems')}
+𝗕𝗲𝘀𝗰𝗵𝗹𝗮𝗴𝗻𝗮𝗵𝗺𝘁: ${field('seizedItems')}
+
+𝗕𝗲𝗺𝗲𝗿𝗸𝘂𝗻𝗴𝗲𝗻
+${field('notes')}
+
+𝗔𝗯𝘀𝗰𝗵𝗹𝘂𝘀𝘀
+𝗕𝗲𝗮𝗿𝗯𝗲𝗶𝘁𝗲𝗿: ${field('editorName','Brownie')}
+𝗗𝗮𝘁𝘂𝗺: ${field('closingDate','')}`;
+  if(q('recordPreview')) q('recordPreview').textContent=text;
+}
+function setCurrentCaseTime(){
+  const d=new Date();
+  const pad=n=>String(n).padStart(2,'0');
+  const date=pad(d.getDate())+'.'+pad(d.getMonth()+1)+'.'+d.getFullYear();
+  const time=pad(d.getHours())+':'+pad(d.getMinutes());
+  if(q('caseDateTime') && !q('caseDateTime').value) q('caseDateTime').value=date+' '+time;
+  if(q('closingDate') && !q('closingDate').value) q('closingDate').value=date;
+}
+setCurrentCaseTime();
+document.querySelectorAll('#strafrechner input,#strafrechner textarea,#strafrechner select').forEach(el=>el.addEventListener('input',updateRecord));
+document.querySelectorAll('#offenseList input[type="checkbox"]').forEach(el=>el.addEventListener('change',updateRecord));
+if(q('offenseSearch')) q('offenseSearch').addEventListener('input',e=>{
+  const needle=e.target.value.toLowerCase().trim();
+  document.querySelectorAll('#offenseList .offense').forEach(row=>row.style.display=row.textContent.toLowerCase().includes(needle)?'':'none');
+});
+if(q('clearOffenses')) q('clearOffenses').addEventListener('click',()=>{
+  document.querySelectorAll('#offenseList input[type="checkbox"]').forEach(x=>x.checked=false);
+  updateRecord();
+});
+if(q('copyRecord')) q('copyRecord').addEventListener('click',async()=>{
+  const text=q('recordPreview').textContent;
+  let ok=false;
+  try{ await navigator.clipboard.writeText(text); ok=true; }catch(e){
+    const ta=document.createElement('textarea'); ta.value=text; document.body.appendChild(ta); ta.select();
+    try{ok=document.execCommand('copy')}catch(_){}
+    ta.remove();
+  }
+  q('copyStatus').textContent=ok?'✓ Akte wurde kopiert.':'Kopieren nicht möglich – markiere den Text in der Vorschau.';
+  setTimeout(()=>{ if(q('copyStatus')) q('copyStatus').textContent=''; },3000);
+});
+updateRecord();
+
 </script>
 </body></html>
