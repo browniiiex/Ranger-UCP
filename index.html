@@ -41,6 +41,218 @@ url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABogAAAOtCAIAAAA95HBeAABcYmNhQ
 @media(max-width:1250px){.dashboard-top{grid-template-columns:1fr}.sidecards{grid-template-columns:1fr 1fr;grid-template-rows:auto}.lower{grid-template-columns:1fr 1fr}.lower .panel:last-child{grid-column:1/-1}}
 @media(max-width:900px){.shell{grid-template-columns:1fr}.sidebar{position:relative;height:auto}.nav{display:grid;grid-template-columns:repeat(2,1fr)}.account{display:none}.stats{grid-template-columns:1fr 1fr}.content{padding:16px}}
 @media(max-width:600px){.sidecards,.stats,.lower{grid-template-columns:1fr}.lower .panel:last-child{grid-column:auto}.hero{height:320px}.hero-copy{left:22px;right:20px}.hero h1{font-size:38px}}
+
+/* ===== REFERENCE SCREENSHOT VISUAL POLISH ===== */
+:root{
+  --ref-gold:#efbf61;
+  --ref-gold-soft:#f8d889;
+  --ref-green:#6ee58f;
+  --ref-border:rgba(239,191,97,.34);
+  --ref-glass:rgba(8,12,10,.67);
+}
+
+/* slightly brighter/clearer scenery through the UI */
+body{
+  background-position:center center!important;
+}
+body::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  z-index:-1;
+  background:
+    radial-gradient(circle at 64% 24%,rgba(255,171,63,.06),transparent 30%),
+    linear-gradient(90deg,rgba(2,5,4,.20),rgba(2,4,3,.03) 52%,rgba(2,4,3,.13));
+}
+
+/* Reference-like glass */
+.glass{
+  background:
+    linear-gradient(135deg,rgba(11,15,13,.72),rgba(7,10,8,.61))!important;
+  border:1px solid var(--ref-border)!important;
+  box-shadow:
+    0 16px 42px rgba(0,0,0,.24),
+    inset 0 1px 0 rgba(255,255,255,.035)!important;
+  backdrop-filter:blur(12px) saturate(118%)!important;
+  -webkit-backdrop-filter:blur(12px) saturate(118%)!important;
+}
+
+/* Bigger, cleaner command-center composition */
+@media (min-width:1400px){
+  .content{
+    padding:28px 38px 42px!important;
+  }
+  .dashboard-top{
+    grid-template-columns:minmax(0,1fr) 350px!important;
+    gap:16px!important;
+  }
+  .hero{
+    height:352px!important;
+  }
+  .hero-copy{
+    left:48px!important;
+    bottom:38px!important;
+    max-width:830px!important;
+  }
+  .hero h1{
+    font-size:70px!important;
+    line-height:.91!important;
+    letter-spacing:.025em!important;
+  }
+  .hero p{
+    font-size:16px!important;
+    max-width:720px!important;
+  }
+  .sidecards{
+    grid-template-rows:1.72fr 1fr!important;
+  }
+  .stats{
+    gap:16px!important;
+    margin-top:16px!important;
+  }
+  .stat{
+    min-height:112px!important;
+    padding:18px 22px!important;
+  }
+  .lower{
+    gap:16px!important;
+    margin-top:16px!important;
+    grid-template-columns:1.18fr .94fr .76fr!important;
+  }
+  .panel{
+    min-height:252px!important;
+    padding:20px!important;
+  }
+}
+
+/* large round stat icons like the reference */
+.stat-icon{
+  flex:0 0 66px!important;
+  width:66px!important;
+  height:66px!important;
+  border-radius:50%!important;
+  background:
+    radial-gradient(circle at 35% 30%,rgba(255,222,143,.13),rgba(216,157,55,.08) 55%,rgba(0,0,0,.04))!important;
+  border:1px solid rgba(239,191,97,.08)!important;
+  color:var(--ref-gold-soft)!important;
+  font-size:29px!important;
+  text-shadow:0 0 14px rgba(239,191,97,.18)!important;
+}
+.stat .num{
+  font-size:31px!important;
+  font-weight:500!important;
+}
+.label{
+  color:#d6aa59!important;
+  font-weight:600!important;
+  letter-spacing:1.8px!important;
+}
+
+/* Profile card closer to reference */
+.profile{
+  padding:24px!important;
+}
+.profile-row{
+  margin-top:17px!important;
+  gap:18px!important;
+}
+.avatar{
+  width:72px!important;
+  height:72px!important;
+  border-color:rgba(239,191,97,.65)!important;
+  box-shadow:inset 0 0 20px rgba(239,191,97,.06)!important;
+}
+.profile h3{
+  font-size:24px!important;
+}
+.statusbox strong{
+  color:var(--ref-green)!important;
+  font-size:18px!important;
+}
+
+/* Section headers */
+.panel-title{
+  color:var(--ref-gold)!important;
+  font-size:12px!important;
+  letter-spacing:1.35px!important;
+  font-weight:700!important;
+}
+.panel-title span:last-child{
+  color:#f1ca77!important;
+  font-size:11px!important;
+}
+
+/* appointments: more distinct date blocks and rows */
+.row{
+  min-height:66px!important;
+  padding:11px 10px!important;
+}
+.date{
+  width:58px!important;
+  min-width:58px!important;
+  padding:9px 5px!important;
+  background:linear-gradient(145deg,rgba(239,191,97,.14),rgba(239,191,97,.07))!important;
+  border:1px solid rgba(239,191,97,.08)!important;
+  color:var(--ref-gold-soft)!important;
+  font-size:15px!important;
+}
+.row b{
+  font-size:16px!important;
+}
+.row small{
+  font-size:13px!important;
+}
+
+/* Quick access: larger icon tiles */
+.quick{
+  gap:10px!important;
+}
+.quick button{
+  min-height:92px!important;
+  border-color:rgba(239,191,97,.24)!important;
+  background:linear-gradient(145deg,rgba(16,20,17,.63),rgba(8,11,9,.52))!important;
+  font-size:10px!important;
+}
+.quick span{
+  font-size:28px!important;
+  color:var(--ref-gold-soft)!important;
+}
+.quick button:hover{
+  border-color:rgba(239,191,97,.68)!important;
+  background:linear-gradient(145deg,rgba(33,31,22,.70),rgba(11,14,11,.62))!important;
+  box-shadow:0 12px 30px rgba(0,0,0,.22),0 0 18px rgba(239,191,97,.06)!important;
+}
+
+/* Sidebar more like the reference: clearer icons/text and wider active item */
+.sidebar{
+  background:linear-gradient(180deg,rgba(3,7,5,.86),rgba(3,6,5,.93))!important;
+}
+.nav button{
+  height:43px!important;
+  font-size:10.5px!important;
+  letter-spacing:1.15px!important;
+}
+.nav button.active{
+  color:#f6d27e!important;
+  background:linear-gradient(90deg,rgba(239,191,97,.18),rgba(239,191,97,.025))!important;
+}
+
+/* subtle modern effects */
+.glass,.quick button,.nav button,.btn{
+  transition:transform .28s cubic-bezier(.2,.8,.2,1),
+             border-color .28s ease,
+             background .28s ease,
+             box-shadow .28s ease!important;
+}
+.glass:hover{
+  border-color:rgba(239,191,97,.48)!important;
+  box-shadow:0 19px 48px rgba(0,0,0,.27),0 0 22px rgba(239,191,97,.045)!important;
+}
+.stat:hover,.panel:hover{
+  transform:translateY(-2px)!important;
+}
+
 </style>
 </head>
 <body>
