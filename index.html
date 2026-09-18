@@ -3,431 +3,432 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>Retro Ranger UCP</title>
 
 <style>
 :root{
-  --accent:#34d399;
-  --accent-rgb:52,211,153;
-  --bg:#080b0d;
-  --panel:#0e1316;
-  --panel2:#12191d;
-  --border:rgba(255,255,255,.075);
-  --text:#f4f7f6;
-  --muted:#85918d;
-  --danger:#fb7185;
-  --warning:#fbbf24;
-  --sidebar:245px;
+  --bg:#090b0d;
+  --sidebar:#0d1013;
+  --surface:#111519;
+  --surface2:#161b20;
+  --surface3:#1b2127;
+  --border:#262d34;
+  --text:#f3eee5;
+  --muted:#929aa3;
+
+  --gold:#c59a5b;
+  --gold2:#e0bb7d;
+  --goldSoft:rgba(197,154,91,.12);
+
+  --green:#69b784;
+  --red:#d26c6c;
+
+  --radius:14px;
 }
 
-*{box-sizing:border-box}
-
-html,body{
-  margin:0;
-  min-height:100%;
-  font-family:Inter,Segoe UI,Arial,sans-serif;
-  background:var(--bg);
-  color:var(--text);
+*{
+  box-sizing:border-box;
 }
 
 body{
-  min-height:100vh;
-  overflow-x:hidden;
-}
-
-/* Hintergrund */
-body:before{
-  content:"";
-  position:fixed;
-  inset:0;
-  pointer-events:none;
+  margin:0;
+  font-family:Inter,Segoe UI,Arial,sans-serif;
   background:
-    radial-gradient(circle at 78% 12%,rgba(var(--accent-rgb),.09),transparent 27%),
-    radial-gradient(circle at 20% 85%,rgba(var(--accent-rgb),.045),transparent 25%),
-    linear-gradient(rgba(255,255,255,.012) 1px,transparent 1px),
-    linear-gradient(90deg,rgba(255,255,255,.012) 1px,transparent 1px);
-  background-size:auto,auto,38px 38px,38px 38px;
+    radial-gradient(circle at 75% 10%,rgba(197,154,91,.06),transparent 28%),
+    var(--bg);
+  color:var(--text);
 }
 
 button,input,textarea,select{
   font:inherit;
 }
 
-/* SIDEBAR */
+button{
+  cursor:pointer;
+}
+
+.app{
+  min-height:100vh;
+  display:grid;
+  grid-template-columns:250px 1fr;
+}
+
+
+/* =========================
+   SIDEBAR
+========================= */
+
 .sidebar{
-  position:fixed;
-  left:0;
+  position:sticky;
   top:0;
-  bottom:0;
-  width:var(--sidebar);
-  padding:22px 14px;
-  background:rgba(9,13,15,.93);
-  backdrop-filter:blur(18px);
+  height:100vh;
+  padding:24px 16px;
+  background:rgba(13,16,19,.96);
   border-right:1px solid var(--border);
-  z-index:20;
+  display:flex;
+  flex-direction:column;
 }
 
 .brand{
-  display:flex;
-  align-items:center;
-  gap:12px;
-  padding:5px 10px 26px;
+  padding:4px 10px 26px;
 }
 
-.logo{
-  width:42px;
-  height:42px;
-  display:grid;
-  place-items:center;
-  border-radius:13px;
-  background:linear-gradient(135deg,rgba(var(--accent-rgb),.24),rgba(var(--accent-rgb),.05));
-  border:1px solid rgba(var(--accent-rgb),.35);
-  box-shadow:0 0 30px rgba(var(--accent-rgb),.12);
-  font-size:21px;
-}
-
-.brand h2{
-  font-size:15px;
-  margin:0;
-}
-
-.brand span{
-  color:var(--muted);
-  font-size:11px;
-}
-
-.nav-label{
-  padding:0 12px;
-  margin:10px 0 8px;
-  color:#56615e;
+.brand-small{
+  color:var(--gold);
   font-size:10px;
-  letter-spacing:1.5px;
-  font-weight:700;
+  letter-spacing:4px;
+  text-transform:uppercase;
 }
 
-.nav-item{
+.brand-title{
+  margin-top:5px;
+  font-family:Georgia,serif;
+  font-size:24px;
+  letter-spacing:1px;
+}
+
+.brand-line{
+  width:42px;
+  height:2px;
+  background:var(--gold);
+  margin-top:13px;
+}
+
+.nav{
   display:flex;
-  align-items:center;
-  gap:12px;
+  flex-direction:column;
+  gap:5px;
+}
+
+.nav button{
   width:100%;
-  border:0;
-  color:#909b98;
+  border:1px solid transparent;
   background:transparent;
-  padding:12px 13px;
-  margin:4px 0;
-  border-radius:11px;
-  cursor:pointer;
+  color:#a9b0b7;
   text-align:left;
-  transition:.22s ease;
+  padding:11px 12px;
+  border-radius:9px;
+  transition:.18s;
 }
 
-.nav-item:hover{
-  color:#fff;
-  background:rgba(255,255,255,.04);
-  transform:translateX(3px);
+.nav button:hover{
+  color:white;
+  background:#14191e;
 }
 
-.nav-item.active{
-  color:#fff;
-  background:linear-gradient(90deg,rgba(var(--accent-rgb),.15),rgba(var(--accent-rgb),.035));
-  box-shadow:inset 3px 0 var(--accent);
+.nav button.active{
+  color:var(--gold2);
+  background:var(--goldSoft);
+  border-color:rgba(197,154,91,.2);
 }
 
-.nav-icon{
-  width:23px;
-  text-align:center;
-  font-size:16px;
+.sidebar-bottom{
+  margin-top:auto;
+  border-top:1px solid var(--border);
+  padding:17px 9px 0;
 }
 
-.userbox{
-  position:absolute;
-  left:14px;
-  right:14px;
-  bottom:18px;
-  padding:13px;
-  border:1px solid var(--border);
-  background:rgba(255,255,255,.025);
-  border-radius:13px;
-}
-
-.userrow{
-  display:flex;
-  align-items:center;
-  gap:10px;
-}
-
-.avatar{
-  width:35px;
-  height:35px;
-  border-radius:50%;
-  display:grid;
-  place-items:center;
-  background:rgba(var(--accent-rgb),.14);
-  color:var(--accent);
-  border:1px solid rgba(var(--accent-rgb),.25);
-  font-weight:800;
-}
-
-.username{
-  font-size:13px;
+.user-name{
   font-weight:700;
+  font-size:14px;
 }
 
-.role{
-  color:var(--muted);
-  font-size:11px;
-  margin-top:2px;
+.user-role{
+  color:var(--gold);
+  font-size:12px;
+  margin-top:3px;
 }
 
-/* MAIN */
+
+/* =========================
+   MAIN
+========================= */
+
 .main{
-  margin-left:var(--sidebar);
-  min-height:100vh;
-  padding:25px 32px 60px;
+  min-width:0;
 }
 
 .topbar{
-  height:58px;
+  height:70px;
+  border-bottom:1px solid var(--border);
   display:flex;
   align-items:center;
   justify-content:space-between;
-  margin-bottom:25px;
+  padding:0 32px;
+  background:rgba(9,11,13,.76);
+  backdrop-filter:blur(14px);
+  position:sticky;
+  top:0;
+  z-index:20;
 }
 
-.page-title{
-  font-size:13px;
-  color:var(--muted);
+.page-name{
+  font-size:14px;
+  color:#aab1b8;
 }
 
 .status{
-  display:flex;
-  align-items:center;
-  gap:8px;
-  color:#9da8a5;
   font-size:12px;
-  padding:8px 11px;
-  border:1px solid var(--border);
-  border-radius:10px;
-  background:rgba(255,255,255,.02);
+  color:var(--green);
 }
 
-.status-dot{
-  width:7px;
-  height:7px;
-  border-radius:50%;
-  background:var(--accent);
-  box-shadow:0 0 12px var(--accent);
+.content{
+  max-width:1450px;
+  margin:auto;
+  padding:35px;
 }
 
-/* PAGES */
 .page{
   display:none;
 }
 
 .page.active{
   display:block;
-  animation:pageIn .38s cubic-bezier(.2,.8,.2,1);
+  animation:pageIn .22s ease;
 }
 
 @keyframes pageIn{
   from{
     opacity:0;
-    transform:translateY(12px) scale(.995);
-    filter:blur(3px);
+    transform:translateY(5px);
   }
   to{
     opacity:1;
     transform:none;
-    filter:none;
   }
 }
 
-.hero{
-  margin-bottom:28px;
-}
-
 .eyebrow{
-  color:var(--accent);
-  font-size:11px;
-  letter-spacing:2px;
-  font-weight:800;
-  margin-bottom:8px;
+  color:var(--gold);
+  text-transform:uppercase;
+  letter-spacing:3px;
+  font-size:10px;
+  font-weight:700;
 }
 
-.hero h1{
-  margin:0;
-  font-size:32px;
-  letter-spacing:-1.2px;
+h1{
+  font-family:Georgia,serif;
+  font-weight:500;
+  font-size:34px;
+  margin:8px 0 7px;
 }
 
-.hero p{
+.subtitle{
   color:var(--muted);
-  margin:8px 0 0;
-  max-width:700px;
+  margin-bottom:28px;
   line-height:1.6;
-  font-size:13px;
 }
 
-/* CARDS */
 .grid{
   display:grid;
+  gap:16px;
+}
+
+.grid-4{
   grid-template-columns:repeat(4,1fr);
-  gap:14px;
+}
+
+.grid-3{
+  grid-template-columns:repeat(3,1fr);
+}
+
+.grid-2{
+  grid-template-columns:repeat(2,1fr);
 }
 
 .card{
-  position:relative;
-  overflow:hidden;
+  background:linear-gradient(145deg,var(--surface),#0f1316);
   border:1px solid var(--border);
-  border-radius:16px;
-  background:linear-gradient(145deg,rgba(255,255,255,.035),rgba(255,255,255,.015));
-  padding:19px;
-  transition:.25s ease;
+  border-radius:var(--radius);
+  padding:20px;
 }
 
-.card:before{
-  content:"";
-  position:absolute;
-  width:100px;
-  height:100px;
-  border-radius:50%;
-  background:rgba(var(--accent-rgb),.08);
-  filter:blur(40px);
-  right:-40px;
-  top:-40px;
-  opacity:0;
-  transition:.25s;
+.card-title{
+  color:#c6ccd1;
+  font-size:12px;
+  margin-bottom:10px;
 }
 
-.card:hover{
-  border-color:rgba(var(--accent-rgb),.22);
-  transform:translateY(-3px);
-  box-shadow:0 15px 40px rgba(0,0,0,.2);
+.big-number{
+  font-family:Georgia,serif;
+  font-size:29px;
 }
 
-.card:hover:before{
-  opacity:1;
+.gold{
+  color:var(--gold2);
 }
 
-.stat-label{
+.muted{
   color:var(--muted);
-  font-size:11px;
-}
-
-.stat{
-  margin-top:8px;
-  font-size:27px;
-  font-weight:800;
-}
-
-.stat-sub{
-  margin-top:7px;
-  color:#65716e;
-  font-size:10px;
 }
 
 .section-title{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  margin:27px 0 12px;
+  font-size:15px;
+  margin:0 0 15px;
 }
 
-.section-title h3{
-  margin:0;
-  font-size:14px;
+
+/* =========================
+   BUTTONS / FORMS
+========================= */
+
+.btn{
+  border:1px solid var(--border);
+  background:var(--surface2);
+  color:white;
+  border-radius:8px;
+  padding:10px 15px;
+  transition:.18s;
 }
 
-/* DASHBOARD */
-.activity{
+.btn:hover{
+  border-color:#414a53;
+  background:#1b2127;
+}
+
+.btn-primary{
+  background:var(--gold);
+  color:#111;
+  border-color:var(--gold);
+  font-weight:800;
+}
+
+.btn-primary:hover{
+  background:var(--gold2);
+}
+
+.btn-danger{
+  color:#e89a9a;
+}
+
+label{
+  display:block;
+  color:#aab1b8;
+  font-size:12px;
+  margin-bottom:7px;
+}
+
+input,
+textarea,
+select{
+  width:100%;
+  color:white;
+  background:#0b0e11;
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:11px 12px;
+  outline:none;
+}
+
+input:focus,
+textarea:focus,
+select:focus{
+  border-color:var(--gold);
+}
+
+textarea{
+  resize:vertical;
+  min-height:95px;
+}
+
+.form-grid{
   display:grid;
-  grid-template-columns:1.5fr 1fr;
+  grid-template-columns:1fr 1fr;
   gap:14px;
 }
 
-.empty{
-  min-height:150px;
-  display:grid;
-  place-items:center;
-  text-align:center;
-  color:#68736f;
+.form-group{
+  margin-bottom:14px;
 }
 
-.empty-icon{
-  font-size:26px;
-  opacity:.5;
-  margin-bottom:8px;
-}
 
-/* STRAFRECHNER */
-.calculator{
+/* =========================
+   DASHBOARD
+========================= */
+
+.dashboard-layout{
   display:grid;
-  grid-template-columns:minmax(0,1.5fr) minmax(330px,.7fr);
+  grid-template-columns:1.4fr .8fr;
   gap:16px;
-  align-items:start;
+  margin-top:16px;
 }
 
-.catalog{
-  min-height:590px;
+.timeline-item{
+  padding:14px 0;
+  border-bottom:1px solid var(--border);
+  display:flex;
+  justify-content:space-between;
+  gap:15px;
 }
+
+.timeline-item:last-child{
+  border-bottom:0;
+}
+
+.tag{
+  display:inline-flex;
+  padding:4px 8px;
+  border-radius:999px;
+  font-size:10px;
+  border:1px solid rgba(197,154,91,.25);
+  background:var(--goldSoft);
+  color:var(--gold2);
+}
+
+
+/* =========================
+   TERMINE
+========================= */
 
 .toolbar{
   display:flex;
+  justify-content:space-between;
+  gap:12px;
+  align-items:center;
+  margin-bottom:18px;
+}
+
+.list{
+  display:flex;
+  flex-direction:column;
   gap:10px;
-  margin-bottom:16px;
+}
+
+.list-item{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:11px;
+  padding:16px;
+  display:flex;
+  justify-content:space-between;
+  gap:20px;
+  align-items:center;
+}
+
+.item-title{
+  font-weight:700;
+}
+
+.item-meta{
+  color:var(--muted);
+  font-size:12px;
+  margin-top:5px;
+}
+
+
+/* =========================
+   STRAFRECHNER
+========================= */
+
+.calculator{
+  display:grid;
+  grid-template-columns:1fr 390px;
+  gap:18px;
 }
 
 .search{
-  flex:1;
-  position:relative;
-}
-
-.search input,
-.field input,
-.field textarea{
-  width:100%;
-  color:#fff;
-  background:#090d0f;
-  border:1px solid var(--border);
-  outline:none;
-  border-radius:11px;
-  padding:12px 13px;
-  transition:.2s;
-}
-
-.search input:focus,
-.field input:focus,
-.field textarea:focus{
-  border-color:rgba(var(--accent-rgb),.45);
-  box-shadow:0 0 0 3px rgba(var(--accent-rgb),.07);
-}
-
-.tabs{
-  display:flex;
-  gap:6px;
-  flex-wrap:wrap;
-  margin-bottom:15px;
-}
-
-.tab{
-  border:1px solid var(--border);
-  color:#8d9895;
-  background:rgba(255,255,255,.02);
-  padding:8px 11px;
-  border-radius:9px;
-  cursor:pointer;
-  font-size:11px;
-  transition:.2s;
-}
-
-.tab:hover{
-  color:#fff;
-}
-
-.tab.active{
-  color:var(--accent);
-  border-color:rgba(var(--accent-rgb),.28);
-  background:rgba(var(--accent-rgb),.08);
+  margin-bottom:14px;
 }
 
 .offense-list{
@@ -437,1053 +438,1693 @@ button,input,textarea,select{
 }
 
 .offense{
-  display:grid;
-  grid-template-columns:35px 1fr auto;
-  align-items:center;
-  gap:11px;
-  padding:12px;
   border:1px solid var(--border);
-  border-radius:12px;
+  background:var(--surface);
+  border-radius:9px;
+  padding:13px;
+  display:grid;
+  grid-template-columns:1fr auto auto;
+  gap:15px;
+  align-items:center;
   cursor:pointer;
-  transition:.2s;
-  background:rgba(255,255,255,.012);
 }
 
 .offense:hover{
-  background:rgba(255,255,255,.027);
-  border-color:rgba(255,255,255,.12);
+  border-color:#49515a;
 }
 
 .offense.selected{
-  border-color:rgba(var(--accent-rgb),.32);
-  background:rgba(var(--accent-rgb),.065);
+  border-color:var(--gold);
+  background:var(--goldSoft);
 }
 
-.check{
-  width:23px;
-  height:23px;
-  border:1px solid #303a37;
-  border-radius:7px;
-  display:grid;
-  place-items:center;
-  color:transparent;
-  transition:.2s;
-}
-
-.offense.selected .check{
-  background:var(--accent);
-  border-color:var(--accent);
-  color:#06110d;
-  transform:scale(1.05);
-}
-
-.offense-name{
-  font-size:12px;
-  font-weight:700;
-}
-
-.offense-law{
-  color:var(--muted);
-  font-size:10px;
-  margin-top:4px;
-}
-
-.penalty{
-  text-align:right;
-  font-size:11px;
-}
-
-.money{
-  font-weight:700;
-}
-
+.money,
 .he{
-  color:var(--muted);
-  margin-top:4px;
+  font-size:12px;
+  color:#c6ccd1;
 }
 
-/* SUMMARY */
 .summary{
   position:sticky;
-  top:22px;
+  top:90px;
+  align-self:start;
 }
 
-.summary-title{
-  font-size:13px;
-  font-weight:800;
-  margin-bottom:17px;
-}
-
-.person-fields{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:8px;
-  margin-bottom:16px;
-}
-
-.field label{
-  display:block;
-  color:var(--muted);
-  font-size:10px;
-  margin-bottom:6px;
-}
-
-.field textarea{
-  min-height:90px;
-  resize:vertical;
-}
-
-.selected-count{
-  display:flex;
-  justify-content:space-between;
-  color:var(--muted);
-  font-size:11px;
-  padding:13px 0;
-  border-top:1px solid var(--border);
+.summary-total{
+  padding:15px 0;
   border-bottom:1px solid var(--border);
 }
 
-.totals{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:8px;
-  margin-top:14px;
+.summary-total strong{
+  display:block;
+  font-size:27px;
+  font-family:Georgia,serif;
+  margin-top:5px;
 }
 
-.totalbox{
-  padding:14px;
-  border-radius:12px;
-  background:#090d0f;
+
+/* =========================
+   VOTES
+========================= */
+
+.vote{
+  padding:17px;
   border:1px solid var(--border);
-}
-
-.totalbox span{
-  color:var(--muted);
-  font-size:10px;
-}
-
-.totalbox strong{
-  display:block;
-  font-size:20px;
-  margin-top:6px;
-}
-
-.totalbox.hebox.limit{
-  border-color:rgba(251,191,36,.3);
-  background:rgba(251,191,36,.035);
-}
-
-.limit-info{
-  display:none;
-  margin-top:10px;
-  padding:10px;
-  border-radius:9px;
-  color:#f5cb61;
-  background:rgba(251,191,36,.07);
-  border:1px solid rgba(251,191,36,.18);
-  font-size:10px;
-}
-
-.limit-info.show{
-  display:block;
-  animation:fadeIn .3s;
-}
-
-@keyframes fadeIn{
-  from{opacity:0}
-  to{opacity:1}
-}
-
-.btn{
-  width:100%;
-  border:0;
-  padding:12px 14px;
+  background:var(--surface);
   border-radius:11px;
-  margin-top:10px;
-  cursor:pointer;
-  font-weight:800;
-  font-size:12px;
-  transition:.22s;
+  margin-bottom:10px;
 }
 
-.btn-primary{
-  color:#06110d;
-  background:var(--accent);
-  box-shadow:0 8px 25px rgba(var(--accent-rgb),.12);
-}
-
-.btn-primary:hover{
-  transform:translateY(-2px);
-  box-shadow:0 12px 35px rgba(var(--accent-rgb),.22);
-}
-
-.btn-secondary{
-  color:#b8c0bd;
-  background:rgba(255,255,255,.04);
-  border:1px solid var(--border);
-}
-
-.btn-secondary:hover{
-  color:#fff;
-  background:rgba(255,255,255,.07);
-}
-
-/* GENERISCHE SEITEN */
-.placeholder{
-  min-height:390px;
-  display:grid;
-  place-items:center;
-  text-align:center;
-}
-
-.placeholder .bigicon{
-  width:64px;
-  height:64px;
-  margin:auto;
-  display:grid;
-  place-items:center;
-  border-radius:18px;
-  font-size:26px;
-  color:var(--accent);
-  background:rgba(var(--accent-rgb),.07);
-  border:1px solid rgba(var(--accent-rgb),.17);
-}
-
-.placeholder h3{
-  margin:15px 0 7px;
-}
-
-.placeholder p{
-  margin:0;
-  color:var(--muted);
-  font-size:12px;
-}
-
-/* SETTINGS */
-.color-options{
+.vote-actions{
   display:flex;
-  gap:10px;
+  gap:8px;
   margin-top:15px;
 }
 
-.color{
-  width:37px;
-  height:37px;
-  border-radius:11px;
-  cursor:pointer;
-  border:3px solid transparent;
-  transition:.2s;
+
+/* =========================
+   EID
+========================= */
+
+.oath{
+  max-width:800px;
+  margin:auto;
+  text-align:center;
+  padding:45px;
 }
 
-.color:hover{
-  transform:scale(1.08);
+.oath-symbol{
+  color:var(--gold);
+  font-size:32px;
 }
 
-.color.active{
-  outline:2px solid rgba(255,255,255,.5);
-  outline-offset:3px;
+.oath-text{
+  font-family:Georgia,serif;
+  font-size:20px;
+  line-height:1.9;
+  color:#ded8cd;
 }
 
-/* TOAST */
-.toast{
+
+/* =========================
+   MODAL
+========================= */
+
+.modal-backdrop{
   position:fixed;
-  right:25px;
-  bottom:25px;
-  min-width:260px;
-  padding:14px 16px;
-  border-radius:12px;
-  color:#dce5e1;
-  background:#111719;
-  border:1px solid rgba(var(--accent-rgb),.22);
-  box-shadow:0 20px 50px rgba(0,0,0,.4);
-  transform:translateY(30px);
-  opacity:0;
-  pointer-events:none;
-  transition:.3s cubic-bezier(.2,.8,.2,1);
+  inset:0;
+  background:rgba(0,0,0,.72);
+  display:none;
+  align-items:center;
+  justify-content:center;
   z-index:100;
-  font-size:12px;
+  padding:20px;
 }
 
-.toast.show{
-  transform:none;
-  opacity:1;
+.modal-backdrop.show{
+  display:flex;
 }
 
-/* MOBILE */
+.modal{
+  width:min(620px,100%);
+  max-height:90vh;
+  overflow:auto;
+  background:#111519;
+  border:1px solid #323941;
+  border-radius:15px;
+  padding:24px;
+}
+
+.modal-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:20px;
+}
+
+.modal-header h2{
+  margin:0;
+  font-family:Georgia,serif;
+}
+
+.close{
+  border:0;
+  background:transparent;
+  color:#999;
+  font-size:24px;
+}
+
+
+/* =========================
+   MOBILE
+========================= */
+
+.mobile-menu{
+  display:none;
+}
+
 @media(max-width:1050px){
-  .grid{grid-template-columns:repeat(2,1fr)}
-  .calculator{grid-template-columns:1fr}
-  .summary{position:relative;top:0}
+
+  .grid-4{
+    grid-template-columns:repeat(2,1fr);
+  }
+
+  .calculator{
+    grid-template-columns:1fr;
+  }
+
+  .summary{
+    position:static;
+  }
+
 }
 
-@media(max-width:760px){
-  :root{--sidebar:72px}
-  .sidebar{padding:18px 9px}
-  .brand h2,.brand span,.nav-item .nav-text,.nav-label,.userbox .usertext{display:none}
-  .brand{justify-content:center;padding:4px 0 25px}
-  .nav-item{justify-content:center}
-  .userbox{padding:10px;display:flex;justify-content:center}
-  .main{padding:18px}
-  .grid{grid-template-columns:1fr}
-  .activity{grid-template-columns:1fr}
+@media(max-width:780px){
+
+  .app{
+    grid-template-columns:1fr;
+  }
+
+  .sidebar{
+    display:none;
+  }
+
+  .topbar{
+    padding:0 18px;
+  }
+
+  .mobile-menu{
+    display:block;
+  }
+
+  .content{
+    padding:23px 16px;
+  }
+
+  .grid-4,
+  .grid-3,
+  .grid-2,
+  .dashboard-layout,
+  .form-grid{
+    grid-template-columns:1fr;
+  }
+
+  h1{
+    font-size:29px;
+  }
+
+  .list-item{
+    align-items:flex-start;
+    flex-direction:column;
+  }
+
 }
 </style>
 </head>
 
 <body>
 
+<div class="app">
+
+<!-- SIDEBAR -->
+
 <aside class="sidebar">
 
   <div class="brand">
-    <div class="logo">★</div>
-    <div>
-      <h2>RETRO RANGER</h2>
-      <span>Unified Control Panel</span>
-    </div>
+    <div class="brand-small">Retro Roleplay</div>
+    <div class="brand-title">RETRO RANGER</div>
+    <div class="brand-line"></div>
   </div>
 
-  <div class="nav-label">ÜBERSICHT</div>
+  <nav class="nav">
+    <button class="active" data-page="dashboard">⌂ &nbsp; Dashboard</button>
+    <button data-page="termine">◷ &nbsp; Termine</button>
+    <button data-page="strafrechner">§ &nbsp; Strafrechner</button>
+    <button data-page="akten">▤ &nbsp; Akten</button>
+    <button data-page="familien">♜ &nbsp; Familien</button>
+    <button data-page="abstimmungen">✓ &nbsp; Abstimmungen</button>
+    <button data-page="eid">✦ &nbsp; Ranger-Eid</button>
+    <button data-page="verwaltung">⚙ &nbsp; Ranger-Verwaltung</button>
+    <button data-page="einstellungen">◈ &nbsp; Einstellungen</button>
+  </nav>
 
-  <button class="nav-item active" data-page="dashboard">
-    <span class="nav-icon">⌂</span>
-    <span class="nav-text">Dashboard</span>
-  </button>
-
-  <button class="nav-item" data-page="calculator">
-    <span class="nav-icon">⚖</span>
-    <span class="nav-text">Strafrechner</span>
-  </button>
-
-  <button class="nav-item" data-page="files">
-    <span class="nav-icon">▤</span>
-    <span class="nav-text">Akten</span>
-  </button>
-
-  <div class="nav-label">RANGER</div>
-
-  <button class="nav-item" data-page="families">
-    <span class="nav-icon">♟</span>
-    <span class="nav-text">Familien</span>
-  </button>
-
-  <button class="nav-item" data-page="oath">
-    <span class="nav-icon">✦</span>
-    <span class="nav-text">Ranger-Eid</span>
-  </button>
-
-  <button class="nav-item" data-page="votes">
-    <span class="nav-icon">✓</span>
-    <span class="nav-text">Abstimmungen</span>
-  </button>
-
-  <div class="nav-label">SYSTEM</div>
-
-  <button class="nav-item" data-page="settings">
-    <span class="nav-icon">⚙</span>
-    <span class="nav-text">Einstellungen</span>
-  </button>
-
-  <div class="userbox">
-    <div class="userrow">
-      <div class="avatar">R</div>
-      <div class="usertext">
-        <div class="username">Ranger</div>
-        <div class="role">Nicht angemeldet</div>
-      </div>
-    </div>
+  <div class="sidebar-bottom">
+    <div class="user-name">Brownie</div>
+    <div class="user-role">Ranger-Leitung</div>
   </div>
 
 </aside>
 
 
+<!-- MAIN -->
+
 <main class="main">
 
-  <div class="topbar">
-    <div class="page-title" id="breadcrumb">Ranger UCP / Dashboard</div>
+<header class="topbar">
 
-    <div class="status">
-      <div class="status-dot"></div>
-      System online
-    </div>
+  <div class="page-name" id="pageName">
+    Dashboard
+  </div>
+
+  <div class="status">
+    ● System bereit
+  </div>
+
+</header>
+
+
+<div class="content">
+
+
+<!-- ================= DASHBOARD ================= -->
+
+<section class="page active" id="dashboard">
+
+  <div class="eyebrow">Command Center</div>
+  <h1>Willkommen bei den Retro Rangern.</h1>
+
+  <div class="subtitle">
+    Zentrale Verwaltung für Ranger, Akten, Termine und Abstimmungen.
   </div>
 
 
-  <!-- DASHBOARD -->
-  <section class="page active" id="dashboard">
+  <div class="grid grid-4">
 
-    <div class="hero">
-      <div class="eyebrow">RETRO RANGER COMMAND</div>
-      <h1>Willkommen im Ranger UCP.</h1>
-      <p>
-        Zentrale Verwaltung für Strafakten, Familieninformationen,
-        Abstimmungen und interne Ranger-Vorgänge.
-      </p>
+    <div class="card">
+      <div class="card-title">AKTIVE RANGER</div>
+      <div class="big-number">12</div>
     </div>
 
-    <div class="grid">
+    <div class="card">
+      <div class="card-title">OFFENE AKTEN</div>
+      <div class="big-number">4</div>
+    </div>
 
-      <div class="card">
-        <div class="stat-label">STRAFTATEN IM KATALOG</div>
-        <div class="stat">79</div>
-        <div class="stat-sub">StGB · StVO · WaffG · BtMG</div>
-      </div>
+    <div class="card">
+      <div class="card-title">NÄCHSTE TERMINE</div>
+      <div class="big-number">2</div>
+    </div>
 
-      <div class="card">
-        <div class="stat-label">OFFENE AKTEN</div>
-        <div class="stat">0</div>
-        <div class="stat-sub">Keine offenen Vorgänge</div>
-      </div>
+    <div class="card">
+      <div class="card-title">OFFENE ABSTIMMUNGEN</div>
+      <div class="big-number gold">1</div>
+    </div>
 
-      <div class="card">
-        <div class="stat-label">ABSTIMMUNGEN</div>
-        <div class="stat">0</div>
-        <div class="stat-sub">Keine aktive Abstimmung</div>
-      </div>
+  </div>
 
-      <div class="card">
-        <div class="stat-label">HAFTMAXIMUM</div>
-        <div class="stat">40 <small style="font-size:11px;color:var(--muted)">HE</small></div>
-        <div class="stat-sub">Automatisch begrenzt</div>
-      </div>
+
+  <div class="dashboard-layout">
+
+    <div class="card">
+
+      <h3 class="section-title">
+        Nächste Termine
+      </h3>
+
+      <div id="dashboardAppointments"></div>
 
     </div>
 
-    <div class="section-title">
-      <h3>Aktuelle Vorgänge</h3>
-    </div>
 
-    <div class="activity">
+    <div class="card">
 
-      <div class="card empty">
-        <div>
-          <div class="empty-icon">▤</div>
-          Noch keine Akten vorhanden
-        </div>
+      <h3 class="section-title">
+        Laufende Abstimmung
+      </h3>
+
+      <div class="tag">
+        OFFEN
       </div>
 
-      <div class="card empty">
-        <div>
-          <div class="empty-icon">✓</div>
-          Keine offenen Abstimmungen
+      <h3>
+        Aufnahme eines neuen Rangers
+      </h3>
+
+      <div class="muted">
+        Die Abstimmung endet in 2 Tagen.
+      </div>
+
+      <button
+        class="btn btn-primary"
+        style="margin-top:18px"
+        onclick="openPage('abstimmungen')">
+        Zur Abstimmung
+      </button>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- ================= TERMINE ================= -->
+
+<section class="page" id="termine">
+
+  <div class="eyebrow">Organisation</div>
+  <h1>Termine</h1>
+
+  <div class="subtitle">
+    Besprechungen, Schulungen und Ranger-Termine verwalten.
+    Neue Termine können später automatisch an Discord übermittelt werden.
+  </div>
+
+
+  <div class="toolbar">
+
+    <div class="muted">
+      Kommende Termine
+    </div>
+
+    <button
+      class="btn btn-primary"
+      onclick="openModal('appointmentModal')">
+      + Termin erstellen
+    </button>
+
+  </div>
+
+
+  <div class="list" id="appointmentList"></div>
+
+</section>
+
+
+<!-- ================= STRAFRECHNER ================= -->
+
+<section class="page" id="strafrechner">
+
+  <div class="eyebrow">Gesetzbuch</div>
+  <h1>Strafrechner</h1>
+
+  <div class="subtitle">
+    Straftaten auswählen und Geldstrafe sowie Hafteinheiten automatisch berechnen.
+  </div>
+
+
+  <div class="calculator">
+
+    <div>
+
+      <input
+        class="search"
+        id="offenseSearch"
+        placeholder="Straftat suchen...">
+
+      <div class="offense-list" id="offenseList"></div>
+
+    </div>
+
+
+    <div class="card summary">
+
+      <div class="eyebrow">
+        Berechnung
+      </div>
+
+      <h2>Strafe</h2>
+
+      <div id="selectedOffenses" class="muted">
+        Keine Straftaten ausgewählt.
+      </div>
+
+
+      <div class="summary-total">
+
+        <span class="muted">
+          Geldstrafe
+        </span>
+
+        <strong id="totalMoney">
+          $0
+        </strong>
+
+      </div>
+
+
+      <div class="summary-total">
+
+        <span class="muted">
+          Hafteinheiten
+        </span>
+
+        <strong id="totalHE">
+          0 HE
+        </strong>
+
+        <div
+          class="muted"
+          id="heNotice"
+          style="font-size:11px;margin-top:5px">
         </div>
+
+      </div>
+
+
+      <button
+        class="btn btn-primary"
+        style="width:100%;margin-top:17px"
+        onclick="createCaseFromCalculator()">
+        Akte erstellen
+      </button>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- ================= AKTEN ================= -->
+
+<section class="page" id="akten">
+
+  <div class="eyebrow">Dokumentation</div>
+  <h1>Akten</h1>
+
+  <div class="subtitle">
+    Erstellte Ranger-Akten und Vorgänge.
+  </div>
+
+
+  <div class="toolbar">
+
+    <div class="muted">
+      Aktenübersicht
+    </div>
+
+    <button class="btn">
+      + Neue Akte
+    </button>
+
+  </div>
+
+
+  <div class="card">
+
+    <div class="muted">
+      Noch keine Akten in dieser Testversion vorhanden.
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- ================= FAMILIEN ================= -->
+
+<section class="page" id="familien">
+
+  <div class="eyebrow">Informationen</div>
+  <h1>Familien</h1>
+
+  <div class="subtitle">
+    Übersicht bekannter Familien, Mitglieder und Standorte.
+  </div>
+
+
+  <div class="toolbar">
+
+    <input
+      style="max-width:350px"
+      placeholder="Familie suchen...">
+
+    <button class="btn btn-primary">
+      + Familie eintragen
+    </button>
+
+  </div>
+
+
+  <div class="grid grid-3">
+
+    <div class="card">
+
+      <div class="tag">
+        FAMILIE
+      </div>
+
+      <h3>Beispiel Familie</h3>
+
+      <div class="muted">
+        Standort: Nicht eingetragen
       </div>
 
     </div>
 
-  </section>
+  </div>
+
+</section>
 
 
-  <!-- STRAFRECHNER -->
-  <section class="page" id="calculator">
+<!-- ================= ABSTIMMUNGEN ================= -->
 
-    <div class="hero">
-      <div class="eyebrow">STRAFVERFOLGUNG</div>
-      <h1>Strafrechner</h1>
-      <p>
-        Delikte auswählen und Geldstrafe sowie Hafteinheiten automatisch berechnen.
-        Die tatsächlich verhängte Haft wird automatisch auf maximal 40 HE begrenzt.
-      </p>
+<section class="page" id="abstimmungen">
+
+  <div class="eyebrow">Ranger Council</div>
+  <h1>Abstimmungen</h1>
+
+  <div class="subtitle">
+    Interne Entscheidungen der Ranger.
+    Bei neuen Abstimmungen kann später automatisch eine Discord-Benachrichtigung gesendet werden.
+  </div>
+
+
+  <div class="toolbar">
+
+    <div class="muted">
+      Aktive Abstimmungen
     </div>
 
-    <div class="calculator">
+    <button
+      class="btn btn-primary"
+      onclick="openModal('voteModal')">
+      + Abstimmung erstellen
+    </button>
 
-      <div class="card catalog">
+  </div>
 
-        <div class="toolbar">
-          <div class="search">
-            <input id="searchInput" placeholder="Straftat oder Paragraph suchen...">
-          </div>
-        </div>
 
-        <div class="tabs">
-          <button class="tab active" data-cat="Alle">Alle</button>
-          <button class="tab" data-cat="StGB">StGB</button>
-          <button class="tab" data-cat="StVO">StVO</button>
-          <button class="tab" data-cat="WaffG">WaffG</button>
-          <button class="tab" data-cat="BtMG">BtMG</button>
-        </div>
+  <div id="voteList">
 
-        <div class="offense-list" id="offenseList"></div>
+    <div class="vote">
 
+      <div class="tag">
+        AUFNAHME
       </div>
 
+      <h3>
+        Soll Max Mustermann als Ranger aufgenommen werden?
+      </h3>
 
-      <div class="card summary">
+      <div class="muted">
+        Abstimmung läuft.
+      </div>
 
-        <div class="summary-title">Aktuelle Strafe</div>
+      <div class="vote-actions">
 
-        <div class="person-fields">
-          <div class="field">
-            <label>VORNAME</label>
-            <input id="firstname" placeholder="Vorname">
-          </div>
-
-          <div class="field">
-            <label>NACHNAME</label>
-            <input id="lastname" placeholder="Nachname">
-          </div>
-        </div>
-
-        <div class="selected-count">
-          <span>Ausgewählte Delikte</span>
-          <strong id="selectedCount">0</strong>
-        </div>
-
-        <div class="totals">
-
-          <div class="totalbox">
-            <span>GELDSTRAFE</span>
-            <strong id="moneyTotal">$0</strong>
-          </div>
-
-          <div class="totalbox hebox" id="heBox">
-            <span>HAFTSTRAFE</span>
-            <strong id="heTotal">0 HE</strong>
-          </div>
-
-        </div>
-
-        <div class="limit-info" id="limitInfo">
-          ⚠ Haftmaximum erreicht. Die berechnete Strafe überschreitet
-          40 HE und wird auf 40 HE begrenzt.
-        </div>
-
-        <button class="btn btn-primary" id="createFile">
-          Aktenvorlage erstellen
+        <button
+          class="btn"
+          onclick="vote(this,'Ja')">
+          ✓ Ja
         </button>
 
-        <button class="btn btn-secondary" id="clearSelection">
-          Auswahl zurücksetzen
+        <button
+          class="btn"
+          onclick="vote(this,'Nein')">
+          ✕ Nein
+        </button>
+
+        <button
+          class="btn"
+          onclick="vote(this,'Enthaltung')">
+          – Enthaltung
         </button>
 
       </div>
 
+      <div
+        class="muted vote-result"
+        style="margin-top:12px">
+      </div>
+
     </div>
 
-  </section>
+  </div>
+
+</section>
 
 
-  <!-- AKTEN -->
-  <section class="page" id="files">
-    <div class="hero">
-      <div class="eyebrow">VERWALTUNG</div>
-      <h1>Akten</h1>
-      <p>Gespeicherte Strafakten und vergangene Vorgänge.</p>
+<!-- ================= EID ================= -->
+
+<section class="page" id="eid">
+
+  <div class="eyebrow">Ehre & Pflicht</div>
+  <h1>Ranger-Eid</h1>
+
+  <div class="subtitle">
+    Der Eid der Retro Ranger.
+  </div>
+
+
+  <div class="card oath">
+
+    <div class="oath-symbol">
+      ✦
     </div>
 
-    <div class="card placeholder">
+    <h2>Der Eid</h2>
+
+    <div class="oath-text">
+
+      „Ich schwöre, den Retro Rangern loyal zu dienen,
+      meine Pflichten gewissenhaft zu erfüllen und
+      meine Kameraden zu respektieren.
+
+      <br><br>
+
+      Was innerhalb der Ranger besprochen,
+      geplant oder anvertraut wird,
+      bleibt innerhalb der Ranger.
+
+      <br><br>
+
+      Ich bewahre Verschwiegenheit,
+      handle im Sinne der Gemeinschaft
+      und stehe zu meinem Wort.“
+
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- ================= VERWALTUNG ================= -->
+
+<section class="page" id="verwaltung">
+
+  <div class="eyebrow">Administration</div>
+  <h1>Ranger-Verwaltung</h1>
+
+  <div class="subtitle">
+    Mitglieder, Ränge und Zugriffsrechte verwalten.
+  </div>
+
+
+  <div class="toolbar">
+
+    <div class="muted">
+      Ranger
+    </div>
+
+    <button class="btn btn-primary">
+      + Ranger hinzufügen
+    </button>
+
+  </div>
+
+
+  <div class="list">
+
+    <div class="list-item">
+
       <div>
-        <div class="bigicon">▤</div>
-        <h3>Aktenverwaltung</h3>
-        <p>Wird im nächsten Schritt mit Supabase verbunden.</p>
-      </div>
-    </div>
-  </section>
 
+        <div class="item-title">
+          Brownie
+        </div>
 
-  <!-- FAMILIEN -->
-  <section class="page" id="families">
-    <div class="hero">
-      <div class="eyebrow">INFORMATIONSSYSTEM</div>
-      <h1>Familien</h1>
-      <p>Familien, Mitglieder und bekannte Standorte verwalten.</p>
-    </div>
-
-    <div class="card placeholder">
-      <div>
-        <div class="bigicon">♟</div>
-        <h3>Familienregister</h3>
-        <p>Hier werden Familien und deren Standorte hinterlegt.</p>
-      </div>
-    </div>
-  </section>
-
-
-  <!-- EID -->
-  <section class="page" id="oath">
-    <div class="hero">
-      <div class="eyebrow">RETRO RANGER</div>
-      <h1>Der Ranger-Eid</h1>
-      <p>Pflicht, Loyalität und Verschwiegenheit.</p>
-    </div>
-
-    <div class="card" style="max-width:850px;padding:30px">
-
-      <div style="
-        font-size:18px;
-        line-height:1.9;
-        color:#dce3e0;
-        border-left:3px solid var(--accent);
-        padding-left:22px;
-      ">
-        Ich schwöre, meine Pflichten als Retro Ranger gewissenhaft
-        und loyal zu erfüllen, die Interessen der Ranger zu schützen
-        und die mir anvertrauten Informationen vertraulich zu behandeln.
-        <br><br>
-        Ich verpflichte mich, interne Angelegenheiten, Gespräche,
-        Ermittlungen und Informationen nicht an Unbefugte weiterzugeben
-        und über rangerinterne Vorgänge Verschwiegenheit zu bewahren.
-        <br><br>
-        Ich handle nach bestem Wissen und Gewissen und stehe für
-        Zusammenhalt, Verantwortung und Loyalität innerhalb der
-        Retro Ranger ein.
-      </div>
-
-    </div>
-  </section>
-
-
-  <!-- ABSTIMMUNGEN -->
-  <section class="page" id="votes">
-    <div class="hero">
-      <div class="eyebrow">PERSONALENTSCHEIDUNGEN</div>
-      <h1>Abstimmungen</h1>
-      <p>Interne Abstimmungen zur Übernahme neuer Ranger.</p>
-    </div>
-
-    <div class="card placeholder">
-      <div>
-        <div class="bigicon">✓</div>
-        <h3>Keine aktive Abstimmung</h3>
-        <p>Später können hier Übernahme-Abstimmungen gestartet werden.</p>
-      </div>
-    </div>
-  </section>
-
-
-  <!-- SETTINGS -->
-  <section class="page" id="settings">
-    <div class="hero">
-      <div class="eyebrow">PERSONALISIERUNG</div>
-      <h1>Einstellungen</h1>
-      <p>Das UCP kann für jeden Ranger individuell angepasst werden.</p>
-    </div>
-
-    <div class="card" style="max-width:600px">
-      <h3 style="margin-top:0">Deine Akzentfarbe</h3>
-
-      <p style="color:var(--muted);font-size:12px">
-        Die Farbe verändert Buttons, Effekte und Hervorhebungen nur für dich.
-      </p>
-
-      <div class="color-options">
-
-        <div class="color active"
-             data-color="#34d399"
-             data-rgb="52,211,153"
-             style="background:#34d399"></div>
-
-        <div class="color"
-             data-color="#60a5fa"
-             data-rgb="96,165,250"
-             style="background:#60a5fa"></div>
-
-        <div class="color"
-             data-color="#a78bfa"
-             data-rgb="167,139,250"
-             style="background:#a78bfa"></div>
-
-        <div class="color"
-             data-color="#f472b6"
-             data-rgb="244,114,182"
-             style="background:#f472b6"></div>
-
-        <div class="color"
-             data-color="#f59e0b"
-             data-rgb="245,158,11"
-             style="background:#f59e0b"></div>
+        <div class="item-meta">
+          Ranger-Leitung · Aktiv
+        </div>
 
       </div>
-    </div>
-  </section>
 
+      <button class="btn">
+        Bearbeiten
+      </button>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- ================= SETTINGS ================= -->
+
+<section class="page" id="einstellungen">
+
+  <div class="eyebrow">Persönlich</div>
+  <h1>Einstellungen</h1>
+
+  <div class="subtitle">
+    Passe deine persönliche UCP-Ansicht an.
+  </div>
+
+
+  <div class="card" style="max-width:600px">
+
+    <h3 class="section-title">
+      Akzentfarbe
+    </h3>
+
+    <div class="muted" style="margin-bottom:15px">
+      Diese Einstellung wird später für jeden Ranger separat gespeichert.
+    </div>
+
+    <input
+      type="color"
+      id="accentPicker"
+      value="#c59a5b"
+      style="height:50px">
+
+  </div>
+
+</section>
+
+
+</div>
 </main>
+</div>
 
 
-<div class="toast" id="toast"></div>
+<!-- ================= TERMIN MODAL ================= -->
+
+<div class="modal-backdrop" id="appointmentModal">
+
+  <div class="modal">
+
+    <div class="modal-header">
+
+      <h2>Neuer Termin</h2>
+
+      <button
+        class="close"
+        onclick="closeModal('appointmentModal')">
+        ×
+      </button>
+
+    </div>
+
+
+    <div class="form-group">
+
+      <label>Titel</label>
+
+      <input
+        id="appointmentTitle"
+        placeholder="z. B. Ranger-Besprechung">
+
+    </div>
+
+
+    <div class="form-grid">
+
+      <div class="form-group">
+
+        <label>Datum</label>
+
+        <input
+          type="date"
+          id="appointmentDate">
+
+      </div>
+
+
+      <div class="form-group">
+
+        <label>Uhrzeit</label>
+
+        <input
+          type="time"
+          id="appointmentTime">
+
+      </div>
+
+    </div>
+
+
+    <div class="form-group">
+
+      <label>Ort</label>
+
+      <input
+        id="appointmentLocation"
+        placeholder="z. B. Ranger HQ">
+
+    </div>
+
+
+    <div class="form-group">
+
+      <label>Beschreibung</label>
+
+      <textarea
+        id="appointmentDescription"
+        placeholder="Weitere Informationen..."></textarea>
+
+    </div>
+
+
+    <button
+      class="btn btn-primary"
+      style="width:100%"
+      onclick="saveAppointment()">
+      Termin erstellen
+    </button>
+
+  </div>
+
+</div>
+
+
+<!-- ================= VOTE MODAL ================= -->
+
+<div class="modal-backdrop" id="voteModal">
+
+  <div class="modal">
+
+    <div class="modal-header">
+
+      <h2>Neue Abstimmung</h2>
+
+      <button
+        class="close"
+        onclick="closeModal('voteModal')">
+        ×
+      </button>
+
+    </div>
+
+
+    <div class="form-group">
+
+      <label>Titel / Frage</label>
+
+      <input
+        id="voteTitle"
+        placeholder="Soll ...?">
+
+    </div>
+
+
+    <div class="form-group">
+
+      <label>Art</label>
+
+      <select id="voteType">
+
+        <option>Allgemein</option>
+        <option>Aufnahme</option>
+        <option>Beförderung</option>
+        <option>Entlassung</option>
+
+      </select>
+
+    </div>
+
+
+    <div class="form-group">
+
+      <label>Beschreibung</label>
+
+      <textarea
+        id="voteDescription"
+        placeholder="Weitere Informationen..."></textarea>
+
+    </div>
+
+
+    <div class="form-group">
+
+      <label>Ende der Abstimmung</label>
+
+      <input
+        type="datetime-local"
+        id="voteEnd">
+
+    </div>
+
+
+    <button
+      class="btn btn-primary"
+      style="width:100%"
+      onclick="saveVote()">
+      Abstimmung starten
+    </button>
+
+  </div>
+
+</div>
 
 
 <script>
 
-/* =========================================================
+/* ============================================
    NAVIGATION
-========================================================= */
+============================================ */
 
-const navItems = document.querySelectorAll(".nav-item");
-const pages = document.querySelectorAll(".page");
-const breadcrumb = document.getElementById("breadcrumb");
+const navButtons =
+  document.querySelectorAll(".nav button");
 
-navItems.forEach(item => {
-  item.addEventListener("click", () => {
+const pages =
+  document.querySelectorAll(".page");
 
-    navItems.forEach(x => x.classList.remove("active"));
-    item.classList.add("active");
+navButtons.forEach(button=>{
 
-    pages.forEach(p => p.classList.remove("active"));
+  button.addEventListener("click",()=>{
 
-    const target = document.getElementById(item.dataset.page);
-    target.classList.add("active");
-
-    breadcrumb.textContent =
-      "Ranger UCP / " +
-      item.querySelector(".nav-text").textContent;
-
-    window.scrollTo({
-      top:0,
-      behavior:"smooth"
-    });
+    openPage(button.dataset.page);
 
   });
+
 });
 
 
-/* =========================================================
-   DEMO STRAFTATEN
-   Später kommen ALLE Daten automatisch aus Supabase.
-========================================================= */
+function openPage(id){
 
-const offenses = [
+  pages.forEach(page=>{
+    page.classList.remove("active");
+  });
 
-  {law:"StGB",paragraph:"§ 13",name:"Raub",money:25000,he:15},
-  {law:"StGB",paragraph:"§ 14",name:"Geiselnahme",money:40000,he:25},
-  {law:"StGB",paragraph:"§ 15",name:"Betrug",money:20000,he:10},
-  {law:"StGB",paragraph:"§ 19",name:"Körperverletzung (leicht)",money:15000,he:10},
-  {law:"StGB",paragraph:"§ 19",name:"Körperverletzung (schwer)",money:25000,he:15},
-  {law:"StGB",paragraph:"§ 20",name:"Totschlag",money:40000,he:20},
-  {law:"StGB",paragraph:"§ 21",name:"Mord",money:50000,he:30},
-  {law:"StGB",paragraph:"§ 23",name:"Hehlerei",money:25000,he:15},
-  {law:"StGB",paragraph:"§ 24",name:"Widerstand gegen Vollstreckungsbeamte",money:25000,he:10},
-  {law:"StGB",paragraph:"§ 30",name:"Nötigung",money:20000,he:20},
+  navButtons.forEach(button=>{
+    button.classList.remove("active");
+  });
 
-  {law:"StVO",paragraph:"§ 3",name:"Geschwindigkeit innerorts",money:10000,he:10},
-  {law:"StVO",paragraph:"§ 3",name:"Geschwindigkeit außerorts",money:15000,he:15},
-  {law:"StVO",paragraph:"§ 8",name:"Unzulässiges Halten / Parken",money:5000,he:0},
-  {law:"StVO",paragraph:"§ 9",name:"Fahrerflucht / fehlende Hilfeleistung",money:15000,he:15},
-  {law:"StVO",paragraph:"§ 10",name:"Fahren ohne Fahrerlaubnis",money:25000,he:0},
-  {law:"StVO",paragraph:"§ 14",name:"Fahren unter Einfluss",money:25000,he:15},
-  {law:"StVO",paragraph:"§ 21",name:"Illegale Kraftfahrzeugrennen",money:30000,he:15},
+  const page =
+    document.getElementById(id);
 
-  {law:"WaffG",paragraph:"§ 3",name:"Besitz / Führen ohne Waffenlizenz",money:25000,he:15},
-  {law:"WaffG",paragraph:"§ 4",name:"Offenes Waffentragen",money:15000,he:10},
-  {law:"WaffG",paragraph:"§ 5",name:"Waffe illegaler Herkunft",money:30000,he:15},
-  {law:"WaffG",paragraph:"§ 7",name:"Unerlaubter Waffenhandel",money:35000,he:20},
+  if(page){
+    page.classList.add("active");
+  }
 
-  {law:"BtMG",paragraph:"§ 1",name:"Besitz / Konsum illegaler Substanzen",money:30000,he:15},
-  {law:"BtMG",paragraph:"§ 2",name:"Überschreitung Eigenbedarfsmenge Cannabis",money:15000,he:15}
+  const button =
+    document.querySelector(
+      `.nav button[data-page="${id}"]`
+    );
+
+  if(button){
+    button.classList.add("active");
+  }
+
+  document.getElementById("pageName").textContent =
+    button
+      ? button.textContent.trim()
+      : id;
+
+  window.scrollTo({
+    top:0,
+    behavior:"smooth"
+  });
+
+}
+
+
+/* ============================================
+   MODALS
+============================================ */
+
+function openModal(id){
+
+  document
+    .getElementById(id)
+    .classList.add("show");
+
+}
+
+function closeModal(id){
+
+  document
+    .getElementById(id)
+    .classList.remove("show");
+
+}
+
+
+/* ============================================
+   TERMINE
+============================================ */
+
+const appointments = [
+
+  {
+    title:"Ranger-Besprechung",
+    date:"2026-09-20",
+    time:"20:00",
+    location:"Ranger HQ"
+  },
+
+  {
+    title:"Interne Schulung",
+    date:"2026-09-24",
+    time:"19:30",
+    location:"Trainingsgelände"
+  }
 
 ];
 
-let selected = new Set();
-let category = "Alle";
+
+function renderAppointments(){
+
+  const list =
+    document.getElementById("appointmentList");
+
+  const dashboard =
+    document.getElementById("dashboardAppointments");
+
+  list.innerHTML="";
+  dashboard.innerHTML="";
 
 
-const offenseList = document.getElementById("offenseList");
-const searchInput = document.getElementById("searchInput");
+  if(!appointments.length){
+
+    list.innerHTML =
+      `<div class="card muted">
+        Keine Termine vorhanden.
+      </div>`;
+
+    return;
+
+  }
 
 
-function money(value){
-  return "$" + value.toLocaleString("de-DE");
-}
+  appointments
+    .sort((a,b)=>
+      a.date.localeCompare(b.date)
+    )
+    .forEach(item=>{
 
+      const element =
+        document.createElement("div");
 
-function renderOffenses(){
+      element.className="list-item";
 
-  const search = searchInput.value.toLowerCase();
+      element.innerHTML=`
 
-  const filtered = offenses.filter(o => {
+        <div>
 
-    const matchesCategory =
-      category === "Alle" || o.law === category;
+          <div class="item-title">
+            ${escapeHTML(item.title)}
+          </div>
 
-    const matchesSearch =
-      o.name.toLowerCase().includes(search) ||
-      o.paragraph.toLowerCase().includes(search) ||
-      o.law.toLowerCase().includes(search);
+          <div class="item-meta">
 
-    return matchesCategory && matchesSearch;
+            ${formatDate(item.date)}
 
-  });
+            ${item.time
+              ? " · "+item.time+" Uhr"
+              : ""
+            }
 
-  offenseList.innerHTML = "";
+            ${item.location
+              ? " · "+escapeHTML(item.location)
+              : ""
+            }
 
-  filtered.forEach((o) => {
+          </div>
 
-    const realIndex = offenses.indexOf(o);
+        </div>
 
-    const div = document.createElement("div");
+        <span class="tag">
+          TERMIN
+        </span>
 
-    div.className =
-      "offense" +
-      (selected.has(realIndex) ? " selected" : "");
+      `;
 
-    div.innerHTML = `
-      <div class="check">✓</div>
-
-      <div>
-        <div class="offense-name">${o.name}</div>
-        <div class="offense-law">${o.law} ${o.paragraph}</div>
-      </div>
-
-      <div class="penalty">
-        <div class="money">${money(o.money)}</div>
-        <div class="he">${o.he} HE</div>
-      </div>
-    `;
-
-    div.addEventListener("click", () => {
-
-      if(selected.has(realIndex)){
-        selected.delete(realIndex);
-      }else{
-        selected.add(realIndex);
-      }
-
-      renderOffenses();
-      updateTotals();
+      list.appendChild(element);
 
     });
 
-    offenseList.appendChild(div);
 
-  });
+  appointments
+    .slice(0,3)
+    .forEach(item=>{
+
+      const element =
+        document.createElement("div");
+
+      element.className="timeline-item";
+
+      element.innerHTML=`
+
+        <div>
+
+          <strong>
+            ${escapeHTML(item.title)}
+          </strong>
+
+          <div class="item-meta">
+
+            ${formatDate(item.date)}
+            ${item.time
+              ? " · "+item.time+" Uhr"
+              : ""
+            }
+
+          </div>
+
+        </div>
+
+        <span class="tag">
+          TERMIN
+        </span>
+
+      `;
+
+      dashboard.appendChild(element);
+
+    });
 
 }
 
 
-function updateTotals(){
+function saveAppointment(){
 
-  let totalMoney = 0;
-  let calculatedHE = 0;
+  const title =
+    document
+      .getElementById("appointmentTitle")
+      .value
+      .trim();
 
-  selected.forEach(index => {
-    totalMoney += offenses[index].money;
-    calculatedHE += offenses[index].he;
-  });
+  const date =
+    document
+      .getElementById("appointmentDate")
+      .value;
 
-  const actualHE = Math.min(calculatedHE,40);
+  const time =
+    document
+      .getElementById("appointmentTime")
+      .value;
 
-  document.getElementById("selectedCount").textContent =
-    selected.size;
-
-  document.getElementById("moneyTotal").textContent =
-    money(totalMoney);
-
-  document.getElementById("heTotal").textContent =
-    actualHE + " HE";
-
-  const limit =
-    calculatedHE > 40;
-
-  document.getElementById("limitInfo")
-    .classList.toggle("show",limit);
-
-  document.getElementById("heBox")
-    .classList.toggle("limit",limit);
-
-}
+  const location =
+    document
+      .getElementById("appointmentLocation")
+      .value
+      .trim();
 
 
-document.querySelectorAll(".tab").forEach(tab => {
+  if(!title || !date){
 
-  tab.addEventListener("click", () => {
-
-    document.querySelectorAll(".tab")
-      .forEach(x => x.classList.remove("active"));
-
-    tab.classList.add("active");
-
-    category = tab.dataset.cat;
-
-    renderOffenses();
-
-  });
-
-});
-
-
-searchInput.addEventListener("input",renderOffenses);
-
-
-document.getElementById("clearSelection")
-.addEventListener("click",() => {
-
-  selected.clear();
-
-  renderOffenses();
-  updateTotals();
-
-  toast("Auswahl wurde zurückgesetzt.");
-
-});
-
-
-/* =========================================================
-   AKTENVORLAGE
-========================================================= */
-
-document.getElementById("createFile")
-.addEventListener("click",() => {
-
-  const firstname =
-    document.getElementById("firstname").value.trim();
-
-  const lastname =
-    document.getElementById("lastname").value.trim();
-
-  if(!firstname || !lastname){
-
-    toast("Bitte Vor- und Nachnamen eintragen.");
+    alert(
+      "Bitte Titel und Datum eintragen."
+    );
 
     return;
+
   }
 
-  if(selected.size === 0){
 
-    toast("Bitte mindestens eine Straftat auswählen.");
+  appointments.push({
+
+    title,
+    date,
+    time,
+    location
+
+  });
+
+
+  renderAppointments();
+
+  closeModal("appointmentModal");
+
+
+  document
+    .getElementById("appointmentTitle")
+    .value="";
+
+  document
+    .getElementById("appointmentDate")
+    .value="";
+
+  document
+    .getElementById("appointmentTime")
+    .value="";
+
+  document
+    .getElementById("appointmentLocation")
+    .value="";
+
+  document
+    .getElementById("appointmentDescription")
+    .value="";
+
+}
+
+
+/* ============================================
+   STRAFRECHNER
+   Erst Demo-Daten.
+   Danach laden wir alle 79 aus Supabase.
+============================================ */
+
+const offenses = [
+
+  {
+    law:"StGB",
+    name:"Raub",
+    money:25000,
+    he:15
+  },
+
+  {
+    law:"StGB",
+    name:"Geiselnahme",
+    money:40000,
+    he:25
+  },
+
+  {
+    law:"StGB",
+    name:"Betrug",
+    money:20000,
+    he:10
+  },
+
+  {
+    law:"StGB",
+    name:"Körperverletzung – leicht",
+    money:15000,
+    he:10
+  },
+
+  {
+    law:"StGB",
+    name:"Körperverletzung – schwer",
+    money:25000,
+    he:15
+  },
+
+  {
+    law:"StGB",
+    name:"Mord",
+    money:50000,
+    he:30
+  },
+
+  {
+    law:"StVO",
+    name:"Fahren ohne Fahrerlaubnis",
+    money:25000,
+    he:0
+  },
+
+  {
+    law:"StVO",
+    name:"Illegale Kraftfahrzeugrennen",
+    money:30000,
+    he:15
+  },
+
+  {
+    law:"WaffG",
+    name:"Besitz / Führen ohne Waffenlizenz",
+    money:25000,
+    he:15
+  },
+
+  {
+    law:"BtMG",
+    name:"Besitz / Konsum illegaler Substanzen",
+    money:30000,
+    he:15
+  }
+
+];
+
+
+const selected =
+  new Set();
+
+
+function renderOffenses(filter=""){
+
+  const container =
+    document.getElementById("offenseList");
+
+  container.innerHTML="";
+
+
+  offenses
+    .filter(item=>
+
+      item.name
+        .toLowerCase()
+        .includes(filter.toLowerCase())
+
+      ||
+
+      item.law
+        .toLowerCase()
+        .includes(filter.toLowerCase())
+
+    )
+    .forEach((item,index)=>{
+
+      const originalIndex =
+        offenses.indexOf(item);
+
+      const row =
+        document.createElement("div");
+
+      row.className =
+        "offense"+
+        (
+          selected.has(originalIndex)
+            ? " selected"
+            : ""
+        );
+
+
+      row.innerHTML=`
+
+        <div>
+
+          <strong>
+            ${escapeHTML(item.name)}
+          </strong>
+
+          <div class="item-meta">
+            ${item.law}
+          </div>
+
+        </div>
+
+        <div class="money">
+          $${item.money.toLocaleString("de-DE")}
+        </div>
+
+        <div class="he">
+          ${item.he} HE
+        </div>
+
+      `;
+
+
+      row.addEventListener("click",()=>{
+
+        if(selected.has(originalIndex)){
+
+          selected.delete(originalIndex);
+
+        }else{
+
+          selected.add(originalIndex);
+
+        }
+
+        renderOffenses(
+          document
+            .getElementById("offenseSearch")
+            .value
+        );
+
+        calculatePenalty();
+
+      });
+
+
+      container.appendChild(row);
+
+    });
+
+}
+
+
+function calculatePenalty(){
+
+  let money=0;
+  let rawHE=0;
+
+  const names=[];
+
+
+  selected.forEach(index=>{
+
+    const item=
+      offenses[index];
+
+    money+=item.money;
+    rawHE+=item.he;
+
+    names.push(item.name);
+
+  });
+
+
+  const actualHE=
+    Math.min(rawHE,40);
+
+
+  document
+    .getElementById("totalMoney")
+    .textContent=
+      "$"+
+      money.toLocaleString("de-DE");
+
+
+  document
+    .getElementById("totalHE")
+    .textContent=
+      actualHE+" HE";
+
+
+  document
+    .getElementById("selectedOffenses")
+    .innerHTML=
+
+      names.length
+
+      ?
+
+      names
+        .map(name=>
+          `<div style="margin:5px 0">
+            • ${escapeHTML(name)}
+          </div>`
+        )
+        .join("")
+
+      :
+
+      "Keine Straftaten ausgewählt.";
+
+
+  document
+    .getElementById("heNotice")
+    .textContent=
+
+      rawHE>40
+
+      ?
+
+      `Berechnet: ${rawHE} HE · Ranger-Maximum: 40 HE`
+
+      :
+
+      "";
+
+}
+
+
+document
+  .getElementById("offenseSearch")
+  .addEventListener("input",event=>{
+
+    renderOffenses(event.target.value);
+
+  });
+
+
+function createCaseFromCalculator(){
+
+  if(!selected.size){
+
+    alert(
+      "Bitte zuerst mindestens eine Straftat auswählen."
+    );
 
     return;
+
   }
 
-  let totalMoney = 0;
-  let calculatedHE = 0;
-
-  const crimes = [];
-
-  selected.forEach(index => {
-
-    const o = offenses[index];
-
-    totalMoney += o.money;
-    calculatedHE += o.he;
-
-    crimes.push(
-      `${o.law} ${o.paragraph} – ${o.name}`
-    );
-
-  });
-
-  const actualHE =
-    Math.min(calculatedHE,40);
-
-  const template = `
-RETRO RANGER – STRAFAKTE
-
-Beschuldigter:
-${firstname} ${lastname}
-
-Straftaten:
-${crimes.map(x => "• " + x).join("\n")}
-
-Gesamtgeldstrafe:
-${money(totalMoney)}
-
-Hafteinheiten:
-${actualHE} HE
-
-${calculatedHE > 40
-? `Berechnete Hafteinheiten: ${calculatedHE} HE
-Haftmaximum von 40 HE angewendet.`
-: ""}
-
-Bearbeitet durch:
-Retro Ranger
-`.trim();
-
-  navigator.clipboard.writeText(template)
-  .then(() => {
-    toast("Aktenvorlage wurde erstellt und kopiert.");
-  })
-  .catch(() => {
-    toast("Aktenvorlage erstellt.");
-  });
-
-});
-
-
-/* =========================================================
-   FARBEN
-========================================================= */
-
-const savedColor =
-  localStorage.getItem("ranger-accent");
-
-const savedRGB =
-  localStorage.getItem("ranger-accent-rgb");
-
-if(savedColor && savedRGB){
-
-  document.documentElement.style
-    .setProperty("--accent",savedColor);
-
-  document.documentElement.style
-    .setProperty("--accent-rgb",savedRGB);
+  openPage("akten");
 
 }
 
 
-document.querySelectorAll(".color")
-.forEach(color => {
+/* ============================================
+   ABSTIMMUNGEN
+============================================ */
 
-  color.addEventListener("click",() => {
+function vote(button,answer){
 
-    document.querySelectorAll(".color")
-      .forEach(x => x.classList.remove("active"));
+  const voteBox =
+    button.closest(".vote");
 
-    color.classList.add("active");
+  const result =
+    voteBox.querySelector(".vote-result");
 
-    const c = color.dataset.color;
-    const rgb = color.dataset.rgb;
-
-    document.documentElement.style
-      .setProperty("--accent",c);
-
-    document.documentElement.style
-      .setProperty("--accent-rgb",rgb);
-
-    localStorage.setItem(
-      "ranger-accent",
-      c
-    );
-
-    localStorage.setItem(
-      "ranger-accent-rgb",
-      rgb
-    );
-
-    toast("Deine Farbe wurde gespeichert.");
-
-  });
-
-});
-
-
-/* =========================================================
-   TOAST
-========================================================= */
-
-let toastTimer;
-
-function toast(message){
-
-  const el =
-    document.getElementById("toast");
-
-  el.textContent = message;
-
-  el.classList.add("show");
-
-  clearTimeout(toastTimer);
-
-  toastTimer = setTimeout(() => {
-    el.classList.remove("show");
-  },2600);
+  result.textContent =
+    "Deine Stimme: "+answer;
 
 }
 
 
-/* START */
+function saveVote(){
+
+  const title =
+    document
+      .getElementById("voteTitle")
+      .value
+      .trim();
+
+  const type =
+    document
+      .getElementById("voteType")
+      .value;
+
+
+  if(!title){
+
+    alert(
+      "Bitte eine Abstimmungsfrage eintragen."
+    );
+
+    return;
+
+  }
+
+
+  const wrapper =
+    document.createElement("div");
+
+  wrapper.className="vote";
+
+  wrapper.innerHTML=`
+
+    <div class="tag">
+      ${escapeHTML(type.toUpperCase())}
+    </div>
+
+    <h3>
+      ${escapeHTML(title)}
+    </h3>
+
+    <div class="muted">
+      Abstimmung läuft.
+    </div>
+
+    <div class="vote-actions">
+
+      <button class="btn vote-ja">
+        ✓ Ja
+      </button>
+
+      <button class="btn vote-nein">
+        ✕ Nein
+      </button>
+
+      <button class="btn vote-enthaltung">
+        – Enthaltung
+      </button>
+
+    </div>
+
+    <div
+      class="muted vote-result"
+      style="margin-top:12px">
+    </div>
+
+  `;
+
+
+  wrapper
+    .querySelector(".vote-ja")
+    .addEventListener(
+      "click",
+      event=>vote(event.currentTarget,"Ja")
+    );
+
+  wrapper
+    .querySelector(".vote-nein")
+    .addEventListener(
+      "click",
+      event=>vote(event.currentTarget,"Nein")
+    );
+
+  wrapper
+    .querySelector(".vote-enthaltung")
+    .addEventListener(
+      "click",
+      event=>vote(event.currentTarget,"Enthaltung")
+    );
+
+
+  document
+    .getElementById("voteList")
+    .prepend(wrapper);
+
+
+  closeModal("voteModal");
+
+
+  document
+    .getElementById("voteTitle")
+    .value="";
+
+  document
+    .getElementById("voteDescription")
+    .value="";
+
+}
+
+
+/* ============================================
+   ACCENT COLOR
+============================================ */
+
+document
+  .getElementById("accentPicker")
+  .addEventListener("input",event=>{
+
+    document
+      .documentElement
+      .style
+      .setProperty(
+        "--gold",
+        event.target.value
+      );
+
+  });
+
+
+/* ============================================
+   HELPERS
+============================================ */
+
+function escapeHTML(value){
+
+  return String(value)
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+
+}
+
+
+function formatDate(date){
+
+  if(!date){
+    return "";
+  }
+
+  const parts=
+    date.split("-");
+
+  return (
+    parts[2]+
+    "."+
+    parts[1]+
+    "."+
+    parts[0]
+  );
+
+}
+
+
+/* ============================================
+   INITIALIZE
+============================================ */
+
+renderAppointments();
 renderOffenses();
-updateTotals();
+calculatePenalty();
 
 </script>
 
