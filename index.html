@@ -1,1 +1,1491 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Retro Ranger UCP</title>
 
+<style>
+:root{
+  --accent:#34d399;
+  --accent-rgb:52,211,153;
+  --bg:#080b0d;
+  --panel:#0e1316;
+  --panel2:#12191d;
+  --border:rgba(255,255,255,.075);
+  --text:#f4f7f6;
+  --muted:#85918d;
+  --danger:#fb7185;
+  --warning:#fbbf24;
+  --sidebar:245px;
+}
+
+*{box-sizing:border-box}
+
+html,body{
+  margin:0;
+  min-height:100%;
+  font-family:Inter,Segoe UI,Arial,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+}
+
+body{
+  min-height:100vh;
+  overflow-x:hidden;
+}
+
+/* Hintergrund */
+body:before{
+  content:"";
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  background:
+    radial-gradient(circle at 78% 12%,rgba(var(--accent-rgb),.09),transparent 27%),
+    radial-gradient(circle at 20% 85%,rgba(var(--accent-rgb),.045),transparent 25%),
+    linear-gradient(rgba(255,255,255,.012) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.012) 1px,transparent 1px);
+  background-size:auto,auto,38px 38px,38px 38px;
+}
+
+button,input,textarea,select{
+  font:inherit;
+}
+
+/* SIDEBAR */
+.sidebar{
+  position:fixed;
+  left:0;
+  top:0;
+  bottom:0;
+  width:var(--sidebar);
+  padding:22px 14px;
+  background:rgba(9,13,15,.93);
+  backdrop-filter:blur(18px);
+  border-right:1px solid var(--border);
+  z-index:20;
+}
+
+.brand{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:5px 10px 26px;
+}
+
+.logo{
+  width:42px;
+  height:42px;
+  display:grid;
+  place-items:center;
+  border-radius:13px;
+  background:linear-gradient(135deg,rgba(var(--accent-rgb),.24),rgba(var(--accent-rgb),.05));
+  border:1px solid rgba(var(--accent-rgb),.35);
+  box-shadow:0 0 30px rgba(var(--accent-rgb),.12);
+  font-size:21px;
+}
+
+.brand h2{
+  font-size:15px;
+  margin:0;
+}
+
+.brand span{
+  color:var(--muted);
+  font-size:11px;
+}
+
+.nav-label{
+  padding:0 12px;
+  margin:10px 0 8px;
+  color:#56615e;
+  font-size:10px;
+  letter-spacing:1.5px;
+  font-weight:700;
+}
+
+.nav-item{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  width:100%;
+  border:0;
+  color:#909b98;
+  background:transparent;
+  padding:12px 13px;
+  margin:4px 0;
+  border-radius:11px;
+  cursor:pointer;
+  text-align:left;
+  transition:.22s ease;
+}
+
+.nav-item:hover{
+  color:#fff;
+  background:rgba(255,255,255,.04);
+  transform:translateX(3px);
+}
+
+.nav-item.active{
+  color:#fff;
+  background:linear-gradient(90deg,rgba(var(--accent-rgb),.15),rgba(var(--accent-rgb),.035));
+  box-shadow:inset 3px 0 var(--accent);
+}
+
+.nav-icon{
+  width:23px;
+  text-align:center;
+  font-size:16px;
+}
+
+.userbox{
+  position:absolute;
+  left:14px;
+  right:14px;
+  bottom:18px;
+  padding:13px;
+  border:1px solid var(--border);
+  background:rgba(255,255,255,.025);
+  border-radius:13px;
+}
+
+.userrow{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.avatar{
+  width:35px;
+  height:35px;
+  border-radius:50%;
+  display:grid;
+  place-items:center;
+  background:rgba(var(--accent-rgb),.14);
+  color:var(--accent);
+  border:1px solid rgba(var(--accent-rgb),.25);
+  font-weight:800;
+}
+
+.username{
+  font-size:13px;
+  font-weight:700;
+}
+
+.role{
+  color:var(--muted);
+  font-size:11px;
+  margin-top:2px;
+}
+
+/* MAIN */
+.main{
+  margin-left:var(--sidebar);
+  min-height:100vh;
+  padding:25px 32px 60px;
+}
+
+.topbar{
+  height:58px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom:25px;
+}
+
+.page-title{
+  font-size:13px;
+  color:var(--muted);
+}
+
+.status{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  color:#9da8a5;
+  font-size:12px;
+  padding:8px 11px;
+  border:1px solid var(--border);
+  border-radius:10px;
+  background:rgba(255,255,255,.02);
+}
+
+.status-dot{
+  width:7px;
+  height:7px;
+  border-radius:50%;
+  background:var(--accent);
+  box-shadow:0 0 12px var(--accent);
+}
+
+/* PAGES */
+.page{
+  display:none;
+}
+
+.page.active{
+  display:block;
+  animation:pageIn .38s cubic-bezier(.2,.8,.2,1);
+}
+
+@keyframes pageIn{
+  from{
+    opacity:0;
+    transform:translateY(12px) scale(.995);
+    filter:blur(3px);
+  }
+  to{
+    opacity:1;
+    transform:none;
+    filter:none;
+  }
+}
+
+.hero{
+  margin-bottom:28px;
+}
+
+.eyebrow{
+  color:var(--accent);
+  font-size:11px;
+  letter-spacing:2px;
+  font-weight:800;
+  margin-bottom:8px;
+}
+
+.hero h1{
+  margin:0;
+  font-size:32px;
+  letter-spacing:-1.2px;
+}
+
+.hero p{
+  color:var(--muted);
+  margin:8px 0 0;
+  max-width:700px;
+  line-height:1.6;
+  font-size:13px;
+}
+
+/* CARDS */
+.grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:14px;
+}
+
+.card{
+  position:relative;
+  overflow:hidden;
+  border:1px solid var(--border);
+  border-radius:16px;
+  background:linear-gradient(145deg,rgba(255,255,255,.035),rgba(255,255,255,.015));
+  padding:19px;
+  transition:.25s ease;
+}
+
+.card:before{
+  content:"";
+  position:absolute;
+  width:100px;
+  height:100px;
+  border-radius:50%;
+  background:rgba(var(--accent-rgb),.08);
+  filter:blur(40px);
+  right:-40px;
+  top:-40px;
+  opacity:0;
+  transition:.25s;
+}
+
+.card:hover{
+  border-color:rgba(var(--accent-rgb),.22);
+  transform:translateY(-3px);
+  box-shadow:0 15px 40px rgba(0,0,0,.2);
+}
+
+.card:hover:before{
+  opacity:1;
+}
+
+.stat-label{
+  color:var(--muted);
+  font-size:11px;
+}
+
+.stat{
+  margin-top:8px;
+  font-size:27px;
+  font-weight:800;
+}
+
+.stat-sub{
+  margin-top:7px;
+  color:#65716e;
+  font-size:10px;
+}
+
+.section-title{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin:27px 0 12px;
+}
+
+.section-title h3{
+  margin:0;
+  font-size:14px;
+}
+
+/* DASHBOARD */
+.activity{
+  display:grid;
+  grid-template-columns:1.5fr 1fr;
+  gap:14px;
+}
+
+.empty{
+  min-height:150px;
+  display:grid;
+  place-items:center;
+  text-align:center;
+  color:#68736f;
+}
+
+.empty-icon{
+  font-size:26px;
+  opacity:.5;
+  margin-bottom:8px;
+}
+
+/* STRAFRECHNER */
+.calculator{
+  display:grid;
+  grid-template-columns:minmax(0,1.5fr) minmax(330px,.7fr);
+  gap:16px;
+  align-items:start;
+}
+
+.catalog{
+  min-height:590px;
+}
+
+.toolbar{
+  display:flex;
+  gap:10px;
+  margin-bottom:16px;
+}
+
+.search{
+  flex:1;
+  position:relative;
+}
+
+.search input,
+.field input,
+.field textarea{
+  width:100%;
+  color:#fff;
+  background:#090d0f;
+  border:1px solid var(--border);
+  outline:none;
+  border-radius:11px;
+  padding:12px 13px;
+  transition:.2s;
+}
+
+.search input:focus,
+.field input:focus,
+.field textarea:focus{
+  border-color:rgba(var(--accent-rgb),.45);
+  box-shadow:0 0 0 3px rgba(var(--accent-rgb),.07);
+}
+
+.tabs{
+  display:flex;
+  gap:6px;
+  flex-wrap:wrap;
+  margin-bottom:15px;
+}
+
+.tab{
+  border:1px solid var(--border);
+  color:#8d9895;
+  background:rgba(255,255,255,.02);
+  padding:8px 11px;
+  border-radius:9px;
+  cursor:pointer;
+  font-size:11px;
+  transition:.2s;
+}
+
+.tab:hover{
+  color:#fff;
+}
+
+.tab.active{
+  color:var(--accent);
+  border-color:rgba(var(--accent-rgb),.28);
+  background:rgba(var(--accent-rgb),.08);
+}
+
+.offense-list{
+  display:flex;
+  flex-direction:column;
+  gap:7px;
+}
+
+.offense{
+  display:grid;
+  grid-template-columns:35px 1fr auto;
+  align-items:center;
+  gap:11px;
+  padding:12px;
+  border:1px solid var(--border);
+  border-radius:12px;
+  cursor:pointer;
+  transition:.2s;
+  background:rgba(255,255,255,.012);
+}
+
+.offense:hover{
+  background:rgba(255,255,255,.027);
+  border-color:rgba(255,255,255,.12);
+}
+
+.offense.selected{
+  border-color:rgba(var(--accent-rgb),.32);
+  background:rgba(var(--accent-rgb),.065);
+}
+
+.check{
+  width:23px;
+  height:23px;
+  border:1px solid #303a37;
+  border-radius:7px;
+  display:grid;
+  place-items:center;
+  color:transparent;
+  transition:.2s;
+}
+
+.offense.selected .check{
+  background:var(--accent);
+  border-color:var(--accent);
+  color:#06110d;
+  transform:scale(1.05);
+}
+
+.offense-name{
+  font-size:12px;
+  font-weight:700;
+}
+
+.offense-law{
+  color:var(--muted);
+  font-size:10px;
+  margin-top:4px;
+}
+
+.penalty{
+  text-align:right;
+  font-size:11px;
+}
+
+.money{
+  font-weight:700;
+}
+
+.he{
+  color:var(--muted);
+  margin-top:4px;
+}
+
+/* SUMMARY */
+.summary{
+  position:sticky;
+  top:22px;
+}
+
+.summary-title{
+  font-size:13px;
+  font-weight:800;
+  margin-bottom:17px;
+}
+
+.person-fields{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+  margin-bottom:16px;
+}
+
+.field label{
+  display:block;
+  color:var(--muted);
+  font-size:10px;
+  margin-bottom:6px;
+}
+
+.field textarea{
+  min-height:90px;
+  resize:vertical;
+}
+
+.selected-count{
+  display:flex;
+  justify-content:space-between;
+  color:var(--muted);
+  font-size:11px;
+  padding:13px 0;
+  border-top:1px solid var(--border);
+  border-bottom:1px solid var(--border);
+}
+
+.totals{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+  margin-top:14px;
+}
+
+.totalbox{
+  padding:14px;
+  border-radius:12px;
+  background:#090d0f;
+  border:1px solid var(--border);
+}
+
+.totalbox span{
+  color:var(--muted);
+  font-size:10px;
+}
+
+.totalbox strong{
+  display:block;
+  font-size:20px;
+  margin-top:6px;
+}
+
+.totalbox.hebox.limit{
+  border-color:rgba(251,191,36,.3);
+  background:rgba(251,191,36,.035);
+}
+
+.limit-info{
+  display:none;
+  margin-top:10px;
+  padding:10px;
+  border-radius:9px;
+  color:#f5cb61;
+  background:rgba(251,191,36,.07);
+  border:1px solid rgba(251,191,36,.18);
+  font-size:10px;
+}
+
+.limit-info.show{
+  display:block;
+  animation:fadeIn .3s;
+}
+
+@keyframes fadeIn{
+  from{opacity:0}
+  to{opacity:1}
+}
+
+.btn{
+  width:100%;
+  border:0;
+  padding:12px 14px;
+  border-radius:11px;
+  margin-top:10px;
+  cursor:pointer;
+  font-weight:800;
+  font-size:12px;
+  transition:.22s;
+}
+
+.btn-primary{
+  color:#06110d;
+  background:var(--accent);
+  box-shadow:0 8px 25px rgba(var(--accent-rgb),.12);
+}
+
+.btn-primary:hover{
+  transform:translateY(-2px);
+  box-shadow:0 12px 35px rgba(var(--accent-rgb),.22);
+}
+
+.btn-secondary{
+  color:#b8c0bd;
+  background:rgba(255,255,255,.04);
+  border:1px solid var(--border);
+}
+
+.btn-secondary:hover{
+  color:#fff;
+  background:rgba(255,255,255,.07);
+}
+
+/* GENERISCHE SEITEN */
+.placeholder{
+  min-height:390px;
+  display:grid;
+  place-items:center;
+  text-align:center;
+}
+
+.placeholder .bigicon{
+  width:64px;
+  height:64px;
+  margin:auto;
+  display:grid;
+  place-items:center;
+  border-radius:18px;
+  font-size:26px;
+  color:var(--accent);
+  background:rgba(var(--accent-rgb),.07);
+  border:1px solid rgba(var(--accent-rgb),.17);
+}
+
+.placeholder h3{
+  margin:15px 0 7px;
+}
+
+.placeholder p{
+  margin:0;
+  color:var(--muted);
+  font-size:12px;
+}
+
+/* SETTINGS */
+.color-options{
+  display:flex;
+  gap:10px;
+  margin-top:15px;
+}
+
+.color{
+  width:37px;
+  height:37px;
+  border-radius:11px;
+  cursor:pointer;
+  border:3px solid transparent;
+  transition:.2s;
+}
+
+.color:hover{
+  transform:scale(1.08);
+}
+
+.color.active{
+  outline:2px solid rgba(255,255,255,.5);
+  outline-offset:3px;
+}
+
+/* TOAST */
+.toast{
+  position:fixed;
+  right:25px;
+  bottom:25px;
+  min-width:260px;
+  padding:14px 16px;
+  border-radius:12px;
+  color:#dce5e1;
+  background:#111719;
+  border:1px solid rgba(var(--accent-rgb),.22);
+  box-shadow:0 20px 50px rgba(0,0,0,.4);
+  transform:translateY(30px);
+  opacity:0;
+  pointer-events:none;
+  transition:.3s cubic-bezier(.2,.8,.2,1);
+  z-index:100;
+  font-size:12px;
+}
+
+.toast.show{
+  transform:none;
+  opacity:1;
+}
+
+/* MOBILE */
+@media(max-width:1050px){
+  .grid{grid-template-columns:repeat(2,1fr)}
+  .calculator{grid-template-columns:1fr}
+  .summary{position:relative;top:0}
+}
+
+@media(max-width:760px){
+  :root{--sidebar:72px}
+  .sidebar{padding:18px 9px}
+  .brand h2,.brand span,.nav-item .nav-text,.nav-label,.userbox .usertext{display:none}
+  .brand{justify-content:center;padding:4px 0 25px}
+  .nav-item{justify-content:center}
+  .userbox{padding:10px;display:flex;justify-content:center}
+  .main{padding:18px}
+  .grid{grid-template-columns:1fr}
+  .activity{grid-template-columns:1fr}
+}
+</style>
+</head>
+
+<body>
+
+<aside class="sidebar">
+
+  <div class="brand">
+    <div class="logo">★</div>
+    <div>
+      <h2>RETRO RANGER</h2>
+      <span>Unified Control Panel</span>
+    </div>
+  </div>
+
+  <div class="nav-label">ÜBERSICHT</div>
+
+  <button class="nav-item active" data-page="dashboard">
+    <span class="nav-icon">⌂</span>
+    <span class="nav-text">Dashboard</span>
+  </button>
+
+  <button class="nav-item" data-page="calculator">
+    <span class="nav-icon">⚖</span>
+    <span class="nav-text">Strafrechner</span>
+  </button>
+
+  <button class="nav-item" data-page="files">
+    <span class="nav-icon">▤</span>
+    <span class="nav-text">Akten</span>
+  </button>
+
+  <div class="nav-label">RANGER</div>
+
+  <button class="nav-item" data-page="families">
+    <span class="nav-icon">♟</span>
+    <span class="nav-text">Familien</span>
+  </button>
+
+  <button class="nav-item" data-page="oath">
+    <span class="nav-icon">✦</span>
+    <span class="nav-text">Ranger-Eid</span>
+  </button>
+
+  <button class="nav-item" data-page="votes">
+    <span class="nav-icon">✓</span>
+    <span class="nav-text">Abstimmungen</span>
+  </button>
+
+  <div class="nav-label">SYSTEM</div>
+
+  <button class="nav-item" data-page="settings">
+    <span class="nav-icon">⚙</span>
+    <span class="nav-text">Einstellungen</span>
+  </button>
+
+  <div class="userbox">
+    <div class="userrow">
+      <div class="avatar">R</div>
+      <div class="usertext">
+        <div class="username">Ranger</div>
+        <div class="role">Nicht angemeldet</div>
+      </div>
+    </div>
+  </div>
+
+</aside>
+
+
+<main class="main">
+
+  <div class="topbar">
+    <div class="page-title" id="breadcrumb">Ranger UCP / Dashboard</div>
+
+    <div class="status">
+      <div class="status-dot"></div>
+      System online
+    </div>
+  </div>
+
+
+  <!-- DASHBOARD -->
+  <section class="page active" id="dashboard">
+
+    <div class="hero">
+      <div class="eyebrow">RETRO RANGER COMMAND</div>
+      <h1>Willkommen im Ranger UCP.</h1>
+      <p>
+        Zentrale Verwaltung für Strafakten, Familieninformationen,
+        Abstimmungen und interne Ranger-Vorgänge.
+      </p>
+    </div>
+
+    <div class="grid">
+
+      <div class="card">
+        <div class="stat-label">STRAFTATEN IM KATALOG</div>
+        <div class="stat">79</div>
+        <div class="stat-sub">StGB · StVO · WaffG · BtMG</div>
+      </div>
+
+      <div class="card">
+        <div class="stat-label">OFFENE AKTEN</div>
+        <div class="stat">0</div>
+        <div class="stat-sub">Keine offenen Vorgänge</div>
+      </div>
+
+      <div class="card">
+        <div class="stat-label">ABSTIMMUNGEN</div>
+        <div class="stat">0</div>
+        <div class="stat-sub">Keine aktive Abstimmung</div>
+      </div>
+
+      <div class="card">
+        <div class="stat-label">HAFTMAXIMUM</div>
+        <div class="stat">40 <small style="font-size:11px;color:var(--muted)">HE</small></div>
+        <div class="stat-sub">Automatisch begrenzt</div>
+      </div>
+
+    </div>
+
+    <div class="section-title">
+      <h3>Aktuelle Vorgänge</h3>
+    </div>
+
+    <div class="activity">
+
+      <div class="card empty">
+        <div>
+          <div class="empty-icon">▤</div>
+          Noch keine Akten vorhanden
+        </div>
+      </div>
+
+      <div class="card empty">
+        <div>
+          <div class="empty-icon">✓</div>
+          Keine offenen Abstimmungen
+        </div>
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <!-- STRAFRECHNER -->
+  <section class="page" id="calculator">
+
+    <div class="hero">
+      <div class="eyebrow">STRAFVERFOLGUNG</div>
+      <h1>Strafrechner</h1>
+      <p>
+        Delikte auswählen und Geldstrafe sowie Hafteinheiten automatisch berechnen.
+        Die tatsächlich verhängte Haft wird automatisch auf maximal 40 HE begrenzt.
+      </p>
+    </div>
+
+    <div class="calculator">
+
+      <div class="card catalog">
+
+        <div class="toolbar">
+          <div class="search">
+            <input id="searchInput" placeholder="Straftat oder Paragraph suchen...">
+          </div>
+        </div>
+
+        <div class="tabs">
+          <button class="tab active" data-cat="Alle">Alle</button>
+          <button class="tab" data-cat="StGB">StGB</button>
+          <button class="tab" data-cat="StVO">StVO</button>
+          <button class="tab" data-cat="WaffG">WaffG</button>
+          <button class="tab" data-cat="BtMG">BtMG</button>
+        </div>
+
+        <div class="offense-list" id="offenseList"></div>
+
+      </div>
+
+
+      <div class="card summary">
+
+        <div class="summary-title">Aktuelle Strafe</div>
+
+        <div class="person-fields">
+          <div class="field">
+            <label>VORNAME</label>
+            <input id="firstname" placeholder="Vorname">
+          </div>
+
+          <div class="field">
+            <label>NACHNAME</label>
+            <input id="lastname" placeholder="Nachname">
+          </div>
+        </div>
+
+        <div class="selected-count">
+          <span>Ausgewählte Delikte</span>
+          <strong id="selectedCount">0</strong>
+        </div>
+
+        <div class="totals">
+
+          <div class="totalbox">
+            <span>GELDSTRAFE</span>
+            <strong id="moneyTotal">$0</strong>
+          </div>
+
+          <div class="totalbox hebox" id="heBox">
+            <span>HAFTSTRAFE</span>
+            <strong id="heTotal">0 HE</strong>
+          </div>
+
+        </div>
+
+        <div class="limit-info" id="limitInfo">
+          ⚠ Haftmaximum erreicht. Die berechnete Strafe überschreitet
+          40 HE und wird auf 40 HE begrenzt.
+        </div>
+
+        <button class="btn btn-primary" id="createFile">
+          Aktenvorlage erstellen
+        </button>
+
+        <button class="btn btn-secondary" id="clearSelection">
+          Auswahl zurücksetzen
+        </button>
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <!-- AKTEN -->
+  <section class="page" id="files">
+    <div class="hero">
+      <div class="eyebrow">VERWALTUNG</div>
+      <h1>Akten</h1>
+      <p>Gespeicherte Strafakten und vergangene Vorgänge.</p>
+    </div>
+
+    <div class="card placeholder">
+      <div>
+        <div class="bigicon">▤</div>
+        <h3>Aktenverwaltung</h3>
+        <p>Wird im nächsten Schritt mit Supabase verbunden.</p>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- FAMILIEN -->
+  <section class="page" id="families">
+    <div class="hero">
+      <div class="eyebrow">INFORMATIONSSYSTEM</div>
+      <h1>Familien</h1>
+      <p>Familien, Mitglieder und bekannte Standorte verwalten.</p>
+    </div>
+
+    <div class="card placeholder">
+      <div>
+        <div class="bigicon">♟</div>
+        <h3>Familienregister</h3>
+        <p>Hier werden Familien und deren Standorte hinterlegt.</p>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- EID -->
+  <section class="page" id="oath">
+    <div class="hero">
+      <div class="eyebrow">RETRO RANGER</div>
+      <h1>Der Ranger-Eid</h1>
+      <p>Pflicht, Loyalität und Verschwiegenheit.</p>
+    </div>
+
+    <div class="card" style="max-width:850px;padding:30px">
+
+      <div style="
+        font-size:18px;
+        line-height:1.9;
+        color:#dce3e0;
+        border-left:3px solid var(--accent);
+        padding-left:22px;
+      ">
+        Ich schwöre, meine Pflichten als Retro Ranger gewissenhaft
+        und loyal zu erfüllen, die Interessen der Ranger zu schützen
+        und die mir anvertrauten Informationen vertraulich zu behandeln.
+        <br><br>
+        Ich verpflichte mich, interne Angelegenheiten, Gespräche,
+        Ermittlungen und Informationen nicht an Unbefugte weiterzugeben
+        und über rangerinterne Vorgänge Verschwiegenheit zu bewahren.
+        <br><br>
+        Ich handle nach bestem Wissen und Gewissen und stehe für
+        Zusammenhalt, Verantwortung und Loyalität innerhalb der
+        Retro Ranger ein.
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ABSTIMMUNGEN -->
+  <section class="page" id="votes">
+    <div class="hero">
+      <div class="eyebrow">PERSONALENTSCHEIDUNGEN</div>
+      <h1>Abstimmungen</h1>
+      <p>Interne Abstimmungen zur Übernahme neuer Ranger.</p>
+    </div>
+
+    <div class="card placeholder">
+      <div>
+        <div class="bigicon">✓</div>
+        <h3>Keine aktive Abstimmung</h3>
+        <p>Später können hier Übernahme-Abstimmungen gestartet werden.</p>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- SETTINGS -->
+  <section class="page" id="settings">
+    <div class="hero">
+      <div class="eyebrow">PERSONALISIERUNG</div>
+      <h1>Einstellungen</h1>
+      <p>Das UCP kann für jeden Ranger individuell angepasst werden.</p>
+    </div>
+
+    <div class="card" style="max-width:600px">
+      <h3 style="margin-top:0">Deine Akzentfarbe</h3>
+
+      <p style="color:var(--muted);font-size:12px">
+        Die Farbe verändert Buttons, Effekte und Hervorhebungen nur für dich.
+      </p>
+
+      <div class="color-options">
+
+        <div class="color active"
+             data-color="#34d399"
+             data-rgb="52,211,153"
+             style="background:#34d399"></div>
+
+        <div class="color"
+             data-color="#60a5fa"
+             data-rgb="96,165,250"
+             style="background:#60a5fa"></div>
+
+        <div class="color"
+             data-color="#a78bfa"
+             data-rgb="167,139,250"
+             style="background:#a78bfa"></div>
+
+        <div class="color"
+             data-color="#f472b6"
+             data-rgb="244,114,182"
+             style="background:#f472b6"></div>
+
+        <div class="color"
+             data-color="#f59e0b"
+             data-rgb="245,158,11"
+             style="background:#f59e0b"></div>
+
+      </div>
+    </div>
+  </section>
+
+</main>
+
+
+<div class="toast" id="toast"></div>
+
+
+<script>
+
+/* =========================================================
+   NAVIGATION
+========================================================= */
+
+const navItems = document.querySelectorAll(".nav-item");
+const pages = document.querySelectorAll(".page");
+const breadcrumb = document.getElementById("breadcrumb");
+
+navItems.forEach(item => {
+  item.addEventListener("click", () => {
+
+    navItems.forEach(x => x.classList.remove("active"));
+    item.classList.add("active");
+
+    pages.forEach(p => p.classList.remove("active"));
+
+    const target = document.getElementById(item.dataset.page);
+    target.classList.add("active");
+
+    breadcrumb.textContent =
+      "Ranger UCP / " +
+      item.querySelector(".nav-text").textContent;
+
+    window.scrollTo({
+      top:0,
+      behavior:"smooth"
+    });
+
+  });
+});
+
+
+/* =========================================================
+   DEMO STRAFTATEN
+   Später kommen ALLE Daten automatisch aus Supabase.
+========================================================= */
+
+const offenses = [
+
+  {law:"StGB",paragraph:"§ 13",name:"Raub",money:25000,he:15},
+  {law:"StGB",paragraph:"§ 14",name:"Geiselnahme",money:40000,he:25},
+  {law:"StGB",paragraph:"§ 15",name:"Betrug",money:20000,he:10},
+  {law:"StGB",paragraph:"§ 19",name:"Körperverletzung (leicht)",money:15000,he:10},
+  {law:"StGB",paragraph:"§ 19",name:"Körperverletzung (schwer)",money:25000,he:15},
+  {law:"StGB",paragraph:"§ 20",name:"Totschlag",money:40000,he:20},
+  {law:"StGB",paragraph:"§ 21",name:"Mord",money:50000,he:30},
+  {law:"StGB",paragraph:"§ 23",name:"Hehlerei",money:25000,he:15},
+  {law:"StGB",paragraph:"§ 24",name:"Widerstand gegen Vollstreckungsbeamte",money:25000,he:10},
+  {law:"StGB",paragraph:"§ 30",name:"Nötigung",money:20000,he:20},
+
+  {law:"StVO",paragraph:"§ 3",name:"Geschwindigkeit innerorts",money:10000,he:10},
+  {law:"StVO",paragraph:"§ 3",name:"Geschwindigkeit außerorts",money:15000,he:15},
+  {law:"StVO",paragraph:"§ 8",name:"Unzulässiges Halten / Parken",money:5000,he:0},
+  {law:"StVO",paragraph:"§ 9",name:"Fahrerflucht / fehlende Hilfeleistung",money:15000,he:15},
+  {law:"StVO",paragraph:"§ 10",name:"Fahren ohne Fahrerlaubnis",money:25000,he:0},
+  {law:"StVO",paragraph:"§ 14",name:"Fahren unter Einfluss",money:25000,he:15},
+  {law:"StVO",paragraph:"§ 21",name:"Illegale Kraftfahrzeugrennen",money:30000,he:15},
+
+  {law:"WaffG",paragraph:"§ 3",name:"Besitz / Führen ohne Waffenlizenz",money:25000,he:15},
+  {law:"WaffG",paragraph:"§ 4",name:"Offenes Waffentragen",money:15000,he:10},
+  {law:"WaffG",paragraph:"§ 5",name:"Waffe illegaler Herkunft",money:30000,he:15},
+  {law:"WaffG",paragraph:"§ 7",name:"Unerlaubter Waffenhandel",money:35000,he:20},
+
+  {law:"BtMG",paragraph:"§ 1",name:"Besitz / Konsum illegaler Substanzen",money:30000,he:15},
+  {law:"BtMG",paragraph:"§ 2",name:"Überschreitung Eigenbedarfsmenge Cannabis",money:15000,he:15}
+
+];
+
+let selected = new Set();
+let category = "Alle";
+
+
+const offenseList = document.getElementById("offenseList");
+const searchInput = document.getElementById("searchInput");
+
+
+function money(value){
+  return "$" + value.toLocaleString("de-DE");
+}
+
+
+function renderOffenses(){
+
+  const search = searchInput.value.toLowerCase();
+
+  const filtered = offenses.filter(o => {
+
+    const matchesCategory =
+      category === "Alle" || o.law === category;
+
+    const matchesSearch =
+      o.name.toLowerCase().includes(search) ||
+      o.paragraph.toLowerCase().includes(search) ||
+      o.law.toLowerCase().includes(search);
+
+    return matchesCategory && matchesSearch;
+
+  });
+
+  offenseList.innerHTML = "";
+
+  filtered.forEach((o) => {
+
+    const realIndex = offenses.indexOf(o);
+
+    const div = document.createElement("div");
+
+    div.className =
+      "offense" +
+      (selected.has(realIndex) ? " selected" : "");
+
+    div.innerHTML = `
+      <div class="check">✓</div>
+
+      <div>
+        <div class="offense-name">${o.name}</div>
+        <div class="offense-law">${o.law} ${o.paragraph}</div>
+      </div>
+
+      <div class="penalty">
+        <div class="money">${money(o.money)}</div>
+        <div class="he">${o.he} HE</div>
+      </div>
+    `;
+
+    div.addEventListener("click", () => {
+
+      if(selected.has(realIndex)){
+        selected.delete(realIndex);
+      }else{
+        selected.add(realIndex);
+      }
+
+      renderOffenses();
+      updateTotals();
+
+    });
+
+    offenseList.appendChild(div);
+
+  });
+
+}
+
+
+function updateTotals(){
+
+  let totalMoney = 0;
+  let calculatedHE = 0;
+
+  selected.forEach(index => {
+    totalMoney += offenses[index].money;
+    calculatedHE += offenses[index].he;
+  });
+
+  const actualHE = Math.min(calculatedHE,40);
+
+  document.getElementById("selectedCount").textContent =
+    selected.size;
+
+  document.getElementById("moneyTotal").textContent =
+    money(totalMoney);
+
+  document.getElementById("heTotal").textContent =
+    actualHE + " HE";
+
+  const limit =
+    calculatedHE > 40;
+
+  document.getElementById("limitInfo")
+    .classList.toggle("show",limit);
+
+  document.getElementById("heBox")
+    .classList.toggle("limit",limit);
+
+}
+
+
+document.querySelectorAll(".tab").forEach(tab => {
+
+  tab.addEventListener("click", () => {
+
+    document.querySelectorAll(".tab")
+      .forEach(x => x.classList.remove("active"));
+
+    tab.classList.add("active");
+
+    category = tab.dataset.cat;
+
+    renderOffenses();
+
+  });
+
+});
+
+
+searchInput.addEventListener("input",renderOffenses);
+
+
+document.getElementById("clearSelection")
+.addEventListener("click",() => {
+
+  selected.clear();
+
+  renderOffenses();
+  updateTotals();
+
+  toast("Auswahl wurde zurückgesetzt.");
+
+});
+
+
+/* =========================================================
+   AKTENVORLAGE
+========================================================= */
+
+document.getElementById("createFile")
+.addEventListener("click",() => {
+
+  const firstname =
+    document.getElementById("firstname").value.trim();
+
+  const lastname =
+    document.getElementById("lastname").value.trim();
+
+  if(!firstname || !lastname){
+
+    toast("Bitte Vor- und Nachnamen eintragen.");
+
+    return;
+  }
+
+  if(selected.size === 0){
+
+    toast("Bitte mindestens eine Straftat auswählen.");
+
+    return;
+  }
+
+  let totalMoney = 0;
+  let calculatedHE = 0;
+
+  const crimes = [];
+
+  selected.forEach(index => {
+
+    const o = offenses[index];
+
+    totalMoney += o.money;
+    calculatedHE += o.he;
+
+    crimes.push(
+      `${o.law} ${o.paragraph} – ${o.name}`
+    );
+
+  });
+
+  const actualHE =
+    Math.min(calculatedHE,40);
+
+  const template = `
+RETRO RANGER – STRAFAKTE
+
+Beschuldigter:
+${firstname} ${lastname}
+
+Straftaten:
+${crimes.map(x => "• " + x).join("\n")}
+
+Gesamtgeldstrafe:
+${money(totalMoney)}
+
+Hafteinheiten:
+${actualHE} HE
+
+${calculatedHE > 40
+? `Berechnete Hafteinheiten: ${calculatedHE} HE
+Haftmaximum von 40 HE angewendet.`
+: ""}
+
+Bearbeitet durch:
+Retro Ranger
+`.trim();
+
+  navigator.clipboard.writeText(template)
+  .then(() => {
+    toast("Aktenvorlage wurde erstellt und kopiert.");
+  })
+  .catch(() => {
+    toast("Aktenvorlage erstellt.");
+  });
+
+});
+
+
+/* =========================================================
+   FARBEN
+========================================================= */
+
+const savedColor =
+  localStorage.getItem("ranger-accent");
+
+const savedRGB =
+  localStorage.getItem("ranger-accent-rgb");
+
+if(savedColor && savedRGB){
+
+  document.documentElement.style
+    .setProperty("--accent",savedColor);
+
+  document.documentElement.style
+    .setProperty("--accent-rgb",savedRGB);
+
+}
+
+
+document.querySelectorAll(".color")
+.forEach(color => {
+
+  color.addEventListener("click",() => {
+
+    document.querySelectorAll(".color")
+      .forEach(x => x.classList.remove("active"));
+
+    color.classList.add("active");
+
+    const c = color.dataset.color;
+    const rgb = color.dataset.rgb;
+
+    document.documentElement.style
+      .setProperty("--accent",c);
+
+    document.documentElement.style
+      .setProperty("--accent-rgb",rgb);
+
+    localStorage.setItem(
+      "ranger-accent",
+      c
+    );
+
+    localStorage.setItem(
+      "ranger-accent-rgb",
+      rgb
+    );
+
+    toast("Deine Farbe wurde gespeichert.");
+
+  });
+
+});
+
+
+/* =========================================================
+   TOAST
+========================================================= */
+
+let toastTimer;
+
+function toast(message){
+
+  const el =
+    document.getElementById("toast");
+
+  el.textContent = message;
+
+  el.classList.add("show");
+
+  clearTimeout(toastTimer);
+
+  toastTimer = setTimeout(() => {
+    el.classList.remove("show");
+  },2600);
+
+}
+
+
+/* START */
+renderOffenses();
+updateTotals();
+
+</script>
+
+</body>
+</html>
