@@ -264,6 +264,8 @@ body::before{
 
 
 /* Strafrechner + kopierfertige Aktenvorlage */
+.catalog-loading{grid-column:1/-1;padding:18px;border:1px solid rgba(239,191,97,.18);border-radius:8px;color:rgba(255,255,255,.65);text-align:center}
+.catalog-error{color:#ff9a9a!important}
 .calc-layout{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(270px,.7fr);gap:16px;margin-top:22px}
 .ranger-card{padding:22px!important;border-radius:12px!important}
 .calc-head{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:18px}
@@ -358,11 +360,9 @@ textarea.r-input{resize:vertical;min-height:76px}
       </div>
 
       <div id="offenseList" class="offense-list">
-        <label class="offense"><input type="checkbox" data-name="Beispiel: Widerstand" data-money="15000" data-he="10"><span><b>Beispiel: Widerstand</b><small>15.000 $ · 10 HE</small></span></label>
-        <label class="offense"><input type="checkbox" data-name="Beispiel: Flucht" data-money="10000" data-he="8"><span><b>Beispiel: Flucht</b><small>10.000 $ · 8 HE</small></span></label>
-        <label class="offense"><input type="checkbox" data-name="Beispiel: Gefährdung" data-money="20000" data-he="15"><span><b>Beispiel: Gefährdung</b><small>20.000 $ · 15 HE</small></span></label>
+        <div class="catalog-loading">Strafkatalog wird geladen...</div>
       </div>
-      <div class="catalog-note">Die Beispiel-Einträge werden anschließend durch euren vollständigen Strafkatalog aus Supabase ersetzt.</div>
+      <div class="catalog-note" id="catalogNote">Daten werden direkt aus dem Ranger-Strafkatalog geladen.</div>
     </div>
 
     <div class="glass ranger-card summary-card">
@@ -505,7 +505,7 @@ function setCurrentCaseTime(){
 }
 setCurrentCaseTime();
 document.querySelectorAll('#strafrechner input,#strafrechner textarea,#strafrechner select').forEach(el=>el.addEventListener('input',updateRecord));
-document.querySelectorAll('#offenseList input[type="checkbox"]').forEach(el=>el.addEventListener('change',updateRecord));
+
 if(q('offenseSearch')) q('offenseSearch').addEventListener('input',e=>{
   const needle=e.target.value.toLowerCase().trim();
   document.querySelectorAll('#offenseList .offense').forEach(row=>row.style.display=row.textContent.toLowerCase().includes(needle)?'':'none');
