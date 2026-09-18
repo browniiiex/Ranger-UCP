@@ -527,5 +527,74 @@ if(q('copyRecord')) q('copyRecord').addEventListener('click',async()=>{
 });
 updateRecord();
 
+
+const SUPABASE_URL = 'https://tgfngbayiauxlylckfue.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable__Dna5vaArnJ3YIMaHBRUdQ_p6TvgmJc';
+
+function offenseRow(item){
+  const label=document.createElement('label');
+  label.className='offense';
+
+  const cb=document.createElement('input');
+  cb.type='checkbox';
+  cb.dataset.name=item.straftat || 'Straftat';
+  cb.dataset.money=String(Number(item.geldstrafe)||0);
+  cb.dataset.he=String(Number(item.hafteinheiten)||0);
+  cb.addEventListener('change',updateRecord);
+
+  const span=document.createElement('span');
+  const b=document.createElement('b');
+  b.textContent=(item.kategorie ? item.kategorie+' · ' : '')+(item.straftat||'Straftat');
+  const small=document.createElement('small');
+  small.textContent=moneyFmt.format(Number(item.geldstrafe)||0)+' $ · '+(Number(item.hafteinheiten)||0)+' HE';
+
+  span.append(b,small);
+  label.append(cb,span);
+  return label;
+}
+
+async function loadOffenses(){
+  const list=q('offenseList');
+  const note=q('catalogNote');
+  if(!list) return;
+
+  try{
+    const url=SUPABASE_URL+'/rest/v1/strafkatalog?select=id,kategorie,straftat,beschreibung,geldstrafe,hafteinheiten&aktiv=eq.true&order=kategorie.asc,straftat.asc';
+    const res=await fetch(url,{
+      headers:{
+        'apikey':SUPABASE_ANON_KEY,
+        'Authorization':'Bearer '+SUPABASE_ANON_KEY
+      }
+    });
+
+    if(!res.ok){
+      const detail=await res.text();
+      throw new Error(res.status+' '+detail);
+    }
+
+    const data=await res.json();
+    list.innerHTML='';
+
+    if(!data.length){
+      list.innerHTML='<div class="catalog-loading">Keine aktiven Straftaten gefunden.</div>';
+      if(note) note.textContent='Supabase ist erreichbar, aber der Strafkatalog liefert keine Einträge.';
+      return;
+    }
+
+    data.forEach(item=>list.appendChild(offenseRow(item)));
+    if(note) note.textContent=data.length+' aktive Straftaten geladen.';
+    updateRecord();
+  }catch(err){
+    console.error('Strafkatalog:',err);
+    list.innerHTML='<div class="catalog-loading catalog-error">Strafkatalog konnte nicht geladen werden.</div>';
+    if(note){
+      note.classList.add('catalog-error');
+      note.textContent='Supabase-Zugriff blockiert. Als Nächstes prüfen wir die RLS-Leserechte.';
+    }
+  }
+}
+
+loadOffenses();
+
 </script>
 </body></html>
