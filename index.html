@@ -538,6 +538,57 @@ body{
   .content{width:min(calc(100vw - 260px),1650px)!important}
 }
 
+
+/* ===== 1920x1080 MOCKUP-LOCK — COMPLETE VISUAL REBUILD ===== */
+@media (min-width:1200px){
+  html{font-size:16px!important}
+  .app{grid-template-columns:220px 1fr!important}
+  .sidebar{padding:18px 14px!important}
+  .topbar{height:58px!important;padding:0 32px!important}
+  .content{
+    width:auto!important;max-width:none!important;
+    margin:0!important;padding:28px 42px 38px!important;
+  }
+  #dashboard{max-width:none!important}
+  .command-grid{
+    grid-template-columns:minmax(0,1fr) 330px!important;
+    gap:16px!important;
+  }
+  .hero{
+    min-height:340px!important;
+    border-radius:12px!important;
+    background:linear-gradient(90deg,rgba(4,7,6,.32),rgba(5,7,6,.09) 58%,rgba(5,7,6,.04))!important;
+  }
+  .hero-copy{left:40px!important;bottom:38px!important;max-width:790px!important}
+  .hero h1{font-size:64px!important;line-height:.91!important}
+  .hero p{font-size:16px!important;max-width:680px!important}
+  .right-stack{gap:16px!important}
+  .profile-panel{min-height:210px!important;padding:24px!important}
+  .status-panel{min-height:114px!important;padding:20px!important}
+  .stats{grid-template-columns:repeat(4,1fr)!important;gap:16px!important;margin-top:16px!important}
+  .stat{min-height:104px!important;padding:19px 22px!important}
+  .mockup-bottom{
+    grid-template-columns:1.18fr .94fr .76fr!important;
+    gap:16px!important;margin-top:16px!important;
+  }
+  .panel{min-height:238px!important;padding:20px!important}
+  .quick-grid{grid-template-columns:1fr 1fr!important;gap:10px!important}
+  .quick-btn{min-height:91px!important}
+}
+/* brighter cinematic glass exactly like the visual reference */
+.profile-panel,.status-panel,.panel,.stat,.card,.vote,.list-item,.activity-card,.permission,.member-choice{
+  background:linear-gradient(145deg,rgba(8,12,10,.72),rgba(7,9,8,.62))!important;
+  border:1px solid rgba(228,176,91,.34)!important;
+  box-shadow:0 15px 38px rgba(0,0,0,.22),inset 0 1px 0 rgba(255,255,255,.025)!important;
+}
+.hero{border-color:rgba(228,176,91,.38)!important}
+.nav button{border-radius:4px!important}
+.nav button.active{box-shadow:inset 3px 0 #e7ad54!important}
+.stat-value{font-size:31px!important}
+.profile-name{font-size:22px!important}
+.avatar{width:62px!important;height:62px!important}
+.quick-btn span{font-size:26px!important}
+
 </style>
 </head>
 <body>
