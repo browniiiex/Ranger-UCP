@@ -597,4 +597,70 @@ async function loadOffenses(){
 loadOffenses();
 
 </script>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+#authGate{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;padding:24px;background:linear-gradient(rgba(2,7,5,.58),rgba(2,7,5,.88)),var(--bg-image,none);backdrop-filter:blur(12px)}
+#authGate.hidden{display:none}
+.auth-box{width:min(440px,100%);padding:34px;border:1px solid rgba(239,191,97,.38);border-radius:14px;background:rgba(4,9,7,.91);box-shadow:0 24px 80px rgba(0,0,0,.55);text-align:center}
+.auth-mark{font-size:34px;color:#efbf61;margin-bottom:8px}.auth-box h2{font-family:Georgia,serif;font-size:31px;margin:4px 0;color:#fff}
+.auth-box p{color:rgba(255,255,255,.65);line-height:1.55;margin:10px 0 22px}
+.discord-login{width:100%;min-height:48px;border:1px solid rgba(239,191,97,.55);border-radius:8px;background:#efbf61;color:#10120f;font-weight:900;letter-spacing:.05em;cursor:pointer}
+.discord-login:hover{filter:brightness(1.06)}
+#authMsg{min-height:20px;margin-top:12px;font-size:12px;color:#ff9a9a}
+#logoutBtn{margin-top:10px;width:100%;background:transparent;border:1px solid rgba(239,191,97,.25);color:#d8c9a7;border-radius:7px;padding:9px;cursor:pointer}
+</style>
+<div id="authGate">
+  <div class="auth-box">
+    <div class="auth-mark">◆</div>
+    <div class="label">RETRO RANGER</div>
+    <h2>Ranger UCP</h2>
+    <p>Melde dich mit deinem Discord-Account an. Der Zugriff wird anschließend über deine Discord-ID geprüft.</p>
+    <button type="button" class="discord-login" id="discordLogin">MIT DISCORD ANMELDEN</button>
+    <div id="authMsg" aria-live="polite"></div>
+  </div>
+</div>
+<script>
+(async()=>{
+  const SB_URL='https://tgfngbayiauxlylckfue.supabase.co';
+  const SB_KEY='sb_publishable__Dna5vaArnJ3YIMaHBRUdQ_p6TvgmJc';
+  const gate=document.getElementById('authGate');
+  const msg=document.getElementById('authMsg');
+  const login=document.getElementById('discordLogin');
+
+  if(!window.supabase){
+    msg.textContent='Login konnte nicht geladen werden.';
+    return;
+  }
+  const client=window.supabase.createClient(SB_URL,SB_KEY);
+
+  login.addEventListener('click',async()=>{
+    login.disabled=true;
+    login.textContent='WEITERLEITUNG...';
+    const {error}=await client.auth.signInWithOAuth({
+      provider:'discord',
+      options:{redirectTo:'https://ranger-ucp.vercel.app/'}
+    });
+    if(error){
+      msg.textContent=error.message;
+      login.disabled=false;
+      login.textContent='MIT DISCORD ANMELDEN';
+    }
+  });
+
+  const {data:{session}}=await client.auth.getSession();
+  if(session){
+    gate.classList.add('hidden');
+    const meta=session.user.user_metadata||{};
+    const discordName=meta.full_name||meta.name||meta.user_name||meta.preferred_username||'Ranger';
+    document.querySelectorAll('.profile-name').forEach(x=>x.textContent=discordName);
+  }
+
+  client.auth.onAuthStateChange((_event,session)=>{
+    if(session) gate.classList.add('hidden');
+    else gate.classList.remove('hidden');
+  });
+})();
+</script>
+
 </body></html>
