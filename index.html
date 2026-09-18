@@ -284,6 +284,22 @@ h1{font-family:Georgia,"Times New Roman",serif!important;font-weight:500!importa
 @media(max-width:1250px){.mockup-bottom{grid-template-columns:1fr 1fr!important}.quick-panel{grid-column:1/-1}.quick-grid{grid-template-columns:repeat(4,1fr)}}
 @media(max-width:780px){.mockup-bottom{grid-template-columns:1fr!important}.quick-grid{grid-template-columns:1fr 1fr!important}}
 
+
+/* ===== BACKGROUND SCALE FIX ONLY ===== */
+body{
+  background-size: auto, auto, 100% auto !important;
+  background-position: center center, center center, center top !important;
+  background-repeat: no-repeat, no-repeat, no-repeat !important;
+  background-attachment: fixed, fixed, fixed !important;
+  background-color:#070605 !important;
+}
+@media (max-aspect-ratio: 16/9){
+  body{
+    background-size:auto, auto, auto 100vh !important;
+    background-position:center center, center center, center top !important;
+  }
+}
+
 </style>
 </head>
 <body>
