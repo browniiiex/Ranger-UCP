@@ -658,8 +658,8 @@ input::placeholder, textarea::placeholder { font-size: 16px !important; opacity:
   <div class="profile-page-grid">
     <div class="glass profile-main-card">
       <div class="profile-page-avatar" id="profileAvatar">R</div>
-      <div class="profile-photo-actions"><input id="profilePhotoInput" type="file" accept="image/png,image/jpeg,image/webp" hidden><button class="profile-photo-btn" id="profilePhotoButton" type="button">PROFILBILD ÄNDERN</button></div>
-      <div class="profile-photo-note" id="profilePhotoNote">JPG, PNG oder WEBP · max. 5 MB</div>
+      <div class="profile-photo-actions"><input id="profilePhotoInput" type="file" accept="image/png,image/jpeg,image/webp,image/gif" hidden><button class="profile-photo-btn" id="profilePhotoButton" type="button">PROFILBILD ÄNDERN</button></div>
+      <div class="profile-photo-note" id="profilePhotoNote">JPG, PNG, WEBP oder GIF · max. 5 MB</div>
       <div class="profile-page-name" id="profileName">Ranger</div>
       <div class="profile-page-rank" id="profileRank">Ranger auf Probe</div>
       <div class="profile-page-status">● IM DIENST</div>
@@ -945,7 +945,7 @@ input::placeholder, textarea::placeholder { font-size: 16px !important; opacity:
       <b>Eigener Hintergrund</b>
       <small>Wähle dein eigenes Bild. Es wird ausschließlich für deinen Account gespeichert.</small>
       <div class="background-actions">
-        <label class="background-upload">BILD AUSWÄHLEN<input id="backgroundUpload" type="file" accept="image/png,image/jpeg,image/webp"></label>
+        <label class="background-upload">BILD / GIF AUSWÄHLEN<input id="backgroundUpload" type="file" accept="image/png,image/jpeg,image/webp,image/gif"></label>
         <button type="button" id="removeBackground" class="background-remove">STANDARD VERWENDEN</button>
       </div>
       <small id="backgroundStatus"></small>
@@ -1560,10 +1560,10 @@ button.danger,.danger-btn,.btn-danger,[data-action="delete-vote"],button[onclick
   document.getElementById('backgroundUpload')?.addEventListener('change',async e=>{
     const file=e.target.files?.[0],status=document.getElementById('backgroundStatus');
     if(!file)return;
-    if(!/^image\/(png|jpeg|webp)$/.test(file.type)){if(status)status.textContent='Bitte PNG, JPG oder WEBP auswählen.';return;}
+    if(!/^image\/(png|jpeg|webp|gif)$/.test(file.type)){if(status)status.textContent='Bitte PNG, JPG, WEBP oder GIF auswählen.';return;}
     if(file.size>8*1024*1024){if(status)status.textContent='Das Bild darf maximal 8 MB groß sein.';return;}
     if(status)status.textContent='Bild wird hochgeladen …';
-    const ext=file.type==='image/png'?'png':file.type==='image/webp'?'webp':'jpg';
+    const ext=file.type==='image/png'?'png':file.type==='image/webp'?'webp':file.type==='image/gif'?'gif':'jpg';
     const path=`${currentUser.id}/background.${ext}`;
     const {error:upErr}=await client.storage.from('ranger-backgrounds').upload(path,file,{upsert:true,contentType:file.type,cacheControl:'3600'});
     if(upErr){if(status)status.textContent='Upload fehlgeschlagen: '+upErr.message;return;}
@@ -1678,11 +1678,26 @@ button.danger,.danger-btn,.btn-danger,[data-action="delete-vote"],button[onclick
     const {data:perms,error:permErr}=await client.from('ucp_permissions').select('*').eq('user_id',session.user.id).maybeSingle();
     if(permErr || !perms){ showGate('Deine UCP-Rechte konnten nicht geladen werden.',false); return false; }
     currentAccess=userRow; currentPermissions=perms;
-    const {data:allowSelf}=await client.from('ucp_allowlist').select('ranger_rang').eq('discord_id',userRow.discord_id).maybeSingle();
+    const meta=session.user.user_metadata||{};
+    const identityData=(session.user.identities||[]).flatMap(x=>[x?.id,x?.identity_data?.provider_id,x?.identity_data?.sub,x?.identity_data?.id]);
+    const discordIds=[userRow.discord_id,meta.provider_id,meta.discord_id,meta.sub,...identityData]
+      .map(x=>String(x||'').trim()).filter((x,i,a)=>/^\d{15,22}$/.test(x)&&a.indexOf(x)===i);
+    let allowSelf=null;
+    if(discordIds.length){
+      const {data:matches}=await client.from('ucp_allowlist').select('discord_id,display_name,ranger_rang').in('discord_id',discordIds).eq('enabled',true).limit(1);
+      allowSelf=matches?.[0]||null;
+    }
+    if(!allowSelf){
+      const loginName=userRow.display_name||userRow.discord_name||meta.full_name||meta.name||meta.user_name||'';
+      if(loginName){const {data:byName}=await client.from('ucp_allowlist').select('discord_id,display_name,ranger_rang').ilike('display_name',loginName).eq('enabled',true).limit(1);allowSelf=byName?.[0]||null;}
+    }
+    if(allowSelf?.discord_id&&allowSelf.discord_id!==currentAccess.discord_id){
+      currentAccess={...currentAccess,discord_id:allowSelf.discord_id};
+      await client.from('ucp_users').update({discord_id:allowSelf.discord_id}).eq('id',currentUser.id);
+    }
     currentRangerRank=allowSelf?.ranger_rang||'Ranger auf Probe';
     hideGate(); applyPermissions(); await loadNavPreferences(); await loadDesignPrefs(); startPresence();
     if(currentPermissions.profil) await loadProfile();
-    const meta=session.user.user_metadata||{};
     const discordName=userRow.display_name||userRow.discord_name||meta.full_name||meta.name||meta.user_name||'Ranger';
     document.querySelectorAll('.profile-name').forEach(x=>x.textContent=discordName);
     const account=document.querySelector('.account'); if(account) account.innerHTML='<b>'+escapeHtml(discordName)+'</b><small class="account-rank">'+escapeHtml((currentRangerRank||'Ranger auf Probe').toUpperCase())+'</small>';
@@ -1860,7 +1875,7 @@ button.danger,.danger-btn,.btn-danger,[data-action="delete-vote"],button[onclick
   async function uploadProfilePhoto(file){
     const note=document.getElementById('profilePhotoNote');
     if(!file)return;
-    if(!['image/jpeg','image/png','image/webp'].includes(file.type)){note.textContent='Bitte JPG, PNG oder WEBP auswählen.';return;}
+    if(!['image/jpeg','image/png','image/webp','image/gif'].includes(file.type)){note.textContent='Bitte JPG, PNG, WEBP oder GIF auswählen.';return;}
     if(file.size>5*1024*1024){note.textContent='Das Bild darf maximal 5 MB groß sein.';return;}
     note.textContent='Profilbild wird hochgeladen…';
     const ext=(file.name.split('.').pop()||'jpg').toLowerCase();
