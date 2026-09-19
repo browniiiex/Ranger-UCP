@@ -769,6 +769,24 @@ button.danger,.danger-btn,.btn-danger,[data-action="delete-vote"],button[onclick
 .rights-controls input{width:100%;margin-top:6px;background:#080d0a;border:1px solid rgba(239,191,97,.28);color:#fff;border-radius:7px;padding:11px;font-size:15px}
 .stream-activity-grid{display:grid;gap:18px;margin-top:18px}.stream-card{padding:22px}.stream-card-head{display:flex;justify-content:space-between;gap:18px;align-items:flex-start;margin-bottom:18px}.stream-card h3{margin:0;font:500 24px Georgia;color:#fff}.stream-meta{color:var(--muted);font-size:14px;margin-top:5px}.stream-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.stream-stat{padding:16px;border:1px solid rgba(239,191,97,.18);border-radius:12px;background:rgba(3,8,5,.55)}.stream-stat strong{display:block;font-size:24px;color:#efbf61}.stream-stat span{font-size:13px;color:#d8c9a7}.stream-days{margin-top:16px;display:flex;flex-wrap:wrap;gap:8px}.stream-day{padding:8px 11px;border-radius:999px;border:1px solid rgba(239,191,97,.25);background:rgba(239,191,97,.08);font-size:13px;color:#eee2c7}.stream-empty{color:var(--muted);font-size:14px;margin-top:14px}@media(max-width:1100px){.rights-controls{grid-template-columns:1fr 1fr!important}.stream-stats{grid-template-columns:1fr 1fr}}@media(max-width:650px){.rights-controls,.stream-stats{grid-template-columns:1fr!important}}
 
+/* Compact Stream-Aktivität */
+.stream-activity-grid{gap:10px!important;margin-top:10px!important}
+.stream-card{padding:13px 16px!important}
+.stream-card-head{margin-bottom:10px!important}
+.stream-card h3{font-size:19px!important}
+.stream-meta{font-size:12px!important;margin-top:3px!important}
+.stream-stats{gap:8px!important}
+.stream-stat{padding:10px 12px!important;border-radius:9px!important}
+.stream-stat strong{font-size:20px!important}
+.stream-stat span{font-size:11px!important}
+.stream-history-wrap{margin-top:10px!important}
+.stream-history-btn{padding:7px 12px!important;font-size:12px!important}
+.stream-history{margin-top:9px!important}
+.stream-history-head{padding:10px 13px!important}
+.stream-history-month{padding:10px 13px 5px!important;font-size:16px!important}
+.stream-history-row{padding:7px 13px!important}
+@media(min-width:1000px){.stream-card{display:grid!important;grid-template-columns:minmax(220px,.8fr) minmax(650px,2.2fr) auto;column-gap:14px;align-items:center}.stream-card-head{margin:0!important}.stream-history-wrap{margin:0!important}.stream-history{grid-column:1/-1}.stream-history-btn{white-space:nowrap}.stream-stats{grid-template-columns:repeat(4,minmax(130px,1fr))!important}}
+
 /* Stream-History */
 .stream-history-wrap{margin-top:16px}.stream-history-btn{display:inline-flex;align-items:center;gap:9px;padding:10px 16px;border:1px solid rgba(239,191,97,.35);border-radius:999px;background:rgba(239,191,97,.08);color:#efbf61;font:700 13px "Barlow Condensed",sans-serif;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;transition:.2s ease}.stream-history-btn:hover{background:rgba(239,191,97,.16);transform:translateY(-1px)}.stream-history-btn .history-arrow{transition:transform .22s ease}.stream-history-btn.open .history-arrow{transform:rotate(180deg)}.stream-history{display:none;margin-top:14px;border:1px solid rgba(239,191,97,.18);border-radius:14px;background:rgba(2,6,4,.55);overflow:hidden}.stream-history.open{display:block;animation:historyIn .2s ease}.stream-history-head{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:15px 18px;border-bottom:1px solid rgba(239,191,97,.16);color:#efbf61;font-weight:700}.stream-history-count{color:var(--muted);font-size:13px;font-weight:500}.stream-history-month{padding:13px 18px 7px;color:#fff;font:500 18px Georgia}.stream-history-row{display:grid;grid-template-columns:1fr auto;gap:18px;align-items:center;padding:10px 18px;border-top:1px solid rgba(255,255,255,.055);color:#eee2c7}.stream-history-row strong{color:#efbf61}.stream-history-row:hover{background:rgba(239,191,97,.05)}@keyframes historyIn{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:none}}
 </style>
