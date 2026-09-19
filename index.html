@@ -391,6 +391,35 @@ body.no-ucp-glass .glass,body.no-ucp-glass .card,body.no-ucp-glass .panel{backdr
 }
 .sidebar,.main,.app,.shell,#app,.login-gate{position:relative;z-index:1}
 
+
+/* Verwaltung */
+.admin-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:20px 0 14px}
+.admin-stat{padding:17px 18px!important;min-height:112px}
+.admin-stat span{display:block;font:600 12px "Barlow Condensed";letter-spacing:1.4px;color:#8f8a80}
+.admin-stat strong{display:block;margin:5px 0 2px;font:700 31px Georgia,serif;color:var(--gold2)}
+.admin-stat small{display:block;color:#77736b;font-size:11px;line-height:1.35}
+.admin-grid{display:grid;grid-template-columns:1.25fr .75fr;gap:14px}
+.admin-panel{padding:18px!important}
+.admin-panel .panel-title{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:11px}
+.admin-link{border:0;background:none;color:var(--gold2);font:600 11px "Barlow Condensed";letter-spacing:.8px;cursor:pointer}
+.admin-ranger-row,.admin-ap-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 3px;border-bottom:1px solid rgba(229,173,85,.11)}
+.admin-ranger-row:last-child,.admin-ap-row:last-child{border-bottom:0}
+.admin-ranger-main b,.admin-ap-main b{display:block;font:600 15px "Barlow Condensed";letter-spacing:.5px}
+.admin-ranger-main small,.admin-ap-main small{display:block;color:#77736b;font-size:11px;margin-top:2px}
+.admin-status{padding:4px 8px;border-radius:20px;border:1px solid rgba(229,173,85,.24);font-size:10px;color:#bdb7ab;white-space:nowrap}
+.admin-status.ok{color:#91d29b;border-color:rgba(93,177,107,.3)}
+.admin-status.pending{color:#e2b96d}
+.admin-actions-panel{margin-top:14px}
+.admin-actions{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}
+.admin-actions button{display:flex;align-items:center;gap:10px;text-align:left;min-height:67px;padding:12px;border:1px solid rgba(229,173,85,.2);border-radius:9px;background:rgba(3,7,5,.65);color:#ddd8cf;cursor:pointer}
+.admin-actions button:hover{border-color:var(--gold);transform:translateY(-1px)}
+.admin-actions button>b{font-size:20px;color:var(--gold2);width:25px;text-align:center}
+.admin-actions button span{font:600 13px "Barlow Condensed";letter-spacing:.7px}
+.admin-actions button small{display:block;margin-top:3px;color:#77736b;font:400 10px Arial,sans-serif;letter-spacing:0}
+.admin-notice{margin-top:10px}
+@media(max-width:1000px){.admin-stats{grid-template-columns:repeat(2,1fr)}.admin-grid{grid-template-columns:1fr}.admin-actions{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:620px){.admin-stats,.admin-actions{grid-template-columns:1fr}}
+
 </style>
 
 <style id="global-readability-upgrade">
@@ -638,7 +667,39 @@ input::placeholder, textarea::placeholder { font-size: 16px !important; opacity:
   <div class="rights-create-actions"><button type="button" class="rights-save" id="voteSave">ABSTIMMUNG STARTEN</button><div id="voteResult" class="rights-create-result"></div></div>
 </div></div>
   <section class="page inner" id="eid"><h1>Ranger-Eid</h1><div class="sub">Interner Eid · Platzhalter bis zur finalen Fassung.</div><div class="glass placeholder">Der finale Ranger-Eid wird hier hinterlegt.</div></section>
-  <section class="page inner" id="verwaltung"><h1>Verwaltung</h1><div class="sub">Mitglieder und Rollen verwalten.</div><div class="glass placeholder">Administration · Mitglied</div></section>
+  <section class="page inner" id="verwaltung">
+  <h1>Verwaltung</h1>
+  <div class="sub">Zentrale Übersicht für die Ranger-Administration.</div>
+
+  <div class="admin-stats">
+    <div class="glass admin-stat"><span>AKTIVE RANGER</span><strong id="adminActiveRangers">–</strong><small id="adminActiveSub">Wird geladen…</small></div>
+    <div class="glass admin-stat"><span>NOCH NICHT ANGEMELDET</span><strong id="adminPendingUsers">–</strong><small>Freigeschaltet, aber Discord noch nicht verbunden</small></div>
+    <div class="glass admin-stat"><span>TERMINE</span><strong id="adminUpcoming">–</strong><small>Nächste 7 Tage</small></div>
+    <div class="glass admin-stat"><span>OFFENE ABSTIMMUNGEN</span><strong id="adminOpenVotes">–</strong><small>Ranger-Rat</small></div>
+  </div>
+
+  <div class="admin-grid">
+    <div class="glass admin-panel">
+      <div class="panel-title"><span>♜ RANGER-ÜBERSICHT</span><button class="admin-link" type="button" onclick="openPage('rechte')">RECHTE & ROLLEN →</button></div>
+      <div id="adminRangerList"><div class="muted">Wird geladen…</div></div>
+    </div>
+    <div class="glass admin-panel">
+      <div class="panel-title"><span>◷ NÄCHSTE TERMINE</span><button class="admin-link" type="button" onclick="openPage('termine')">DIENSTPLAN →</button></div>
+      <div id="adminAppointmentList"><div class="muted">Wird geladen…</div></div>
+    </div>
+  </div>
+
+  <div class="glass admin-panel admin-actions-panel">
+    <div class="panel-title"><span>ϟ SCHNELLVERWALTUNG</span></div>
+    <div class="admin-actions">
+      <button type="button" onclick="openPage('rechte')"><b>♟</b><span>RANGER VERWALTEN<small>Zugriff, Rang, Twitch & Rechte</small></span></button>
+      <button type="button" onclick="openPage('termine')"><b>◷</b><span>DIENSTPLAN<small>Termine erstellen und bearbeiten</small></span></button>
+      <button type="button" onclick="openPage('abstimmungen')"><b>●</b><span>RANGER-RAT<small>Abstimmungen verwalten</small></span></button>
+      <button type="button" onclick="openPage('aktivitaet')"><b>▶</b><span>STREAMS<small>Aktivität der Ranger prüfen</small></span></button>
+    </div>
+  </div>
+  <div id="adminNotice" class="muted admin-notice"></div>
+</section>
   <section class="page inner" id="rechte"><h1>Rechte & Rollen</h1><div class="sub">Discord-Nutzer vorab per Discord-ID anlegen und Berechtigungen individuell verwalten.</div><div class="rights-toolbar"><button type="button" class="rights-add" id="addRightsUser">＋ BENUTZER HINZUFÜGEN</button></div><div id="rightsNotice" class="glass placeholder">Benutzer werden geladen…</div><div id="rightsUsers" class="rights-users"></div></section>
   <section class="page inner" id="einstellungen">
 <h1>Einstellungen</h1><div class="sub">Persönliche UCP-Einstellungen.</div>
@@ -1145,6 +1206,7 @@ button.danger,.danger-btn,.btn-danger,[data-action="delete-vote"],button[onclick
     if(currentPermissions.dienstplan) await loadAppointments();
     if(currentPermissions.familien) await loadFamilies();
     if(currentPermissions.ranger_rat) await loadVotes();
+    if(currentPermissions.verwaltung) await loadAdministration();
     if(currentPermissions.stream_aktivitaet) await loadStreamActivity();
     if(currentPermissions.dashboard) await loadDashboard();
     return true;
@@ -1487,6 +1549,48 @@ button.danger,.danger-btn,.btn-danger,[data-action="delete-vote"],button[onclick
   });
 
   // Command Center – Live-Daten aus Supabase
+
+  async function loadAdministration(){
+    if(!client||!currentPermissions?.verwaltung)return;
+    const notice=document.getElementById('adminNotice');
+    if(currentAccess?.rolle!=='administration'){
+      if(notice)notice.innerHTML='<span class="access-denied">Dieser Bereich ist nur für die Administration.</span>';
+      return;
+    }
+    if(notice)notice.textContent='Verwaltungsdaten werden geladen…';
+    const today=new Date();today.setHours(0,0,0,0);
+    const todayISO=today.toISOString().slice(0,10);
+    const in7=new Date(today);in7.setDate(in7.getDate()+7);const in7ISO=in7.toISOString().slice(0,10);
+    const [allowQ,usersQ,appointmentsQ,votesQ]=await Promise.all([
+      client.from('ucp_allowlist').select('discord_id,display_name,twitch_name,joined_at,ranger_rang,rolle,enabled,created_at').order('created_at',{ascending:true}),
+      client.from('ucp_users').select('discord_id,id,enabled'),
+      client.from('ucp_termine').select('*').gte('datum',todayISO).order('datum',{ascending:true}).order('uhrzeit',{ascending:true}),
+      client.from('ucp_rat_abstimmungen').select('id,status,endet_am')
+    ]);
+    const err=allowQ.error||usersQ.error||appointmentsQ.error||votesQ.error;
+    if(err){if(notice)notice.textContent='Verwaltung konnte nicht geladen werden: '+err.message;return;}
+    const allow=allowQ.data||[],users=usersQ.data||[],appointments=appointmentsQ.data||[],votes=votesQ.data||[];
+    const logged=new Set(users.map(x=>x.discord_id));
+    const active=allow.filter(x=>x.enabled);
+    const pending=active.filter(x=>!logged.has(x.discord_id));
+    const upcoming=appointments.filter(x=>x.datum<=in7ISO);
+    const openVotes=votes.filter(v=>v.status!=='beendet'&&(!v.endet_am||new Date(v.endet_am)>new Date()));
+    const set=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v};
+    set('adminActiveRangers',active.length);set('adminPendingUsers',pending.length);set('adminUpcoming',upcoming.length);set('adminOpenVotes',openVotes.length);
+    set('adminActiveSub',active.length===1?'1 Ranger freigeschaltet':active.length+' Ranger freigeschaltet');
+
+    const rangerWrap=document.getElementById('adminRangerList');
+    if(rangerWrap)rangerWrap.innerHTML=active.map(r=>{
+      const isLogged=logged.has(r.discord_id);
+      const meta=[r.ranger_rang||'Kein Rang',r.twitch_name?'Twitch: '+r.twitch_name:'Kein Twitch'].join(' · ');
+      return `<div class="admin-ranger-row"><div class="admin-ranger-main"><b>${escapeHtml(r.display_name||'Ranger')}</b><small>${escapeHtml(meta)}</small></div><span class="admin-status ${isLogged?'ok':'pending'}">${isLogged?'VERBUNDEN':'ANMELDUNG OFFEN'}</span></div>`;
+    }).join('')||'<div class="dash-empty">Keine aktiven Ranger.</div>';
+
+    const apWrap=document.getElementById('adminAppointmentList');
+    if(apWrap)apWrap.innerHTML=appointments.slice(0,5).map(a=>`<div class="admin-ap-row"><div class="admin-ap-main"><b>${escapeHtml(a.titel)}</b><small>${new Date(a.datum+'T12:00:00').toLocaleDateString('de-DE')} · ${escapeHtml((a.uhrzeit||'').slice(0,5))} Uhr${a.ort?' · '+escapeHtml(a.ort):''}</small></div></div>`).join('')||'<div class="dash-empty">Keine kommenden Termine.</div>';
+    if(notice)notice.textContent='Zuletzt aktualisiert: '+new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})+' Uhr';
+  }
+
   async function loadDashboard(){
     if(!client||!currentPermissions?.dashboard)return;
     const name=currentAccess?.display_name||currentAccess?.discord_name||'Ranger';
