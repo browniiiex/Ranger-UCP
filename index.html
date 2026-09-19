@@ -1074,9 +1074,13 @@ button.danger,.danger-btn,.btn-danger,[data-action="delete-vote"],button[onclick
     if(!client||!currentPermissions?.ranger_rat)return;
     const wrap=document.getElementById('voteList'),notice=document.getElementById('voteNotice'); if(!wrap)return;
     notice.textContent='Abstimmungen werden geladen…';
+    const isAdmin=currentAccess?.rolle==='administration';
+    const ballotQuery=isAdmin
+      ? client.from('ucp_rat_stimmen').select('*')
+      : client.from('ucp_rat_stimmen').select('*').eq('user_id',currentUser.id);
     const [{data:votes,error},{data:ballots,error:be}]=await Promise.all([
       client.from('ucp_rat_abstimmungen').select('*').order('erstellt_am',{ascending:false}),
-      client.from('ucp_rat_stimmen').select('*')
+      ballotQuery
     ]);
     if(error||be){notice.textContent='Abstimmungen konnten nicht geladen werden: '+(error?.message||be?.message);return;}
     notice.textContent=(votes?.length||0)+' Abstimmung'+((votes?.length||0)===1?'':'en')+' vorhanden.';
@@ -1088,8 +1092,10 @@ button.danger,.danger-btn,.btn-danger,[data-action="delete-vote"],button[onclick
       const ended=v.status==='beendet'||(v.endet_am&&new Date(v.endet_am)<=new Date());
       const total=counts.ja+counts.nein+counts.enthaltung;
       const finalText=counts.ja>counts.nein?'MEHRHEIT: JA':counts.nein>counts.ja?'MEHRHEIT: NEIN':'ERGEBNIS: UNENTSCHIEDEN';
-      const isAdmin=currentAccess?.rolle==='administration';
-      return `<div class="glass vote-card" data-vote="${v.id}"><div class="vote-card-head"><div><h3>${escapeHtml(v.titel)}</h3>${v.beschreibung?`<div class="vote-desc">${escapeHtml(v.beschreibung)}</div>`:''}<div class="vote-meta">${escapeHtml(voteDateText(v))}</div></div><div class="vote-status ${ended?'ended':''}">${ended?'BEENDET':'● OFFEN'}</div></div><div class="vote-buttons"><button class="vote-choice ${mine==='ja'?'selected':''}" data-choice="ja" ${ended?'disabled':''}>✓ JA</button><button class="vote-choice ${mine==='nein'?'selected':''}" data-choice="nein" ${ended?'disabled':''}>× NEIN</button><button class="vote-choice ${mine==='enthaltung'?'selected':''}" data-choice="enthaltung" ${ended?'disabled':''}>– ENTHALTUNG</button></div><div class="vote-results"><div class="vote-result-box"><strong>${counts.ja}</strong>Ja</div><div class="vote-result-box"><strong>${counts.nein}</strong>Nein</div><div class="vote-result-box"><strong>${counts.enthaltung}</strong>Enthaltung</div></div>${ended?`<div class="vote-final"><b>${finalText}</b><span>${total} abgegebene Stimme${total===1?'':'n'}</span></div>`:''}<div class="vote-admin">${!ended?`<button class="vote-end" type="button">ABSTIMMUNG BEENDEN</button>`:''}${ended&&isAdmin?`<button class="vote-delete" type="button">ABSTIMMUNG LÖSCHEN</button>`:''}</div></div>`;
+      const resultHtml=isAdmin
+        ? `<div class="vote-results"><div class="vote-result-box"><strong>${counts.ja}</strong>Ja</div><div class="vote-result-box"><strong>${counts.nein}</strong>Nein</div><div class="vote-result-box"><strong>${counts.enthaltung}</strong>Enthaltung</div></div>${ended?`<div class="vote-final"><b>${finalText}</b><span>${total} abgegebene Stimme${total===1?'':'n'}</span></div>`:''}`
+        : (ended?`<div class="vote-final"><b>ABSTIMMUNG BEENDET</b><span>Das Ergebnis ist nur für die Administration einsehbar.</span></div>`:'');
+      return `<div class="glass vote-card" data-vote="${v.id}"><div class="vote-card-head"><div><h3>${escapeHtml(v.titel)}</h3>${v.beschreibung?`<div class="vote-desc">${escapeHtml(v.beschreibung)}</div>`:''}<div class="vote-meta">${escapeHtml(voteDateText(v))}</div></div><div class="vote-status ${ended?'ended':''}">${ended?'BEENDET':'● OFFEN'}</div></div><div class="vote-buttons"><button class="vote-choice ${mine==='ja'?'selected':''}" data-choice="ja" ${ended?'disabled':''}>✓ JA</button><button class="vote-choice ${mine==='nein'?'selected':''}" data-choice="nein" ${ended?'disabled':''}>× NEIN</button><button class="vote-choice ${mine==='enthaltung'?'selected':''}" data-choice="enthaltung" ${ended?'disabled':''}>– ENTHALTUNG</button></div>${resultHtml}<div class="vote-admin">${!ended?`<button class="vote-end" type="button">ABSTIMMUNG BEENDEN</button>`:''}${ended&&isAdmin?`<button class="vote-delete" type="button">ABSTIMMUNG LÖSCHEN</button>`:''}</div></div>`;
     }).join('');
     wrap.querySelectorAll('.vote-card').forEach(card=>{
       const id=Number(card.dataset.vote);
