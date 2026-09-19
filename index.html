@@ -303,6 +303,9 @@ textarea.r-input{resize:vertical;min-height:76px}
 .appointment-modal{position:fixed;inset:0;z-index:100001;display:none;align-items:center;justify-content:center;padding:24px;background:rgba(0,0,0,.72);backdrop-filter:blur(8px)}.appointment-modal.open{display:flex}.appointment-modal-box{width:min(700px,100%);padding:24px;border:1px solid rgba(239,191,97,.42);border-radius:12px;background:rgba(5,10,7,.98);box-shadow:0 30px 90px #000}.appointment-form{display:grid;grid-template-columns:1fr 1fr;gap:12px}.appointment-form label{font-size:10px;letter-spacing:.8px;color:#d8c9a7}.appointment-form .span2{grid-column:1/-1}.appointment-form input,.appointment-form textarea{margin-top:6px}.appointment-save{width:100%;margin-top:16px;height:44px;border:1px solid rgba(239,191,97,.55);border-radius:7px;background:#efbf61;color:#10120f;font-weight:900;cursor:pointer}.appointment-result{min-height:18px;margin-top:9px;font-size:12px}@media(max-width:900px){.appointment-grid,.appointment-form{grid-template-columns:1fr}.appointment-form .span2{grid-column:auto}.appointment-titlebar{flex-direction:column}}
 
 .family-titlebar{display:flex;justify-content:space-between;gap:18px;align-items:flex-end;margin-bottom:18px}.family-list{display:grid;gap:18px;margin-top:18px}.family-card{padding:22px}.family-head{display:flex;justify-content:space-between;gap:18px;align-items:flex-start}.family-name{font-family:Georgia,serif;font-size:26px;font-weight:700}.family-location{margin-top:6px;color:#d6c28d;font-size:16px}.family-text{margin-top:14px;font-size:17px;line-height:1.55;color:#e7e7e7}.family-actions,.member-actions{display:flex;gap:9px;flex-wrap:wrap}.family-actions button,.member-actions button{border:1px solid rgba(212,177,90,.5);background:rgba(0,0,0,.38);color:#fff;padding:10px 13px;cursor:pointer;font:700 14px 'Barlow Condensed',sans-serif;letter-spacing:.6px}.family-actions .danger,.member-actions .danger{border-color:rgba(220,90,90,.55)}.members-box{margin-top:18px;border-top:1px solid rgba(212,177,90,.28);padding-top:16px}.members-title{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:11px;font-weight:700;font-size:18px}.member-row{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:12px 0;border-top:1px solid rgba(255,255,255,.08)}.member-row:first-of-type{border-top:0}.member-name{font-size:17px;font-weight:700}.member-position{font-size:15px;color:#bdbdbd;margin-top:2px}.family-empty{padding:24px;font-size:17px}@media(max-width:700px){.family-titlebar,.family-head,.member-row{align-items:stretch;flex-direction:column}.family-actions,.member-actions{width:100%}}
+
+/* Ranger-Rat Endergebnis */
+.vote-final{margin-top:14px;padding:16px 18px;border:1px solid rgba(239,190,83,.45);border-radius:12px;background:rgba(0,0,0,.38);display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}.vote-final b{font-size:20px;color:#f0c15d;letter-spacing:.5px}.vote-final span{font-size:16px;color:#e8e1d3}.vote-delete{background:rgba(145,35,35,.2)!important;border:1px solid rgba(255,100,100,.55)!important;color:#ff9a9a!important}.vote-delete:hover{background:rgba(175,45,45,.35)!important}
 </style>
 
 <style id="global-readability-upgrade">
@@ -935,12 +938,16 @@ input::placeholder, textarea::placeholder { color: rgba(255,255,255,.58) !import
       const counts={ja:0,nein:0,enthaltung:0};bs.forEach(x=>counts[x.stimme]=(counts[x.stimme]||0)+1);
       const mine=bs.find(x=>x.user_id===currentUser.id)?.stimme||'';
       const ended=v.status==='beendet'||(v.endet_am&&new Date(v.endet_am)<=new Date());
-      return `<div class="glass vote-card" data-vote="${v.id}"><div class="vote-card-head"><div><h3>${escapeHtml(v.titel)}</h3>${v.beschreibung?`<div class="vote-desc">${escapeHtml(v.beschreibung)}</div>`:''}<div class="vote-meta">${escapeHtml(voteDateText(v))}</div></div><div class="vote-status ${ended?'ended':''}">${ended?'BEENDET':'● OFFEN'}</div></div><div class="vote-buttons"><button class="vote-choice ${mine==='ja'?'selected':''}" data-choice="ja" ${ended?'disabled':''}>✓ JA</button><button class="vote-choice ${mine==='nein'?'selected':''}" data-choice="nein" ${ended?'disabled':''}>× NEIN</button><button class="vote-choice ${mine==='enthaltung'?'selected':''}" data-choice="enthaltung" ${ended?'disabled':''}>– ENTHALTUNG</button></div><div class="vote-results"><div class="vote-result-box"><strong>${counts.ja}</strong>Ja</div><div class="vote-result-box"><strong>${counts.nein}</strong>Nein</div><div class="vote-result-box"><strong>${counts.enthaltung}</strong>Enthaltung</div></div>${!ended?`<div class="vote-admin"><button class="vote-end" type="button">ABSTIMMUNG BEENDEN</button></div>`:''}</div>`;
+      const total=counts.ja+counts.nein+counts.enthaltung;
+      const finalText=counts.ja>counts.nein?'MEHRHEIT: JA':counts.nein>counts.ja?'MEHRHEIT: NEIN':'ERGEBNIS: UNENTSCHIEDEN';
+      const isAdmin=currentAccess?.rolle==='administration';
+      return `<div class="glass vote-card" data-vote="${v.id}"><div class="vote-card-head"><div><h3>${escapeHtml(v.titel)}</h3>${v.beschreibung?`<div class="vote-desc">${escapeHtml(v.beschreibung)}</div>`:''}<div class="vote-meta">${escapeHtml(voteDateText(v))}</div></div><div class="vote-status ${ended?'ended':''}">${ended?'BEENDET':'● OFFEN'}</div></div><div class="vote-buttons"><button class="vote-choice ${mine==='ja'?'selected':''}" data-choice="ja" ${ended?'disabled':''}>✓ JA</button><button class="vote-choice ${mine==='nein'?'selected':''}" data-choice="nein" ${ended?'disabled':''}>× NEIN</button><button class="vote-choice ${mine==='enthaltung'?'selected':''}" data-choice="enthaltung" ${ended?'disabled':''}>– ENTHALTUNG</button></div><div class="vote-results"><div class="vote-result-box"><strong>${counts.ja}</strong>Ja</div><div class="vote-result-box"><strong>${counts.nein}</strong>Nein</div><div class="vote-result-box"><strong>${counts.enthaltung}</strong>Enthaltung</div></div>${ended?`<div class="vote-final"><b>${finalText}</b><span>${total} abgegebene Stimme${total===1?'':'n'}</span></div>`:''}<div class="vote-admin">${!ended?`<button class="vote-end" type="button">ABSTIMMUNG BEENDEN</button>`:''}${ended&&isAdmin?`<button class="vote-delete" type="button">ABSTIMMUNG LÖSCHEN</button>`:''}</div></div>`;
     }).join('');
     wrap.querySelectorAll('.vote-card').forEach(card=>{
       const id=Number(card.dataset.vote);
       card.querySelectorAll('[data-choice]').forEach(btn=>btn.addEventListener('click',()=>castVote(id,btn.dataset.choice)));
       card.querySelector('.vote-end')?.addEventListener('click',()=>endVote(id));
+      card.querySelector('.vote-delete')?.addEventListener('click',()=>deleteVote(id));
     });
   }
   async function castVote(id,choice){
@@ -951,6 +958,12 @@ input::placeholder, textarea::placeholder { color: rgba(255,255,255,.58) !import
     if(!confirm('Abstimmung wirklich beenden?'))return;
     const {error}=await client.from('ucp_rat_abstimmungen').update({status:'beendet'}).eq('id',id);
     if(error){document.getElementById('voteNotice').textContent='Beenden fehlgeschlagen: '+error.message;return;} await loadVotes();
+  }
+  async function deleteVote(id){
+    if(currentAccess?.rolle!=='administration')return;
+    if(!confirm('Abstimmung wirklich endgültig löschen?'))return;
+    const {error}=await client.from('ucp_rat_abstimmungen').delete().eq('id',id);
+    if(error){document.getElementById('voteNotice').textContent='Löschen fehlgeschlagen: '+error.message;return;} await loadVotes();
   }
   document.getElementById('voteSave')?.addEventListener('click',async()=>{
     const titel=voteVal('voteTitle'),beschreibung=voteVal('voteDescription')||null,date=voteVal('voteEndDate'),time=voteVal('voteEndTime');
