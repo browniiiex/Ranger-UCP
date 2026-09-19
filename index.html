@@ -486,6 +486,32 @@ body.no-ucp-glass .glass,body.no-ucp-glass .card,body.no-ucp-glass .panel{backdr
 .global-search-empty{padding:30px 16px;text-align:center;color:#77736b;font-size:13px}
 @media(max-width:650px){.global-search-panel{position:fixed;left:14px;right:14px;top:65px;width:auto}}
 
+
+/* Ranger-Akten */
+.rights-notes-open{border:1px solid rgba(229,173,85,.45)!important;background:rgba(229,173,85,.07)!important;color:var(--gold2)!important}
+.ranger-notes-modal{display:none;position:fixed;inset:0;z-index:400;background:rgba(0,0,0,.72);backdrop-filter:blur(7px);padding:30px;overflow:auto}
+.ranger-notes-modal.open{display:flex;align-items:flex-start;justify-content:center}
+.ranger-notes-dialog{width:min(850px,100%);margin:auto;padding:24px!important}
+.ranger-notes-top{display:flex;justify-content:space-between;gap:20px;align-items:flex-start;border-bottom:1px solid rgba(229,173,85,.16);padding-bottom:16px}
+.ranger-notes-top h2{margin:4px 0!important}
+.ranger-notes-close{width:40px;height:40px;min-height:40px!important;border-radius:50%;border:1px solid rgba(229,173,85,.28);background:rgba(0,0,0,.35);color:#ddd;font-size:25px!important;cursor:pointer}
+.ranger-note-create{display:grid;grid-template-columns:180px 1fr auto;gap:12px;align-items:end;margin:18px 0}
+.ranger-note-create label{display:grid;gap:6px;color:#b9a16d;font:700 11px "Barlow Condensed";letter-spacing:1px}
+.ranger-note-text-label textarea{min-height:86px!important;resize:vertical}
+.ranger-note-create button{height:46px}
+.ranger-notes-list{display:grid;gap:10px;margin-top:15px}
+.ranger-note-card{padding:15px;border:1px solid rgba(229,173,85,.16);border-radius:9px;background:rgba(0,0,0,.22)}
+.ranger-note-card.warn{border-color:rgba(181,77,65,.42)}
+.ranger-note-card.good{border-color:rgba(91,159,103,.36)}
+.ranger-note-head{display:flex;justify-content:space-between;gap:14px;align-items:flex-start}
+.ranger-note-head b{color:var(--gold2);font:700 13px "Barlow Condensed";letter-spacing:.8px}
+.ranger-note-head small{color:#77736b}
+.ranger-note-body{margin-top:9px;color:#ddd8cf;white-space:pre-wrap;line-height:1.5}
+.ranger-note-footer{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-top:10px}
+.ranger-note-footer small{color:#77736b}
+.ranger-note-delete{min-height:30px!important;border:0;background:none;color:#b66d65;font:600 10px "Barlow Condensed"!important;cursor:pointer}
+@media(max-width:760px){.ranger-notes-modal{padding:12px}.ranger-note-create{grid-template-columns:1fr}.ranger-note-create button{width:100%}}
+
 </style>
 
 <style id="global-readability-upgrade">
@@ -802,6 +828,31 @@ input::placeholder, textarea::placeholder { font-size: 16px !important; opacity:
   <div id="adminNotice" class="muted admin-notice"></div>
 </section>
   <section class="page inner" id="rechte"><h1>Rechte & Rollen</h1><div class="sub">Discord-Nutzer vorab per Discord-ID anlegen und Berechtigungen individuell verwalten.</div><div class="rights-toolbar"><button type="button" class="rights-add" id="addRightsUser">＋ BENUTZER HINZUFÜGEN</button></div><div id="rightsNotice" class="glass placeholder">Benutzer werden geladen…</div><div id="rightsUsers" class="rights-users"></div></section>
+  <div class="ranger-notes-modal" id="rangerNotesModal" aria-hidden="true">
+    <div class="ranger-notes-dialog glass">
+      <div class="ranger-notes-top">
+        <div><div class="label">INTERNE VERWALTUNG</div><h2 id="rangerNotesTitle">Ranger-Akte</h2><div class="muted" id="rangerNotesMeta"></div></div>
+        <button type="button" id="rangerNotesClose" class="ranger-notes-close">×</button>
+      </div>
+      <div class="ranger-note-create">
+        <label>KATEGORIE
+          <select id="rangerNoteCategory">
+            <option value="Vermerk">Vermerk</option>
+            <option value="Gespräch">Gespräch</option>
+            <option value="Lob">Lob</option>
+            <option value="Auffälligkeit">Auffälligkeit</option>
+            <option value="Verwarnung">Verwarnung</option>
+          </select>
+        </label>
+        <label class="ranger-note-text-label">NOTIZ
+          <textarea id="rangerNoteText" maxlength="3000" placeholder="Internen Vermerk eintragen …"></textarea>
+        </label>
+        <button type="button" id="rangerNoteSave" class="btn">NOTIZ SPEICHERN</button>
+      </div>
+      <div id="rangerNoteStatus" class="muted"></div>
+      <div id="rangerNotesList" class="ranger-notes-list"></div>
+    </div>
+  </div>
   <section class="page inner" id="einstellungen">
 <h1>Einstellungen</h1><div class="sub">Persönliche UCP-Einstellungen.</div>
 <div class="glass nav-settings-card">
@@ -1475,7 +1526,7 @@ button.danger,.danger-btn,.btn-danger,[data-action="delete-vote"],button[onclick
     wrap.innerHTML=rows.map(({allow:a,live:u})=>{
       const p=u?byUser[u.id]:a;
       const name=a.display_name||u?.display_name||u?.discord_name||'Noch nicht angemeldet';
-      return `<div class="glass rights-card" data-discord="${escapeHtml(a.discord_id)}" data-user="${escapeHtml(u?.id||'')}" data-rank="${escapeHtml(a.ranger_rang||'')}"><div class="rights-head" role="button" tabindex="0" aria-expanded="false"><div class="rights-head-main"><span class="rights-toggle">⌄</span><div><div class="rights-name">${escapeHtml(name)}</div><div class="rights-meta">Discord-ID: ${escapeHtml(a.discord_id)} · ${u?'Discord verbunden':'noch nicht angemeldet'}${a.twitch_name?' · Twitch: '+escapeHtml(a.twitch_name):''}${a.joined_at?' · Dabei seit: '+new Date(a.joined_at+'T00:00:00').toLocaleDateString('de-DE'):''}</div></div></div><span class="label ${u?'':'pending-badge'}">${a.enabled?'FREIGESCHALTET':'GESPERRT'}</span></div><div class="rights-body"><div class="rights-controls"><label>ZUGRIFF<select class="r-enabled"><option value="true" ${a.enabled?'selected':''}>Freigeschaltet</option><option value="false" ${!a.enabled?'selected':''}>Gesperrt</option></select></label><label>TWITCH<input class="r-twitch" value="${escapeHtml(a.twitch_name||'')}" placeholder="Twitch-Name"></label><label>DABEI SEIT<input class="r-joined" type="date" value="${escapeHtml(a.joined_at||'')}"></label><label>ROLLE<select class="r-role"><option value="mitglied" ${a.rolle==='mitglied'?'selected':''}>Mitglied</option><option value="administration" ${a.rolle==='administration'?'selected':''}>Administration</option></select></label><button class="rights-save" type="button">ÄNDERUNGEN SPEICHERN</button></div><div class="rights-rank-actions"><label>RANGER-RANG<select class="r-ranger-rank"><option value="">Kein Rang hinterlegt</option>${rangerRanks.map(r=>`<option value="${r}" ${a.ranger_rang===r?'selected':''}>${r}</option>`).join('')}</select></label><button class="rights-delete" type="button" ${u?.id===currentUser?.id?'disabled title="Eigenen Account kannst du nicht löschen"':''}>BENUTZER LÖSCHEN</button></div><div class="permission-grid">${permissionKeys.map(k=>`<label class="permission-item"><input type="checkbox" data-perm="${k}" ${p?.[k]?'checked':''}>${labels[k]}</label>`).join('')}</div><div class="rights-result"></div></div></div>`;
+      return `<div class="glass rights-card" data-discord="${escapeHtml(a.discord_id)}" data-user="${escapeHtml(u?.id||'')}" data-rank="${escapeHtml(a.ranger_rang||'')}"><div class="rights-head" role="button" tabindex="0" aria-expanded="false"><div class="rights-head-main"><span class="rights-toggle">⌄</span><div><div class="rights-name">${escapeHtml(name)}</div><div class="rights-meta">Discord-ID: ${escapeHtml(a.discord_id)} · ${u?'Discord verbunden':'noch nicht angemeldet'}${a.twitch_name?' · Twitch: '+escapeHtml(a.twitch_name):''}${a.joined_at?' · Dabei seit: '+new Date(a.joined_at+'T00:00:00').toLocaleDateString('de-DE'):''}</div></div></div><span class="label ${u?'':'pending-badge'}">${a.enabled?'FREIGESCHALTET':'GESPERRT'}</span></div><div class="rights-body"><div class="rights-controls"><label>ZUGRIFF<select class="r-enabled"><option value="true" ${a.enabled?'selected':''}>Freigeschaltet</option><option value="false" ${!a.enabled?'selected':''}>Gesperrt</option></select></label><label>TWITCH<input class="r-twitch" value="${escapeHtml(a.twitch_name||'')}" placeholder="Twitch-Name"></label><label>DABEI SEIT<input class="r-joined" type="date" value="${escapeHtml(a.joined_at||'')}"></label><label>ROLLE<select class="r-role"><option value="mitglied" ${a.rolle==='mitglied'?'selected':''}>Mitglied</option><option value="administration" ${a.rolle==='administration'?'selected':''}>Administration</option></select></label><button class="rights-save" type="button">ÄNDERUNGEN SPEICHERN</button></div><div class="rights-rank-actions"><label>RANGER-RANG<select class="r-ranger-rank"><option value="">Kein Rang hinterlegt</option>${rangerRanks.map(r=>`<option value="${r}" ${a.ranger_rang===r?'selected':''}>${r}</option>`).join('')}</select></label><button class="rights-notes-open" type="button">📋 RANGER-AKTE</button><button class="rights-delete" type="button" ${u?.id===currentUser?.id?'disabled title="Eigenen Account kannst du nicht löschen"':''}>BENUTZER LÖSCHEN</button></div><div class="permission-grid">${permissionKeys.map(k=>`<label class="permission-item"><input type="checkbox" data-perm="${k}" ${p?.[k]?'checked':''}>${labels[k]}</label>`).join('')}</div><div class="rights-result"></div></div></div>`;
     }).join('');
     wrap.querySelectorAll('.rights-head').forEach(head=>{
       const toggle=()=>{const card=head.closest('.rights-card');const open=card.classList.toggle('open');head.setAttribute('aria-expanded',String(open));};
@@ -1483,6 +1534,7 @@ button.danger,.danger-btn,.btn-danger,[data-action="delete-vote"],button[onclick
       head.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();toggle();}});
     });
     wrap.querySelectorAll('.rights-save').forEach(btn=>btn.addEventListener('click',()=>saveRights(btn.closest('.rights-card'))));
+    wrap.querySelectorAll('.rights-notes-open').forEach(btn=>btn.addEventListener('click',()=>openRangerNotes(btn.closest('.rights-card'))));
     wrap.querySelectorAll('.rights-delete').forEach(btn=>btn.addEventListener('click',()=>deleteRightsUser(btn.closest('.rights-card'))));
   }
   async function saveRights(card){
@@ -1510,6 +1562,65 @@ button.danger,.danger-btn,.btn-danger,[data-action="delete-vote"],button[onclick
       await fetch('/api/uprank-notify',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+session.access_token},body:JSON.stringify({discord_id:discordId,name,old_rank:oldRank||null,new_rank:newRank||null})});
     }catch(e){console.warn('Discord Rangbenachrichtigung fehlgeschlagen',e);}
   }
+
+  let activeRangerNoteDiscordId='';
+  let activeRangerNoteName='';
+
+  function closeRangerNotes(){
+    const modal=document.getElementById('rangerNotesModal');
+    modal?.classList.remove('open');modal?.setAttribute('aria-hidden','true');
+  }
+  async function openRangerNotes(card){
+    if(currentAccess?.rolle!=='administration')return;
+    activeRangerNoteDiscordId=card.dataset.discord||'';
+    activeRangerNoteName=card.querySelector('.rights-name')?.textContent||'Ranger';
+    const modal=document.getElementById('rangerNotesModal');
+    document.getElementById('rangerNotesTitle').textContent='Ranger-Akte · '+activeRangerNoteName;
+    document.getElementById('rangerNotesMeta').textContent='Discord-ID: '+activeRangerNoteDiscordId+' · Nur für die Administration sichtbar';
+    document.getElementById('rangerNoteText').value='';
+    document.getElementById('rangerNoteStatus').textContent='';
+    modal?.classList.add('open');modal?.setAttribute('aria-hidden','false');
+    await loadRangerNotes();
+  }
+  async function loadRangerNotes(){
+    const wrap=document.getElementById('rangerNotesList'),status=document.getElementById('rangerNoteStatus');if(!wrap||!activeRangerNoteDiscordId)return;
+    status.textContent='Akte wird geladen…';
+    const {data,error}=await client.from('ucp_ranger_notes').select('*').eq('ranger_discord_id',activeRangerNoteDiscordId).order('created_at',{ascending:false});
+    if(error){status.textContent='Akte konnte nicht geladen werden: '+error.message;wrap.innerHTML='';return;}
+    status.textContent=(data?.length||0)+' Vermerk'+((data?.length||0)===1?'':'e')+' in der Akte.';
+    wrap.innerHTML=(data||[]).map(n=>{
+      const cls=n.category==='Verwarnung'||n.category==='Auffälligkeit'?'warn':n.category==='Lob'?'good':'';
+      return `<div class="ranger-note-card ${cls}" data-note-id="${n.id}"><div class="ranger-note-head"><b>${escapeHtml(n.category||'Vermerk')}</b><small>${new Date(n.created_at).toLocaleString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})}</small></div><div class="ranger-note-body">${escapeHtml(n.note_text)}</div><div class="ranger-note-footer"><small>Erstellt von: ${escapeHtml(n.created_by_name||'Administration')}</small><button type="button" class="ranger-note-delete">LÖSCHEN</button></div></div>`;
+    }).join('')||'<div class="global-search-empty">Noch keine internen Vermerke vorhanden.</div>';
+    wrap.querySelectorAll('.ranger-note-delete').forEach(btn=>btn.addEventListener('click',async()=>{
+      const id=btn.closest('.ranger-note-card')?.dataset.noteId;if(!id)return;
+      if(!confirm('Diesen internen Vermerk wirklich löschen?'))return;
+      const {error}=await client.from('ucp_ranger_notes').delete().eq('id',id);
+      if(error){status.textContent='Löschen fehlgeschlagen: '+error.message;return;}
+      await loadRangerNotes();
+    }));
+  }
+  document.getElementById('rangerNotesClose')?.addEventListener('click',closeRangerNotes);
+  document.getElementById('rangerNotesModal')?.addEventListener('click',e=>{if(e.target.id==='rangerNotesModal')closeRangerNotes();});
+  document.getElementById('rangerNoteSave')?.addEventListener('click',async()=>{
+    if(currentAccess?.rolle!=='administration'||!activeRangerNoteDiscordId)return;
+    const text=document.getElementById('rangerNoteText')?.value.trim(),category=document.getElementById('rangerNoteCategory')?.value||'Vermerk';
+    const status=document.getElementById('rangerNoteStatus'),btn=document.getElementById('rangerNoteSave');
+    if(!text){status.textContent='Bitte zuerst eine Notiz eintragen.';return;}
+    btn.disabled=true;status.textContent='Notiz wird gespeichert…';
+    const {error}=await client.from('ucp_ranger_notes').insert({
+      ranger_discord_id:activeRangerNoteDiscordId,
+      category,
+      note_text:text,
+      created_by:currentUser.id,
+      created_by_name:currentAccess?.display_name||currentAccess?.discord_name||'Administration'
+    });
+    btn.disabled=false;
+    if(error){status.textContent='Speichern fehlgeschlagen: '+error.message;return;}
+    document.getElementById('rangerNoteText').value='';
+    await loadRangerNotes();
+  });
+
   async function deleteRightsUser(card){
     if(currentAccess?.rolle!=='administration')return;
     const id=card.dataset.user, discordId=card.dataset.discord, name=card.querySelector('.rights-name')?.textContent||'diesen Benutzer';
