@@ -733,6 +733,16 @@ input::placeholder, textarea::placeholder { color: rgba(255,255,255,.58) !import
 #voteModal .rights-save{width:auto!important;min-width:230px;height:48px!important;padding:0 22px!important;font-size:15px!important;}
 #voteModal .rights-create-result{margin:0;font-size:14px;}
 @media(max-width:700px){#voteModal{padding:16px}#voteModal .rights-modal-card{width:100%;padding:24px 18px}#voteModal .rights-create-grid{grid-template-columns:1fr}#voteModal .rights-create-grid .span2{grid-column:auto}#voteModal .rights-create-actions{align-items:stretch;flex-direction:column}#voteModal .rights-save{width:100%!important}}
+
+/* === UI polish: Sidebar + destructive buttons === */
+.sidebar{padding:20px 14px 18px!important;}
+.sidebar nav,.sidebar .nav,.sidebar-menu{display:flex!important;flex-direction:column!important;gap:7px!important;}
+.sidebar [data-page]{min-height:46px!important;padding:11px 14px!important;margin:0!important;border-radius:10px!important;display:flex!important;align-items:center!important;gap:11px!important;line-height:1.15!important;letter-spacing:.035em!important;}
+.sidebar [data-page]+[data-page]{margin-top:0!important;}
+.sidebar [data-page]:hover{transform:translateX(3px)!important;}
+.sidebar [data-page].active{border-radius:10px!important;}
+.sidebar hr,.sidebar .nav-divider{margin:9px 4px!important;opacity:.45!important;}
+button.danger,.danger-btn,.btn-danger,[data-action="delete-vote"],button[onclick*="deleteAbstimmung"],button[onclick*="deleteVote"]{border-radius:12px!important;padding:11px 17px!important;}
 </style>
 <div class="rights-modal" id="rightsAddModal"><div class="rights-modal-box"><div class="rights-modal-head"><h3>Benutzer hinzufügen</h3><button type="button" class="rights-close" id="rightsAddClose">×</button></div><div class="rights-form-grid"><label>DISCORD-ID<input id="newDiscordId" inputmode="numeric" placeholder="z. B. 123456789012345678"></label><label>ANZEIGENAME<input id="newDisplayName" placeholder="Name im UCP"></label><label>ROLLE<select id="newRole"><option value="mitglied">Mitglied</option><option value="administration">Administration</option></select></label><label>ZUGRIFF<select id="newEnabled"><option value="true">Freigeschaltet</option><option value="false">Gesperrt</option></select></label></div><div class="permission-grid" id="newPermissionGrid"></div><button type="button" class="rights-create" id="createRightsUser">BENUTZER ANLEGEN</button><div class="rights-create-result" id="createRightsResult"></div></div></div><div class="appointment-modal" id="appointmentModal"><div class="appointment-modal-box"><div class="rights-modal-head"><h3 id="appointmentModalTitle">Termin anlegen</h3><button class="rights-close" id="appointmentClose" type="button">×</button></div><div class="appointment-form"><label>TITEL<input class="r-input" id="appointmentTitle" placeholder="z. B. Ranger-Besprechung"></label><label>ORT<input class="r-input" id="appointmentPlace" placeholder="z. B. Ranger HQ"></label><label>DATUM<input class="r-input" id="appointmentDate" type="date"></label><label>UHRZEIT<input class="r-input" id="appointmentTime" type="time"></label><label class="span2">BESCHREIBUNG<textarea class="r-input" id="appointmentDescription" rows="4" placeholder="Weitere Informationen…"></textarea></label></div><button class="appointment-save" id="appointmentSave" type="button">TERMIN SPEICHERN</button><div class="appointment-result" id="appointmentResult"></div></div></div>
 <div id="authGate">
@@ -968,7 +978,7 @@ input::placeholder, textarea::placeholder { color: rgba(255,255,255,.58) !import
   document.getElementById('voteSave')?.addEventListener('click',async()=>{
     const titel=voteVal('voteTitle'),beschreibung=voteVal('voteDescription')||null,date=voteVal('voteEndDate'),time=voteVal('voteEndTime');
     if(!titel){voteResult.textContent='Frage / Titel eingeben.';voteResult.className='rights-create-result access-denied';return;}
-    const endet_am=date?(date+'T'+(time||'23:59')+':00'):null;
+    const endet_am=date?new Date(date+'T'+(time||'23:59')+':00').toISOString():null;
     const btn=document.getElementById('voteSave');btn.disabled=true;voteResult.textContent='Wird erstellt…';
     const {error}=await client.from('ucp_rat_abstimmungen').insert({titel,beschreibung,endet_am,erstellt_von:currentUser.id});btn.disabled=false;
     if(error){voteResult.textContent='Fehler: '+error.message;voteResult.className='rights-create-result access-denied';return;}
