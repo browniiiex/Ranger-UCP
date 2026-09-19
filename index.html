@@ -975,6 +975,11 @@ input::placeholder, textarea::placeholder { font-size: 16px !important; opacity:
 </div>
 <script>
 function openPage(id){
+ if(typeof window.__ucpCanOpenPage==='function' && !window.__ucpCanOpenPage(id)){
+   const fallback=typeof window.__ucpFirstAllowedPage==='function'?window.__ucpFirstAllowedPage():'dashboard';
+   if(id!==fallback) return openPage(fallback);
+   return;
+ }
  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
  const page=document.getElementById(id); if(page) page.classList.add('active');
  document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===id));
@@ -1271,6 +1276,7 @@ input::placeholder, textarea::placeholder { color: rgba(255,255,255,.58) !import
 .sidebar{padding:20px 14px 18px!important;}
 .sidebar nav,.sidebar .nav,.sidebar-menu{display:flex!important;flex-direction:column!important;gap:7px!important;}
 .sidebar [data-page]{min-height:46px!important;padding:11px 14px!important;margin:0!important;border-radius:10px!important;display:flex!important;align-items:center!important;gap:11px!important;line-height:1.15!important;letter-spacing:.035em!important;}
+.sidebar [data-page].permission-hidden{display:none!important;}
 .sidebar [data-page]+[data-page]{margin-top:0!important;}
 .sidebar [data-page]:hover{transform:translateX(3px)!important;}
 .sidebar [data-page].active{border-radius:10px!important;}
@@ -1345,7 +1351,7 @@ button.danger,.danger-btn,.btn-danger,[data-action="delete-vote"],button[onclick
   const msg=document.getElementById('authMsg');
   const login=document.getElementById('discordLogin');
   const permissionKeys=['dashboard','profil','stream_aktivitaet','dienstplan','strafrechner','familien','ranger_rat','ranger_eid','verwaltung','rechte_rollen','einstellungen'];
-  const pagePermission={dashboard:'dashboard',profil:'profil',aktivitaet:'stream_aktivitaet',termine:'dienstplan',strafrechner:'strafrechner',familien:'familien',abstimmungen:'ranger_rat',eid:'ranger_eid',verwaltung:'verwaltung',rechte:'rechte_rollen',einstellungen:'einstellungen'};
+  const pagePermission={dashboard:'dashboard',profil:'profil',aktivitaet:'stream_aktivitaet',termine:'dienstplan',strafrechner:'strafrechner',rechteverlesung:'strafrechner',familien:'familien',abstimmungen:'ranger_rat',eid:'ranger_eid',verwaltung:'verwaltung',rechte:'rechte_rollen',einstellungen:'einstellungen'};
   const labels={dashboard:'Command Center',profil:'Mein Profil',stream_aktivitaet:'Stream-Aktivität',dienstplan:'Dienstplan',strafrechner:'Strafrechner',familien:'Familien',ranger_rat:'Ranger-Rat',ranger_eid:'Ranger-Eid',verwaltung:'Verwaltung',rechte_rollen:'Rechte & Rollen',einstellungen:'Einstellungen'};
   let client=null,currentUser=null,currentAccess=null,currentPermissions=null,currentRangerRank='';
   let presenceTimer=null,currentAvatarUrl='';
@@ -1569,18 +1575,55 @@ button.danger,.danger-btn,.btn-danger,[data-action="delete-vote"],button[onclick
   const addModal=document.getElementById('rightsAddModal'), addBtn=document.getElementById('addRightsUser'), addClose=document.getElementById('rightsAddClose'), createBtn=document.getElementById('createRightsUser'), createResult=document.getElementById('createRightsResult');
   const newPermissionGrid=document.getElementById('newPermissionGrid');
   if(newPermissionGrid) newPermissionGrid.innerHTML=permissionKeys.map(k=>`<label class="permission-item"><input type="checkbox" data-new-perm="${k}" ${['dashboard','profil','stream_aktivitaet','dienstplan','strafrechner','ranger_eid','einstellungen'].includes(k)?'checked':''}>${labels[k]}</label>`).join('');
-  addBtn?.addEventListener('click',()=>{createResult.textContent='';addModal.classList.add('open')}); addClose?.addEventListener('click',()=>addModal.classList.remove('open')); addModal?.addEventListener('click',e=>{if(e.target===addModal)addModal.classList.remove('open')});
+  addBtn?.addEventListener('click',()=>{
+    if(currentAccess?.rolle!=='administration'||!currentPermissions?.rechte_rollen){ showResult('Du hast keine Berechtigung, Benutzer anzulegen.',true); return; }
+    createResult.textContent='';addModal.classList.add('open');
+  }); addClose?.addEventListener('click',()=>addModal.classList.remove('open')); addModal?.addEventListener('click',e=>{if(e.target===addModal)addModal.classList.remove('open')});
 
   function showGate(text,allowLogin=true){ gate.classList.remove('hidden'); msg.textContent=text||''; login.style.display=allowLogin?'block':'none'; }
   function hideGate(){ gate.classList.add('hidden'); }
   function applyPermissions(){
     document.querySelectorAll('.nav button[data-page]').forEach(btn=>{
       const key=pagePermission[btn.dataset.page];
-      btn.style.display=(key && currentPermissions && currentPermissions[key])?'':'none';
+      const allowed=!!(key && currentPermissions && currentPermissions[key]);
+      btn.classList.toggle('permission-hidden',!allowed);
+      btn.setAttribute('aria-hidden',String(!allowed));
+      btn.disabled=!allowed;
     });
     const active=document.querySelector('.page.active');
-    if(active){ const key=pagePermission[active.id]; if(key && !currentPermissions?.[key]) openPage('dashboard'); }
+    if(active){ const key=pagePermission[active.id]; if(key && !currentPermissions?.[key]) openPage(window.__ucpFirstAllowedPage()); }
+    const mayManageRights=!!(currentPermissions?.rechte_rollen && currentAccess?.rolle==='administration');
+    if(addBtn) addBtn.classList.toggle('permission-hidden',!mayManageRights);
+    if(!mayManageRights) addModal?.classList.remove('open');
   }
+  window.__ucpCanOpenPage=id=>{
+    const key=pagePermission[id];
+    return !!(key && currentPermissions && currentPermissions[key]);
+  };
+  window.__ucpFirstAllowedPage=()=>{
+    const preferred=['dashboard','profil','aktivitaet','termine','strafrechner','rechteverlesung','familien','abstimmungen','eid','verwaltung','rechte','einstellungen'];
+    return preferred.find(id=>window.__ucpCanOpenPage(id))||'dashboard';
+  };
+  let permissionRefreshBusy=false;
+  async function refreshCurrentAccess(){
+    if(permissionRefreshBusy||!client||!currentUser)return;
+    permissionRefreshBusy=true;
+    try{
+      const [{data:userRow,error:userErr},{data:perms,error:permErr}]=await Promise.all([
+        client.from('ucp_users').select('*').eq('id',currentUser.id).maybeSingle(),
+        client.from('ucp_permissions').select('*').eq('user_id',currentUser.id).maybeSingle()
+      ]);
+      if(userErr||permErr)return;
+      if(!userRow?.enabled){
+        await client.auth.signOut(); currentAccess=null; currentPermissions=null; currentUser=null;
+        showGate('Dein Zugriff wurde deaktiviert.',true); return;
+      }
+      currentAccess=userRow; currentPermissions=perms||{}; applyPermissions();
+    }finally{ permissionRefreshBusy=false; }
+  }
+  window.addEventListener('focus',refreshCurrentAccess);
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshCurrentAccess();});
+  setInterval(refreshCurrentAccess,15000);
   async function checkAccess(session){
     if(!session){ showGate('',true); return false; }
     currentUser=session.user;
@@ -1616,8 +1659,8 @@ button.danger,.danger-btn,.btn-danger,[data-action="delete-vote"],button[onclick
   function escapeHtml(v){return String(v??'').replace(/[&<>'\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','\"':'&quot;'}[c]));}
   async function loadRightsUsers(){
     const wrap=document.getElementById('rightsUsers'), notice=document.getElementById('rightsNotice'); if(!wrap||!notice)return;
-    if(currentAccess?.rolle!=='administration'){ notice.innerHTML='<span class="access-denied">Nur die Administration kann Rechte verändern.</span>'; wrap.innerHTML=''; if(addBtn)addBtn.style.display='none'; return; }
-    if(addBtn)addBtn.style.display=''; notice.textContent='Benutzer werden geladen…';
+    if(currentAccess?.rolle!=='administration'||!currentPermissions?.rechte_rollen){ notice.innerHTML='<span class="access-denied">Keine Berechtigung für Rechte & Rollen.</span>'; wrap.innerHTML=''; if(addBtn)addBtn.classList.add('permission-hidden'); return; }
+    if(addBtn)addBtn.classList.remove('permission-hidden'); notice.textContent='Benutzer werden geladen…';
     const [{data:users,error},{data:perms,error:pe},{data:allow,error:ae}]=await Promise.all([
       client.from('ucp_users').select('*').order('created_at',{ascending:true}),
       client.from('ucp_permissions').select('*'),
@@ -1643,6 +1686,7 @@ button.danger,.danger-btn,.btn-danger,[data-action="delete-vote"],button[onclick
     wrap.querySelectorAll('.rights-delete').forEach(btn=>btn.addEventListener('click',()=>deleteRightsUser(btn.closest('.rights-card'))));
   }
   async function saveRights(card){
+    if(currentAccess?.rolle!=='administration'||!currentPermissions?.rechte_rollen)return;
     const id=card.dataset.user, discordId=card.dataset.discord, btn=card.querySelector('.rights-save'), result=card.querySelector('.rights-result');
     btn.disabled=true; result.textContent='Speichert…';
     const enabled=card.querySelector('.r-enabled').value==='true', rolle=card.querySelector('.r-role').value;
@@ -1676,7 +1720,7 @@ button.danger,.danger-btn,.btn-danger,[data-action="delete-vote"],button[onclick
     modal?.classList.remove('open');modal?.setAttribute('aria-hidden','true');
   }
   async function openRangerNotes(card){
-    if(currentAccess?.rolle!=='administration')return;
+    if(currentAccess?.rolle!=='administration'||!currentPermissions?.rechte_rollen)return;
     activeRangerNoteDiscordId=card.dataset.discord||'';
     activeRangerNoteName=card.querySelector('.rights-name')?.textContent||'Ranger';
     const modal=document.getElementById('rangerNotesModal');
@@ -1708,7 +1752,7 @@ button.danger,.danger-btn,.btn-danger,[data-action="delete-vote"],button[onclick
   document.getElementById('rangerNotesClose')?.addEventListener('click',closeRangerNotes);
   document.getElementById('rangerNotesModal')?.addEventListener('click',e=>{if(e.target.id==='rangerNotesModal')closeRangerNotes();});
   document.getElementById('rangerNoteSave')?.addEventListener('click',async()=>{
-    if(currentAccess?.rolle!=='administration'||!activeRangerNoteDiscordId)return;
+    if(currentAccess?.rolle!=='administration'||!currentPermissions?.rechte_rollen||!activeRangerNoteDiscordId)return;
     const text=document.getElementById('rangerNoteText')?.value.trim(),category=document.getElementById('rangerNoteCategory')?.value||'Vermerk';
     const status=document.getElementById('rangerNoteStatus'),btn=document.getElementById('rangerNoteSave');
     if(!text){status.textContent='Bitte zuerst eine Notiz eintragen.';return;}
@@ -1727,7 +1771,7 @@ button.danger,.danger-btn,.btn-danger,[data-action="delete-vote"],button[onclick
   });
 
   async function deleteRightsUser(card){
-    if(currentAccess?.rolle!=='administration')return;
+    if(currentAccess?.rolle!=='administration'||!currentPermissions?.rechte_rollen)return;
     const id=card.dataset.user, discordId=card.dataset.discord, name=card.querySelector('.rights-name')?.textContent||'diesen Benutzer';
     if(id===currentUser?.id){alert('Deinen eigenen Account kannst du nicht löschen.');return;}
     if(!confirm(name+' wirklich aus dem Ranger UCP entfernen?\n\nDer Zugriff wird sofort entzogen.'))return;
@@ -1738,6 +1782,12 @@ button.danger,.danger-btn,.btn-danger,[data-action="delete-vote"],button[onclick
     await loadRightsUsers();
   }
   createBtn?.addEventListener('click',async()=>{
+    if(currentAccess?.rolle!=='administration'||!currentPermissions?.rechte_rollen){
+      createResult.textContent='Keine Berechtigung zum Anlegen von Benutzern.';
+      createResult.className='rights-create-result access-denied';
+      addModal?.classList.remove('open');
+      return;
+    }
     const discordId=document.getElementById('newDiscordId').value.trim(), displayName=document.getElementById('newDisplayName').value.trim();
     const rolle=document.getElementById('newRole').value, enabled=document.getElementById('newEnabled').value==='true';
     const twitchName=document.getElementById('newTwitchName').value.trim(), joinedAt=document.getElementById('newJoinedAt').value||null, rangerRank=document.getElementById('newRangerRank')?.value||null;
