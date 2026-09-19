@@ -325,6 +325,9 @@ textarea.r-input{resize:vertical;min-height:76px}
 .rights-card .rights-controls{margin-top:18px}
 .rights-card .rights-result{margin-top:10px}
 
+
+/* Live Command Center */
+.dash-link{cursor:pointer;color:var(--gold);font-size:13px;white-space:nowrap}.dash-link:hover{text-decoration:underline}.dash-empty{padding:18px 4px;color:#b7b7b7}.dash-mini-row{display:flex;align-items:center;gap:12px;padding:12px 2px;border-bottom:1px solid rgba(255,255,255,.08)}.dash-mini-row:last-child{border-bottom:0}.dash-mini-date{width:46px;min-width:46px;text-align:center;color:var(--gold);font-weight:800;line-height:1.05}.dash-mini-date strong{display:block;font-size:22px}.dash-mini-main{min-width:0;flex:1}.dash-mini-main b{display:block;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.dash-mini-main small{display:block;color:#aaa;margin-top:3px}.dash-pill{border:1px solid rgba(210,169,69,.5);border-radius:999px;padding:5px 9px;color:var(--gold);font-size:11px;font-weight:800;white-space:nowrap}
 </style>
 
 <style id="global-readability-upgrade">
@@ -386,20 +389,21 @@ input::placeholder, textarea::placeholder { font-size: 16px !important; opacity:
    <div class="dashboard-top">
     <div class="hero"><div class="hero-copy"><h1>RANGER<br>COMMAND CENTER</h1><p>Zentrale Einsatzverwaltung der Retro Ranger. Akten, Termine, Entscheidungen und Dienstinformationen an einem Ort.</p></div></div>
     <div class="sidecards">
-     <div class="glass profile"><div class="label">RANGER IDENTIFICATION</div><div class="profile-row"><div class="avatar">B</div><div><h3>Brownie</h3><div class="muted">Ranger-Leitung</div></div></div></div>
+     <div class="glass profile"><div class="label">RANGER IDENTIFICATION</div><div class="profile-row"><div class="avatar" id="dashAvatar">R</div><div><h3 id="dashName">Ranger</h3><div class="muted" id="dashRole">Mitglied</div></div></div></div>
      <div class="glass statusbox"><div class="label">DIENSTSTATUS</div><strong>IM DIENST</strong><div class="muted">Command Network verbunden</div><i class="dot"></i></div>
     </div>
    </div>
    <div class="stats">
-    <div class="glass stat"><div class="stat-icon">♟</div><div><div class="label">AKTIVE RANGER</div><div class="num">12</div><div class="positive">↑ +2 seit letzter Woche</div></div></div>
-    <div class="glass stat"><div class="stat-icon">▱</div><div><div class="label">OFFENE AKTEN</div><div class="num">4</div><div class="positive">↓ -1 seit letzter Woche</div></div></div>
-    <div class="glass stat"><div class="stat-icon">▣</div><div><div class="label">NÄCHSTE TERMINE</div><div class="num">2</div><div class="muted">In den nächsten 7 Tagen</div></div></div>
-    <div class="glass stat"><div class="stat-icon">●</div><div><div class="label">RANGER-RAT</div><div class="num">1</div><div class="muted">Abstimmung aktiv</div></div></div>
+    <div class="glass stat"><div class="stat-icon">♟</div><div><div class="label">AKTIVE RANGER</div><div class="num" id="dashRangers">–</div><div class="muted" id="dashRangersSub">Wird geladen…</div></div></div>
+    <div class="glass stat"><div class="stat-icon">◉</div><div><div class="label">STREAM-AKTIVITÄT</div><div class="num" id="dashStreamDays">–</div><div class="muted" id="dashStreamSub">Letzte 7 Tage</div></div></div>
+    <div class="glass stat"><div class="stat-icon">▣</div><div><div class="label">NÄCHSTE TERMINE</div><div class="num" id="dashAppointments">–</div><div class="muted">In den nächsten 7 Tagen</div></div></div>
+    <div class="glass stat"><div class="stat-icon">●</div><div><div class="label">RANGER-RAT</div><div class="num" id="dashVotes">–</div><div class="muted" id="dashVotesSub">Offene Abstimmungen</div></div></div>
    </div>
    <div class="lower">
-    <div class="glass panel"><div class="panel-title"><span>▣　NÄCHSTE EINSÄTZE & TERMINE</span><span>Alle anzeigen →</span></div><div class="row"><div class="date">20<br>SEP</div><div style="flex:1"><b>Ranger-Besprechung</b><small>20.09.2026 · 20:00 Uhr · Ranger HQ</small></div><button class="btn">TERMIN</button></div><div class="row"><div class="date">24<br>SEP</div><div style="flex:1"><b>Interne Schulung</b><small>24.09.2026 · 19:30 Uhr · Trainingsgelände</small></div><button class="btn">TERMIN</button></div></div>
-    <div class="glass panel"><div class="panel-title"><span>⚑　AKTUELLE MITTEILUNGEN</span><span>Alle anzeigen →</span></div><div class="row"><div><b>Neue Einsatzrichtlinien</b><small>Interne Ranger-Mitteilung</small></div><span>›</span></div><div class="row"><div><b>Ranger-Rat geöffnet</b><small>Aufnahme-Abstimmung aktiv</small></div><span>›</span></div></div>
-    <div class="glass panel"><div class="panel-title"><span>ϟ　SCHNELLZUGRIFF</span></div><div class="quick"><button onclick="openPage('termine')"><span>▣</span>TERMIN ERSTELLEN</button><button onclick="openPage('strafrechner')"><span>§</span>STRAFRECHNER</button><button onclick="openPage('abstimmungen')"><span>◎</span>ABSTIMMUNG STARTEN</button></div></div>
+    <div class="glass panel"><div class="panel-title"><span>▣　NÄCHSTE EINSÄTZE & TERMINE</span><span class="dash-link" onclick="openPage('termine')">Alle anzeigen →</span></div><div id="dashAppointmentList"><div class="muted">Wird geladen…</div></div></div>
+    <div class="glass panel"><div class="panel-title"><span>●　AKTUELL IM RANGER-RAT</span><span class="dash-link" onclick="openPage('abstimmungen')">Alle anzeigen →</span></div><div id="dashVoteList"><div class="muted">Wird geladen…</div></div></div>
+    <div class="glass panel"><div class="panel-title"><span>◉　LETZTE STREAM-AKTIVITÄT</span><span class="dash-link" onclick="openPage('aktivitaet')">Alle anzeigen →</span></div><div id="dashStreamList"><div class="muted">Wird geladen…</div></div></div>
+    <div class="glass panel"><div class="panel-title"><span>ϟ　SCHNELLZUGRIFF</span></div><div class="quick"><button onclick="openPage('termine')"><span>▣</span>DIENSTPLAN</button><button onclick="openPage('strafrechner')"><span>§</span>STRAFRECHNER</button><button onclick="openPage('abstimmungen')"><span>◎</span>RANGER-RAT</button></div></div>
    </div>
   </section>
   <section class="page inner" id="profil"><h1>Mein Profil</h1><div class="sub">Ranger-Profil und persönliche Übersicht.</div><div class="glass placeholder">Brownie · Ranger-Leitung</div></section>
@@ -887,6 +891,7 @@ button.danger,.danger-btn,.btn-danger,[data-action="delete-vote"],button[onclick
     if(currentPermissions.familien) await loadFamilies();
     if(currentPermissions.ranger_rat) await loadVotes();
     if(currentPermissions.stream_aktivitaet) await loadStreamActivity();
+    if(currentPermissions.dashboard) await loadDashboard();
     return true;
   }
   function escapeHtml(v){return String(v??'').replace(/[&<>'\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','\"':'&quot;'}[c]));}
@@ -1128,6 +1133,48 @@ button.danger,.danger-btn,.btn-danger,[data-action="delete-vote"],button[onclick
     if(error){voteResult.textContent='Fehler: '+error.message;voteResult.className='rights-create-result access-denied';return;}
     voteModal.classList.remove('open');await loadVotes();
   });
+
+  // Command Center – Live-Daten aus Supabase
+  async function loadDashboard(){
+    if(!client||!currentPermissions?.dashboard)return;
+    const name=currentAccess?.display_name||currentAccess?.discord_name||'Ranger';
+    const nameEl=document.getElementById('dashName'), roleEl=document.getElementById('dashRole'), avatar=document.getElementById('dashAvatar');
+    if(nameEl)nameEl.textContent=name;
+    if(roleEl)roleEl.textContent=currentAccess?.rolle==='administration'?'Administration':'Mitglied';
+    if(avatar)avatar.textContent=(name.trim()[0]||'R').toUpperCase();
+    const today=new Date(); today.setHours(0,0,0,0);
+    const todayISO=today.toISOString().slice(0,10);
+    const in7=new Date(today); in7.setDate(in7.getDate()+7); const in7ISO=in7.toISOString().slice(0,10);
+    const sevenAgo=new Date(today); sevenAgo.setDate(sevenAgo.getDate()-6); const sevenAgoISO=sevenAgo.toISOString().slice(0,10);
+    const nowISO=new Date().toISOString();
+    const [rangersQ, appointmentsQ, votesQ, streamsQ, streamUsersQ]=await Promise.all([
+      client.from('ucp_allowlist').select('discord_id,display_name,enabled',{count:'exact'}).eq('enabled',true),
+      client.from('ucp_termine').select('*').gte('datum',todayISO).order('datum',{ascending:true}).order('uhrzeit',{ascending:true}),
+      client.from('ucp_rat_abstimmungen').select('id,titel,beschreibung,status,endet_am').order('erstellt_am',{ascending:false}),
+      client.from('stream_sessions').select('discord_id,stream_date,duration_minutes').gte('stream_date',sevenAgoISO).order('stream_date',{ascending:false}),
+      client.from('ucp_allowlist').select('discord_id,display_name,twitch_name').eq('enabled',true)
+    ]);
+    const rangers=rangersQ.data||[], appointments=appointmentsQ.data||[], allVotes=votesQ.data||[], streams=streamsQ.data||[], streamUsers=streamUsersQ.data||[];
+    const upcoming7=appointments.filter(a=>a.datum<=in7ISO);
+    const openVotes=allVotes.filter(v=>v.status!=='beendet'&&(!v.endet_am||new Date(v.endet_am)>new Date()));
+    const streamDays=new Set(streams.map(x=>x.discord_id+'|'+x.stream_date)).size;
+    const setText=(id,val)=>{const e=document.getElementById(id);if(e)e.textContent=val};
+    setText('dashRangers',rangers.length); setText('dashRangersSub',rangers.length===1?'1 Ranger freigeschaltet':rangers.length+' Ranger freigeschaltet');
+    setText('dashAppointments',upcoming7.length); setText('dashVotes',openVotes.length); setText('dashVotesSub',openVotes.length===1?'1 Abstimmung aktiv':'Offene Abstimmungen');
+    setText('dashStreamDays',streamDays); setText('dashStreamSub',streamDays===1?'1 Streamtag in 7 Tagen':'Streamtage in 7 Tagen');
+
+    const apWrap=document.getElementById('dashAppointmentList');
+    if(apWrap) apWrap.innerHTML=appointments.slice(0,3).map(a=>{const d=new Date(a.datum+'T12:00:00');const mon=['JAN','FEB','MÄR','APR','MAI','JUN','JUL','AUG','SEP','OKT','NOV','DEZ'][d.getMonth()];return `<div class="dash-mini-row"><div class="dash-mini-date"><strong>${String(d.getDate()).padStart(2,'0')}</strong>${mon}</div><div class="dash-mini-main"><b>${escapeHtml(a.titel)}</b><small>${escapeHtml((a.uhrzeit||'').slice(0,5))} Uhr${a.ort?' · '+escapeHtml(a.ort):''}</small></div></div>`}).join('')||'<div class="dash-empty">Keine kommenden Termine.</div>';
+
+    const voteWrap=document.getElementById('dashVoteList');
+    if(voteWrap) voteWrap.innerHTML=openVotes.slice(0,3).map(v=>`<div class="dash-mini-row"><div class="dash-mini-main"><b>${escapeHtml(v.titel)}</b><small>${v.endet_am?'Endet '+new Date(v.endet_am).toLocaleString('de-DE',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'Kein Enddatum'}</small></div><span class="dash-pill">OFFEN</span></div>`).join('')||'<div class="dash-empty">Keine offene Abstimmung.</div>';
+
+    const userMap=Object.fromEntries(streamUsers.map(u=>[u.discord_id,u]));
+    const perDay={}; streams.forEach(x=>{const k=x.discord_id+'|'+x.stream_date;perDay[k]=(perDay[k]||0)+Number(x.duration_minutes||0)});
+    const recent=Object.entries(perDay).map(([k,min])=>{const [discord,date]=k.split('|');return {discord,date,min,user:userMap[discord]}}).sort((a,b)=>b.date.localeCompare(a.date)).slice(0,3);
+    const streamWrap=document.getElementById('dashStreamList');
+    if(streamWrap) streamWrap.innerHTML=recent.map(x=>`<div class="dash-mini-row"><div class="dash-mini-main"><b>${escapeHtml(x.user?.display_name||x.user?.twitch_name||'Ranger')}</b><small>${new Date(x.date+'T12:00:00').toLocaleDateString('de-DE')} · ${(x.min/60).toLocaleString('de-DE',{minimumFractionDigits:1,maximumFractionDigits:1})} h</small></div><span class="dash-pill">TWITCH</span></div>`).join('')||'<div class="dash-empty">Keine Stream-Aktivität in den letzten 7 Tagen.</div>';
+  }
 
   // Dienstplan
   let editingAppointmentId=null;
