@@ -302,6 +302,24 @@ textarea.r-input{resize:vertical;min-height:76px}
 .appointment-titlebar{display:flex;align-items:flex-start;justify-content:space-between;gap:18px}.appointment-notice{padding:14px 18px;margin:18px 0;color:#91e3a4}.appointment-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.appointment-card{padding:20px;position:relative}.appointment-card-top{display:flex;justify-content:space-between;gap:15px;align-items:flex-start}.appointment-date{min-width:66px;text-align:center;border:1px solid rgba(239,191,97,.35);border-radius:8px;padding:9px 7px;background:rgba(239,191,97,.07);color:#efbf61;font-weight:900;line-height:1.1}.appointment-date strong{display:block;font-size:25px}.appointment-info{flex:1}.appointment-info h3{font:500 21px Georgia;margin:0 0 7px}.appointment-meta{font-size:11px;color:#d8c9a7;line-height:1.7}.appointment-desc{font-size:12px;color:var(--muted);margin-top:12px;white-space:pre-wrap}.appointment-actions{display:flex;gap:8px;margin-top:16px}.appointment-actions button{border:1px solid rgba(239,191,97,.35);background:rgba(3,8,5,.7);color:#efbf61;border-radius:6px;padding:8px 11px;font-weight:800;cursor:pointer}.appointment-actions .danger{color:#ffaaaa;border-color:rgba(255,120,120,.28)}.appointment-empty{grid-column:1/-1;padding:34px;text-align:center;color:var(--muted)}
 .appointment-modal{position:fixed;inset:0;z-index:100001;display:none;align-items:center;justify-content:center;padding:24px;background:rgba(0,0,0,.72);backdrop-filter:blur(8px)}.appointment-modal.open{display:flex}.appointment-modal-box{width:min(700px,100%);padding:24px;border:1px solid rgba(239,191,97,.42);border-radius:12px;background:rgba(5,10,7,.98);box-shadow:0 30px 90px #000}.appointment-form{display:grid;grid-template-columns:1fr 1fr;gap:12px}.appointment-form label{font-size:10px;letter-spacing:.8px;color:#d8c9a7}.appointment-form .span2{grid-column:1/-1}.appointment-form input,.appointment-form textarea{margin-top:6px}.appointment-save{width:100%;margin-top:16px;height:44px;border:1px solid rgba(239,191,97,.55);border-radius:7px;background:#efbf61;color:#10120f;font-weight:900;cursor:pointer}.appointment-result{min-height:18px;margin-top:9px;font-size:12px}@media(max-width:900px){.appointment-grid,.appointment-form{grid-template-columns:1fr}.appointment-form .span2{grid-column:auto}.appointment-titlebar{flex-direction:column}}
 </style>
+
+<style id="global-readability-upgrade">
+/* Global readability upgrade */
+html { font-size: 17px; }
+body { font-size: 1rem; line-height: 1.5; }
+.sidebar, .topbar, .page, .card, .panel, .profile-card { font-size: 1rem; }
+.nav-item, .nav button, [data-page], button { font-size: 1rem !important; }
+h1 { font-size: clamp(2rem, 2.4vw, 2.8rem) !important; line-height: 1.1; }
+h2 { font-size: clamp(1.45rem, 1.8vw, 2rem) !important; }
+h3 { font-size: 1.25rem !important; }
+p, label, li, td, th, .muted, .small, .pill, .stat-label, .stat-value { font-size: max(1rem, 16px) !important; }
+.small, small { font-size: 0.94rem !important; }
+input, select, textarea { font-size: 17px !important; line-height: 1.45 !important; min-height: 46px; }
+textarea { min-height: 110px; }
+button { min-height: 42px; line-height: 1.25; }
+input::placeholder, textarea::placeholder { font-size: 16px !important; opacity: .82; }
+@media (max-width: 900px) { html { font-size: 16px; } }
+</style>
 </head>
 <body>
 <div class="shell">
