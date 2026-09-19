@@ -273,6 +273,10 @@ body::before{
 .r-input{width:100%;box-sizing:border-box;background:rgba(2,7,5,.72);border:1px solid rgba(239,191,97,.28);color:#fff;border-radius:7px;padding:11px 12px;outline:none;font:inherit}
 .r-input:focus{border-color:rgba(239,191,97,.78);box-shadow:0 0 0 3px rgba(239,191,97,.08)}
 .search{max-width:310px}
+.tatfinder{margin:0 0 16px;padding:15px;border:1px solid rgba(239,191,97,.26);border-radius:10px;background:rgba(2,7,5,.5)}
+.tatfinder-title{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:9px}.tatfinder-title b{color:#f4f0e6;font-size:16px}.tatfinder-title small{color:rgba(255,255,255,.5)}
+.tatfinder-input-row{display:grid;grid-template-columns:1fr auto;gap:9px}.tatfinder-input-row textarea{min-height:68px!important}.tatfinder-find{border:1px solid rgba(239,191,97,.55);border-radius:8px;background:#efbf61;color:#10120f;padding:0 18px;font-weight:900;cursor:pointer}
+.tatfinder-results{display:grid;gap:8px;margin-top:11px}.tatfinder-hint{color:rgba(255,255,255,.58);font-size:12px}.tatfinder-result{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;padding:11px 12px;border:1px solid rgba(239,191,97,.2);border-radius:8px;background:rgba(7,11,8,.72)}.tatfinder-result b{display:block;color:#f5f0e5}.tatfinder-result small{display:block;color:rgba(255,255,255,.58);margin-top:3px}.tatfinder-add{border:1px solid rgba(239,191,97,.42);border-radius:7px;background:rgba(239,191,97,.1);color:#efbf61;padding:8px 11px;font-weight:800;cursor:pointer}.tatfinder-add.added{color:#77e69a;border-color:rgba(119,230,154,.4)}
 .offense-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;max-height:350px;overflow:auto;padding-right:4px}
 .offense{display:flex;gap:12px;align-items:center;padding:12px;border:1px solid rgba(239,191,97,.18);border-radius:8px;background:rgba(5,10,7,.55);cursor:pointer}
 .offense:hover{border-color:rgba(239,191,97,.48)}
@@ -304,7 +308,7 @@ textarea.r-input{resize:vertical;min-height:76px}
 .record-preview{white-space:pre-wrap;overflow-wrap:anywhere;margin:0;background:rgba(1,5,3,.72);border:1px solid rgba(239,191,97,.18);border-radius:8px;padding:20px;color:#f7f5ef;line-height:1.55;font-family:"Segoe UI",Arial,sans-serif;font-size:14px;max-height:520px;overflow:auto}
 .copy-btn{min-width:170px}
 .copy-status{min-height:20px;margin-top:10px;color:#6ee58f;font-size:12px}
-@media(max-width:1000px){.calc-layout,.form-grid{grid-template-columns:1fr}.form-grid .span2{grid-column:auto}.offense-list{grid-template-columns:1fr}.calc-head{align-items:flex-start;flex-direction:column}.search{max-width:none}}
+@media(max-width:1000px){.calc-layout,.form-grid{grid-template-columns:1fr}.form-grid .span2{grid-column:auto}.offense-list{grid-template-columns:1fr}.calc-head{align-items:flex-start;flex-direction:column}.search{max-width:none}.tatfinder-input-row{grid-template-columns:1fr}.tatfinder-find{min-height:44px}}
 
 
 /* Dienstplan */
@@ -700,6 +704,15 @@ input::placeholder, textarea::placeholder { font-size: 16px !important; opacity:
           <h2>Strafkatalog</h2>
         </div>
         <input id="offenseSearch" class="r-input search" placeholder="Straftat suchen...">
+      </div>
+
+      <div class="tatfinder">
+        <div class="tatfinder-title"><b>🔎 Tatfinder</b><small>kostenlose intelligente Suche</small></div>
+        <div class="tatfinder-input-row">
+          <textarea id="tatfinderInput" class="r-input" placeholder="Beschreibe kurz, was passiert ist, z. B. Person flüchtete mit dem Auto vor der Polizei und hatte keinen Führerschein."></textarea>
+          <button type="button" id="tatfinderFind" class="tatfinder-find">PASSENDE DELIKTE FINDEN</button>
+        </div>
+        <div id="tatfinderResults" class="tatfinder-results"><div class="tatfinder-hint">Der Tatfinder zeigt Vorschläge. Bitte den passenden Paragraphen vor der Übernahme kurz prüfen.</div></div>
       </div>
 
       <div id="offenseList" class="offense-list">
@@ -1160,6 +1173,72 @@ updateRecord();
 
 const SUPABASE_URL = 'https://tgfngbayiauxlylckfue.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable__Dna5vaArnJ3YIMaHBRUdQ_p6TvgmJc';
+let offenseCatalog=[];
+
+function finderNormalize(value){
+  return String(value||'').toLowerCase().replace(/ä/g,'ae').replace(/ö/g,'oe').replace(/ü/g,'ue').replace(/ß/g,'ss').replace(/[^a-z0-9§ ]/g,' ').replace(/\s+/g,' ').trim();
+}
+const finderStop=new Set(['der','die','das','ein','eine','einer','einem','einen','und','oder','aber','mit','ohne','von','vor','zur','zum','auf','in','im','ist','war','hat','hatte','wurde','person','jemand','dann','sich','den','dem','des','bei']);
+const finderSynonyms=[
+  ['flucht','fluechtete','geflohen','weggefahren','abgehauen','entkommen','verfolgung'],
+  ['fuehrerschein','fahrerlaubnis','lizenz','ohne fuehrerschein'],
+  ['waffe','pistole','gewehr','schusswaffe','bewaffnet'],
+  ['diebstahl','gestohlen','geklaut','entwendet','klauen'],
+  ['raub','ausgeraubt','ueberfallen','ueberfall'],
+  ['koerperverletzung','geschlagen','getreten','verletzt','angegriffen'],
+  ['bedrohung','bedroht','gedroht','einschuechterung'],
+  ['beleidigung','beleidigt','beschimpft'],
+  ['entfuehrung','entfuehrt','verschleppt','festgehalten'],
+  ['einbruch','eingebrochen','aufgebrochen'],
+  ['sachbeschaedigung','beschaedigt','zerstoert','kaputt gemacht'],
+  ['verkehrsunfall','unfall','kollision','gerammt'],
+  ['falschfahren','gegenverkehr','falsche fahrbahn'],
+  ['geschwindigkeit','zu schnell','rasen','gerast'],
+  ['polizei','ranger','beamte','streife'],
+  ['widerstand','gewehrt','widersetzt','anweisung verweigert'],
+  ['drogen','betaeubungsmittel','substanzen'],
+  ['maskierung','maskiert','vermummt','maske']
+].map(group=>group.map(finderNormalize));
+
+function finderTerms(text){
+  const normalized=finderNormalize(text),terms=normalized.split(' ').filter(x=>x.length>2&&!finderStop.has(x));
+  const expanded=new Set(terms);
+  finderSynonyms.forEach(group=>{if(group.some(term=>normalized.includes(term)))group.forEach(term=>term.split(' ').forEach(x=>expanded.add(x)));});
+  return {normalized,terms:[...expanded]};
+}
+function findMatchingOffenses(description){
+  const query=finderTerms(description);
+  if(query.terms.length<1)return [];
+  return offenseCatalog.map(item=>{
+    const title=finderNormalize(item.straftat),category=finderNormalize(item.kategorie),details=finderNormalize(item.beschreibung),hay=title+' '+category+' '+details;
+    let score=0,matches=0;
+    query.terms.forEach(term=>{if(title.includes(term)){score+=6;matches++;}else if(category.includes(term)){score+=3;matches++;}else if(details.includes(term)){score+=2;matches++;}});
+    if(title&&query.normalized.includes(title))score+=14;
+    return {item,score,matches};
+  }).filter(x=>x.score>0).sort((a,b)=>b.score-a.score||b.matches-a.matches).slice(0,6);
+}
+function renderTatfinderResults(){
+  const box=q('tatfinderResults'),input=q('tatfinderInput');if(!box||!input)return;
+  const description=input.value.trim();
+  if(description.length<8){box.innerHTML='<div class="tatfinder-hint">Bitte beschreibe den Vorfall mit mindestens einigen Wörtern.</div>';return;}
+  const results=findMatchingOffenses(description);
+  box.innerHTML='';
+  if(!results.length){box.innerHTML='<div class="tatfinder-hint">Keine eindeutige Übereinstimmung gefunden. Versuche wichtige Begriffe wie Fahrzeug, Flucht, Waffe oder Diebstahl zu ergänzen.</div>';return;}
+  results.forEach(({item})=>{
+    const row=document.createElement('div');row.className='tatfinder-result';
+    const info=document.createElement('div'),title=document.createElement('b'),meta=document.createElement('small');
+    title.textContent=(item.kategorie?item.kategorie+' · ':'')+(item.straftat||'Straftat');
+    meta.textContent=moneyFmt.format(Number(item.geldstrafe)||0)+' $ · '+(Number(item.hafteinheiten)||0)+' HE'+(item.beschreibung?' · '+item.beschreibung:'');
+    info.append(title,meta);
+    const add=document.createElement('button');add.type='button';add.className='tatfinder-add';
+    const cb=document.querySelector(`#offenseList input[data-offense-id="${CSS.escape(String(item.id))}"]`);
+    add.textContent=cb?.checked?'✓ AUSGEWÄHLT':'+ HINZUFÜGEN';if(cb?.checked)add.classList.add('added');
+    add.addEventListener('click',()=>{if(cb){cb.checked=true;updateRecord();add.textContent='✓ AUSGEWÄHLT';add.classList.add('added');}});
+    row.append(info,add);box.appendChild(row);
+  });
+}
+q('tatfinderFind')?.addEventListener('click',renderTatfinderResults);
+q('tatfinderInput')?.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='Enter')renderTatfinderResults();});
 
 function offenseRow(item){
   const label=document.createElement('label');
@@ -1167,6 +1246,7 @@ function offenseRow(item){
 
   const cb=document.createElement('input');
   cb.type='checkbox';
+  cb.dataset.offenseId=String(item.id);
   cb.dataset.category=item.kategorie || '';
   cb.dataset.name=item.straftat || 'Straftat';
   cb.dataset.money=String(Number(item.geldstrafe)||0);
@@ -1204,6 +1284,7 @@ async function loadOffenses(){
     }
 
     const data=await res.json();
+    offenseCatalog=data;
     list.innerHTML='';
 
     if(!data.length){
