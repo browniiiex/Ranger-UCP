@@ -1009,7 +1009,7 @@ const q = id => document.getElementById(id);
 function field(id, fallback='xxxx'){ const el=q(id); const v=el ? el.value.trim() : ''; return v || fallback; }
 function selectedOffenses(){
   return [...document.querySelectorAll('#offenseList input[type="checkbox"]:checked')].map(x=>({
-    name:x.dataset.name||'Straftat', money:Number(x.dataset.money)||0, he:Number(x.dataset.he)||0, checkbox:x
+    category:x.dataset.category||'', name:x.dataset.name||'Straftat', money:Number(x.dataset.money)||0, he:Number(x.dataset.he)||0, checkbox:x
   }));
 }
 function renderSelectedOverview(items){
@@ -1030,7 +1030,7 @@ function renderSelectedOverview(items){
     row.className='selected-offense-item';
     const info=document.createElement('div');
     const title=document.createElement('b');
-    title.textContent=item.name;
+    title.textContent=(item.category ? item.category+' · ' : '')+item.name;
     const values=document.createElement('small');
     values.textContent=moneyFmt.format(item.money)+' $ · '+item.he+' HE';
     info.append(title,values);
@@ -1059,7 +1059,7 @@ function updateRecord(){
   if(q('finalHE')) q('finalHE').textContent=actual+' HE';
   renderSelectedOverview(items);
 
-  const crimes=items.length ? items.map(x=>'• '+x.name+' — '+moneyFmt.format(x.money)+' $ / '+x.he+' HE').join('\n') : 'Keine Straftat ausgewählt';
+  const crimes=items.length ? items.map(x=>'• '+(x.category ? x.category+' · ' : '')+x.name+' — '+moneyFmt.format(x.money)+' $ / '+x.he+' HE').join('\n') : 'Keine Straftat ausgewählt';
   const penalty=items.length ? moneyFmt.format(money)+' $ | '+actual+' HE'+(raw>40?' (berechnet: '+raw+' HE, Ranger-Maximum 40 HE)':'') : '0 $ | 0 HE';
 
   const text=`★ ═══════════════════════════════════════ ★
@@ -1146,6 +1146,7 @@ function offenseRow(item){
 
   const cb=document.createElement('input');
   cb.type='checkbox';
+  cb.dataset.category=item.kategorie || '';
   cb.dataset.name=item.straftat || 'Straftat';
   cb.dataset.money=String(Number(item.geldstrafe)||0);
   cb.dataset.he=String(Number(item.hafteinheiten)||0);
