@@ -512,6 +512,30 @@ body.no-ucp-glass .glass,body.no-ucp-glass .card,body.no-ucp-glass .panel{backdr
 .ranger-note-delete{min-height:30px!important;border:0;background:none;color:#b66d65;font:600 10px "Barlow Condensed"!important;cursor:pointer}
 @media(max-width:760px){.ranger-notes-modal{padding:12px}.ranger-note-create{grid-template-columns:1fr}.ranger-note-create button{width:100%}}
 
+
+/* Ranger-Statistiken */
+.admin-statistics-panel{margin-top:14px}
+.ranger-stats-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:14px 0}
+.ranger-stats-summary>div{padding:15px;border:1px solid rgba(229,173,85,.15);border-radius:9px;background:rgba(0,0,0,.18)}
+.ranger-stats-summary span{display:block;color:#8d877e;font:700 10px "Barlow Condensed";letter-spacing:1px}
+.ranger-stats-summary strong{display:block;margin-top:5px;color:var(--gold2);font:500 27px Georgia,serif}
+.ranger-stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.ranger-stats-box{padding:16px;border:1px solid rgba(229,173,85,.13);border-radius:9px;background:rgba(0,0,0,.17)}
+.stats-bars,.stats-ranking{display:grid;gap:9px;margin-top:12px}
+.stats-bar-row{display:grid;grid-template-columns:120px 1fr 36px;gap:9px;align-items:center}
+.stats-bar-row>span{font-size:12px;color:#c7c1b8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.stats-bar-track{height:7px;border-radius:10px;background:rgba(255,255,255,.06);overflow:hidden}
+.stats-bar-fill{height:100%;border-radius:10px;background:linear-gradient(90deg,var(--gold),var(--gold2))}
+.stats-bar-row>b{text-align:right;color:var(--gold2);font-size:12px}
+.stats-rank-row{display:grid;grid-template-columns:25px 1fr auto;gap:9px;align-items:center;padding:8px 0;border-bottom:1px solid rgba(229,173,85,.08)}
+.stats-rank-row:last-child{border-bottom:0}
+.stats-rank-pos{color:#7e786f;font:700 11px "Barlow Condensed"}
+.stats-rank-main b{display:block;font:600 13px "Barlow Condensed";letter-spacing:.3px}
+.stats-rank-main small{display:block;color:#77736b;margin-top:1px;font-size:10px!important}
+.stats-rank-value{color:var(--gold2);font:600 12px "Barlow Condensed"}
+@media(max-width:900px){.ranger-stats-summary{grid-template-columns:repeat(2,1fr)}.ranger-stats-grid{grid-template-columns:1fr}}
+@media(max-width:520px){.ranger-stats-summary{grid-template-columns:1fr}}
+
 </style>
 
 <style id="global-readability-upgrade">
@@ -802,6 +826,34 @@ input::placeholder, textarea::placeholder { font-size: 16px !important; opacity:
     <div class="glass admin-panel">
       <div class="panel-title"><span>◷ NÄCHSTE TERMINE</span><button class="admin-link" type="button" onclick="openPage('termine')">DIENSTPLAN →</button></div>
       <div id="adminAppointmentList"><div class="muted">Wird geladen…</div></div>
+    </div>
+  </div>
+
+  <div class="glass admin-panel admin-statistics-panel">
+    <div class="panel-title"><span>▥ RANGER-STATISTIKEN</span><span id="adminStatsUpdated" class="admin-activity-updated">WIRD GELADEN…</span></div>
+    <div class="ranger-stats-summary">
+      <div><span>RANGER GESAMT</span><strong id="statsTotalRangers">–</strong></div>
+      <div><span>STREAMSTUNDEN · 30 TAGE</span><strong id="statsStreamHours">–</strong></div>
+      <div><span>STREAMTAGE · 30 TAGE</span><strong id="statsStreamDays">–</strong></div>
+      <div><span>UCP ONLINE · JETZT</span><strong id="statsOnlineNow">–</strong></div>
+    </div>
+    <div class="ranger-stats-grid">
+      <div class="ranger-stats-box">
+        <div class="label">RANGVERTEILUNG</div>
+        <div id="statsRankDistribution" class="stats-bars"></div>
+      </div>
+      <div class="ranger-stats-box">
+        <div class="label">STREAM-AKTIVITÄT · 30 TAGE</div>
+        <div id="statsTopStreams" class="stats-ranking"></div>
+      </div>
+      <div class="ranger-stats-box">
+        <div class="label">UCP-AKTIVITÄT</div>
+        <div id="statsUcpActivity" class="stats-ranking"></div>
+      </div>
+      <div class="ranger-stats-box">
+        <div class="label">FAMILIEN</div>
+        <div id="statsFamilies" class="stats-ranking"></div>
+      </div>
     </div>
   </div>
 
@@ -1919,17 +1971,19 @@ button.danger,.danger-btn,.btn-danger,[data-action="delete-vote"],button[onclick
     const todayISO=today.toISOString().slice(0,10);
     const in7=new Date(today);in7.setDate(in7.getDate()+7);const in7ISO=in7.toISOString().slice(0,10);
     const monthAgo=new Date(today);monthAgo.setDate(monthAgo.getDate()-29);const monthAgoISO=monthAgo.toISOString().slice(0,10);
-    const [allowQ,usersQ,appointmentsQ,votesQ,presenceQ,streamsQ]=await Promise.all([
+    const [allowQ,usersQ,appointmentsQ,votesQ,presenceQ,streamsQ,familiesQ,familyMembersQ]=await Promise.all([
       client.from('ucp_allowlist').select('discord_id,display_name,twitch_name,joined_at,ranger_rang,rolle,enabled,created_at').order('created_at',{ascending:true}),
       client.from('ucp_users').select('discord_id,id,enabled'),
       client.from('ucp_termine').select('*').gte('datum',todayISO).order('datum',{ascending:true}).order('uhrzeit',{ascending:true}),
       client.from('ucp_rat_abstimmungen').select('id,status,endet_am'),
       client.from('ucp_presence').select('discord_id,last_seen'),
-      client.from('stream_sessions').select('discord_id,stream_date,duration_minutes').gte('stream_date',monthAgoISO).order('stream_date',{ascending:false})
+      client.from('stream_sessions').select('discord_id,stream_date,duration_minutes').gte('stream_date',monthAgoISO).order('stream_date',{ascending:false}),
+      client.from('familien').select('*'),
+      client.from('familien_mitglieder').select('*')
     ]);
     const err=allowQ.error||usersQ.error||appointmentsQ.error||votesQ.error||presenceQ.error||streamsQ.error;
     if(err){if(notice)notice.textContent='Verwaltung konnte nicht geladen werden: '+err.message;return;}
-    const allow=allowQ.data||[],users=usersQ.data||[],appointments=appointmentsQ.data||[],votes=votesQ.data||[],presence=presenceQ.data||[],streams=streamsQ.data||[];
+    const allow=allowQ.data||[],users=usersQ.data||[],appointments=appointmentsQ.data||[],votes=votesQ.data||[],presence=presenceQ.data||[],streams=streamsQ.data||[],families=familiesQ.data||[],familyMembers=familyMembersQ.data||[];
     const logged=new Set(users.map(x=>x.discord_id));
     const active=allow.filter(x=>x.enabled);
     const pending=active.filter(x=>!logged.has(x.discord_id));
@@ -1950,6 +2004,44 @@ button.danger,.danger-btn,.btn-danger,[data-action="delete-vote"],button[onclick
     if(apWrap)apWrap.innerHTML=appointments.slice(0,5).map(a=>`<div class="admin-ap-row"><div class="admin-ap-main"><b>${escapeHtml(a.titel)}</b><small>${new Date(a.datum+'T12:00:00').toLocaleDateString('de-DE')} · ${escapeHtml((a.uhrzeit||'').slice(0,5))} Uhr${a.ort?' · '+escapeHtml(a.ort):''}</small></div></div>`).join('')||'<div class="dash-empty">Keine kommenden Termine.</div>';
     const presenceMap={};presence.forEach(p=>{if(!presenceMap[p.discord_id]||new Date(p.last_seen)>new Date(presenceMap[p.discord_id]))presenceMap[p.discord_id]=p.last_seen;});
     const streamMap={};streams.forEach(s=>{const x=streamMap[s.discord_id]||(streamMap[s.discord_id]={minutes:0,last:null,days:new Set()});x.minutes+=Number(s.duration_minutes||0);x.days.add(s.stream_date);if(!x.last||s.stream_date>x.last)x.last=s.stream_date;});
+
+    const totalMinutes=streams.reduce((sum,s)=>sum+Number(s.duration_minutes||0),0);
+    const totalStreamDays=new Set(streams.map(s=>s.discord_id+'|'+s.stream_date)).size;
+    const onlineNow=presence.filter(p=>Date.now()-new Date(p.last_seen).getTime()<=2*60*1000).length;
+    set('statsTotalRangers',active.length);
+    set('statsStreamHours',(totalMinutes/60).toLocaleString('de-DE',{minimumFractionDigits:1,maximumFractionDigits:1})+' h');
+    set('statsStreamDays',totalStreamDays);
+    set('statsOnlineNow',onlineNow);
+
+    const rankCounts={};
+    active.forEach(r=>{const k=r.ranger_rang||'Kein Rang';rankCounts[k]=(rankCounts[k]||0)+1;});
+    const rankWrap=document.getElementById('statsRankDistribution');
+    if(rankWrap){
+      const maxRank=Math.max(1,...Object.values(rankCounts));
+      rankWrap.innerHTML=Object.entries(rankCounts).sort((a,b)=>b[1]-a[1]).map(([rank,count])=>`<div class="stats-bar-row"><span title="${escapeHtml(rank)}">${escapeHtml(rank)}</span><div class="stats-bar-track"><div class="stats-bar-fill" style="width:${Math.max(5,count/maxRank*100)}%"></div></div><b>${count}</b></div>`).join('')||'<div class="dash-empty">Keine Daten.</div>';
+    }
+
+    const activeByDiscord=Object.fromEntries(active.map(r=>[r.discord_id,r]));
+    const streamRanking=Object.entries(streamMap).filter(([id])=>activeByDiscord[id]).map(([id,s])=>({id,name:activeByDiscord[id]?.display_name||activeByDiscord[id]?.twitch_name||'Ranger',minutes:s.minutes,days:s.days.size})).sort((a,b)=>b.minutes-a.minutes);
+    const topWrap=document.getElementById('statsTopStreams');
+    if(topWrap)topWrap.innerHTML=streamRanking.slice(0,5).map((x,i)=>`<div class="stats-rank-row"><span class="stats-rank-pos">${i+1}.</span><span class="stats-rank-main"><b>${escapeHtml(x.name)}</b><small>${x.days} Streamtag${x.days===1?'':'e'}</small></span><span class="stats-rank-value">${(x.minutes/60).toLocaleString('de-DE',{minimumFractionDigits:1,maximumFractionDigits:1})} h</span></div>`).join('')||'<div class="dash-empty">Keine Streams in den letzten 30 Tagen.</div>';
+
+    const presenceRanking=active.map(r=>({name:r.display_name||'Ranger',last:presenceMap[r.discord_id]||null})).sort((a,b)=>(b.last?new Date(b.last).getTime():0)-(a.last?new Date(a.last).getTime():0));
+    const ucpWrap=document.getElementById('statsUcpActivity');
+    if(ucpWrap)ucpWrap.innerHTML=presenceRanking.slice(0,5).map((x,i)=>{const online=x.last&&Date.now()-new Date(x.last).getTime()<=2*60*1000;return `<div class="stats-rank-row"><span class="stats-rank-pos">${i+1}.</span><span class="stats-rank-main"><b>${escapeHtml(x.name)}</b><small>${online?'Jetzt online':x.last?'Zuletzt '+new Date(x.last).toLocaleString('de-DE',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'Noch nie im UCP'}</small></span><span class="stats-rank-value">${online?'ONLINE':'UCP'}</span></div>`}).join('')||'<div class="dash-empty">Keine UCP-Aktivität vorhanden.</div>';
+
+    const famWrap=document.getElementById('statsFamilies');
+    if(famWrap){
+      const familyRows=families.map(f=>{
+        const fid=String(f.id);
+        const members=familyMembers.filter(m=>String(m.familie_id??m.family_id??m.familien_id)===fid).length;
+        return {name:f.name||f.familienname||f.titel||'Familie',members};
+      }).sort((a,b)=>b.members-a.members);
+      famWrap.innerHTML=familyRows.slice(0,5).map((x,i)=>`<div class="stats-rank-row"><span class="stats-rank-pos">${i+1}.</span><span class="stats-rank-main"><b>${escapeHtml(x.name)}</b><small>Familienübersicht</small></span><span class="stats-rank-value">${x.members} Mitglied${x.members===1?'':'er'}</span></div>`).join('')||'<div class="dash-empty">Keine Familien eingetragen.</div>';
+    }
+    const statsUpdated=document.getElementById('adminStatsUpdated');
+    if(statsUpdated)statsUpdated.textContent='AKTUALISIERT '+new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})+' UHR';
+
     const activityWrap=document.getElementById('adminActivityList');
     const activityUpdated=document.getElementById('adminActivityUpdated');
     if(activityWrap)activityWrap.innerHTML=active.map(r=>{
