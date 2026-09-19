@@ -1865,9 +1865,9 @@ button.danger,.danger-btn,.btn-danger,[data-action="delete-vote"],button[onclick
     note.textContent='Profilbild wird hochgeladen…';
     const ext=(file.name.split('.').pop()||'jpg').toLowerCase();
     const path=`${currentUser.id}/avatar.${ext}`;
-    const {error:upErr}=await client.storage.from('ranger-avatars').upload(path,file,{upsert:true,contentType:file.type,cacheControl:'3600'});
+    const {error:upErr}=await client.storage.from('ranger-profile-pictures').upload(path,file,{upsert:true,contentType:file.type,cacheControl:'3600'});
     if(upErr){note.textContent='Upload fehlgeschlagen: '+upErr.message;return;}
-    const {data:pub}=client.storage.from('ranger-avatars').getPublicUrl(path);
+    const {data:pub}=client.storage.from('ranger-profile-pictures').getPublicUrl(path);
     const url=pub.publicUrl+'?v='+Date.now();
     const {error:dbErr}=await client.from('ucp_profiles').upsert({user_id:currentUser.id,discord_id:currentAccess.discord_id,avatar_url:url,updated_at:new Date().toISOString()},{onConflict:'user_id'});
     if(dbErr){note.textContent='Speichern fehlgeschlagen: '+dbErr.message;return;}
