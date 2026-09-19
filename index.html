@@ -355,6 +355,30 @@ textarea.r-input{resize:vertical;min-height:76px}
 .nav-order-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:18px}.nav-order-actions .btn{min-height:42px;padding:0 16px!important;border-radius:9px!important}
 .nav-order-reset{background:transparent!important;color:#c9c5bc!important;border:1px solid rgba(229,173,85,.32)!important}#navOrderStatus{font-size:13px;color:#8fd39b}
 
+
+.personal-design-card{max-width:820px;padding:24px!important;margin-top:18px}
+.personal-design-card h2{margin:5px 0 6px;font-family:Georgia,serif;font-size:25px}
+.design-settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}
+.design-setting,.design-toggle{min-height:78px;padding:14px;border:1px solid rgba(229,173,85,.24);border-radius:10px;background:rgba(3,7,5,.66)}
+.design-setting>span,.design-toggle b{display:block;font:600 15px "Barlow Condensed";letter-spacing:.7px;color:#e8e4dc}
+.design-setting>span b{display:inline;color:var(--gold2);margin-left:5px}
+.color-row{display:flex;gap:9px;margin-top:9px}
+#accentColorPicker{width:48px;height:34px;padding:2px;border-radius:7px;cursor:pointer}
+#accentColorText{width:110px;height:34px;padding:6px 9px;border-radius:7px}
+#bgDarkness{width:100%;margin-top:14px;accent-color:var(--gold)}
+.design-toggle{position:relative;display:flex;align-items:center;justify-content:space-between;gap:15px;cursor:pointer}
+.design-toggle small{display:block;color:#77736b;margin-top:3px;font-size:11px}
+.design-toggle input{position:absolute;opacity:0;pointer-events:none}
+.toggle-ui{width:46px;height:25px;border-radius:20px;background:#2b2d2a;border:1px solid #4c4f49;position:relative;flex:none;transition:.2s}
+.toggle-ui:after{content:"";position:absolute;width:17px;height:17px;border-radius:50%;left:3px;top:3px;background:#aaa;transition:.2s}
+.design-toggle input:checked+.toggle-ui{background:rgba(229,173,85,.22);border-color:var(--gold)}
+.design-toggle input:checked+.toggle-ui:after{transform:translateX(21px);background:var(--gold2)}
+#designPrefsStatus{font-size:13px;color:#8fd39b}
+body.no-ucp-animations *,body.no-ucp-animations *:before,body.no-ucp-animations *:after{animation:none!important;transition:none!important}
+body.no-ucp-glass .glass,body.no-ucp-glass .card,body.no-ucp-glass .panel{backdrop-filter:none!important;-webkit-backdrop-filter:none!important;background:rgba(5,8,6,.94)!important}
+body:before{background:rgba(0,0,0,var(--user-bg-darkness,.42))!important}
+@media(max-width:760px){.design-settings-grid{grid-template-columns:1fr}}
+
 </style>
 
 <style id="global-readability-upgrade">
@@ -613,7 +637,46 @@ input::placeholder, textarea::placeholder { font-size: 16px !important; opacity:
 <button type="button" class="btn" id="saveNavOrder">REIHENFOLGE SPEICHERN</button>
 <button type="button" class="btn nav-order-reset" id="resetNavOrder">ZURÜCKSETZEN</button>
 <span id="navOrderStatus"></span>
-</div></div></section>
+</div></div>
+<div class="glass personal-design-card">
+  <div class="label">PERSÖNLICHES DESIGN</div>
+  <h2>UCP anpassen</h2>
+  <p class="nav-settings-hint">Diese Einstellungen gelten nur für deinen Account.</p>
+
+  <div class="design-settings-grid">
+    <label class="design-setting">
+      <span>Akzentfarbe</span>
+      <div class="color-row">
+        <input id="accentColorPicker" type="color" value="#e5ad55">
+        <input id="accentColorText" type="text" value="#e5ad55" maxlength="7">
+      </div>
+    </label>
+
+    <label class="design-setting">
+      <span>Hintergrund-Abdunklung <b id="bgDarknessValue">42%</b></span>
+      <input id="bgDarkness" type="range" min="15" max="75" value="42">
+    </label>
+
+    <label class="design-toggle">
+      <div><b>Animationen</b><small>Seitenwechsel und Hover-Effekte</small></div>
+      <input id="animationsEnabled" type="checkbox" checked>
+      <span class="toggle-ui"></span>
+    </label>
+
+    <label class="design-toggle">
+      <div><b>Glaseffekt</b><small>Transparente Karten und Unschärfe</small></div>
+      <input id="glassEnabled" type="checkbox" checked>
+      <span class="toggle-ui"></span>
+    </label>
+  </div>
+
+  <div class="nav-order-actions">
+    <button type="button" class="btn" id="saveDesignPrefs">DESIGN SPEICHERN</button>
+    <button type="button" class="btn nav-order-reset" id="resetDesignPrefs">STANDARD</button>
+    <span id="designPrefsStatus"></span>
+  </div>
+</div>
+</section>
  </div>
 </main>
 </div>
@@ -960,6 +1023,51 @@ button.danger,.danger-btn,.btn-danger,[data-action="delete-vote"],button[onclick
   const defaultNavOrder=['dashboard','profil','aktivitaet','termine','strafrechner','rechteverlesung','familien','abstimmungen','eid','verwaltung','rechte','einstellungen'];
   const navNames={dashboard:'Command Center',profil:'Mein Profil',aktivitaet:'Stream-Aktivität',termine:'Dienstplan',strafrechner:'Strafrechner',rechteverlesung:'Rechteverlesung',familien:'Familien',abstimmungen:'Ranger-Rat',eid:'Ranger-Eid',verwaltung:'Verwaltung',rechte:'Rechte & Rollen',einstellungen:'Einstellungen'};
   let personalNavOrder=[...defaultNavOrder];
+
+  const defaultDesignPrefs={accent_color:'#e5ad55',background_darkness:42,animations_enabled:true,glass_enabled:true};
+  let personalDesignPrefs={...defaultDesignPrefs};
+
+  function validHex(v){return /^#[0-9a-fA-F]{6}$/.test(String(v||''));}
+  function applyDesignPrefs(prefs){
+    personalDesignPrefs={...defaultDesignPrefs,...(prefs||{})};
+    if(!validHex(personalDesignPrefs.accent_color)) personalDesignPrefs.accent_color=defaultDesignPrefs.accent_color;
+    const c=personalDesignPrefs.accent_color;
+    document.documentElement.style.setProperty('--gold',c);
+    document.documentElement.style.setProperty('--gold2',c);
+    const darkness=Math.max(15,Math.min(75,Number(personalDesignPrefs.background_darkness)||42));
+    document.documentElement.style.setProperty('--user-bg-darkness',String(darkness/100));
+    document.body.classList.toggle('no-ucp-animations',personalDesignPrefs.animations_enabled===false);
+    document.body.classList.toggle('no-ucp-glass',personalDesignPrefs.glass_enabled===false);
+    const cp=document.getElementById('accentColorPicker'),ct=document.getElementById('accentColorText'),bd=document.getElementById('bgDarkness'),bv=document.getElementById('bgDarknessValue'),ae=document.getElementById('animationsEnabled'),ge=document.getElementById('glassEnabled');
+    if(cp)cp.value=c;if(ct)ct.value=c;if(bd)bd.value=darkness;if(bv)bv.textContent=darkness+'%';if(ae)ae.checked=personalDesignPrefs.animations_enabled!==false;if(ge)ge.checked=personalDesignPrefs.glass_enabled!==false;
+  }
+  async function loadDesignPrefs(){
+    const {data}=await client.from('ucp_preferences').select('accent_color,background_darkness,animations_enabled,glass_enabled').eq('user_id',currentUser.id).maybeSingle();
+    applyDesignPrefs(data||defaultDesignPrefs);
+  }
+  function collectDesignPrefs(){
+    const color=document.getElementById('accentColorText')?.value?.trim()||defaultDesignPrefs.accent_color;
+    return {
+      accent_color:validHex(color)?color:defaultDesignPrefs.accent_color,
+      background_darkness:Number(document.getElementById('bgDarkness')?.value||42),
+      animations_enabled:!!document.getElementById('animationsEnabled')?.checked,
+      glass_enabled:!!document.getElementById('glassEnabled')?.checked
+    };
+  }
+  document.getElementById('accentColorPicker')?.addEventListener('input',e=>{const t=document.getElementById('accentColorText');if(t)t.value=e.target.value;applyDesignPrefs({...collectDesignPrefs(),accent_color:e.target.value});});
+  document.getElementById('accentColorText')?.addEventListener('change',e=>{if(validHex(e.target.value)){const p=document.getElementById('accentColorPicker');if(p)p.value=e.target.value;applyDesignPrefs({...collectDesignPrefs(),accent_color:e.target.value});}});
+  document.getElementById('bgDarkness')?.addEventListener('input',e=>{const v=document.getElementById('bgDarknessValue');if(v)v.textContent=e.target.value+'%';document.documentElement.style.setProperty('--user-bg-darkness',String(Number(e.target.value)/100));});
+  document.getElementById('animationsEnabled')?.addEventListener('change',()=>applyDesignPrefs(collectDesignPrefs()));
+  document.getElementById('glassEnabled')?.addEventListener('change',()=>applyDesignPrefs(collectDesignPrefs()));
+  document.getElementById('saveDesignPrefs')?.addEventListener('click',async()=>{
+    const status=document.getElementById('designPrefsStatus');if(status)status.textContent='Speichert…';
+    const prefs=collectDesignPrefs();
+    const {error}=await client.from('ucp_preferences').upsert({user_id:currentUser.id,...prefs,updated_at:new Date().toISOString()},{onConflict:'user_id'});
+    if(status)status.textContent=error?'Fehler: '+error.message:'Gespeichert ✓';
+    if(!error)applyDesignPrefs(prefs);
+  });
+  document.getElementById('resetDesignPrefs')?.addEventListener('click',()=>{applyDesignPrefs(defaultDesignPrefs);const s=document.getElementById('designPrefsStatus');if(s)s.textContent='Standard geladen – jetzt speichern.';});
+
   function normalizeNavOrder(v){const a=Array.isArray(v)?v.filter(x=>defaultNavOrder.includes(x)):[];return [...new Set([...a,...defaultNavOrder])];}
   function applyNavOrder(v){personalNavOrder=normalizeNavOrder(v);const nav=document.querySelector('.sidebar .nav');if(!nav)return;personalNavOrder.forEach(id=>{const b=nav.querySelector(`button[data-page="${id}"]`);if(b)nav.appendChild(b);});}
   function renderNavOrderEditor(){
@@ -1013,7 +1121,7 @@ button.danger,.danger-btn,.btn-danger,[data-action="delete-vote"],button[onclick
     currentAccess=userRow; currentPermissions=perms;
     const {data:allowSelf}=await client.from('ucp_allowlist').select('ranger_rang').eq('discord_id',userRow.discord_id).maybeSingle();
     currentRangerRank=allowSelf?.ranger_rang||'';
-    hideGate(); applyPermissions(); await loadNavPreferences(); startPresence();
+    hideGate(); applyPermissions(); await loadNavPreferences(); await loadDesignPrefs(); startPresence();
     if(currentPermissions.profil) await loadProfile();
     const meta=session.user.user_metadata||{};
     const discordName=userRow.display_name||userRow.discord_name||meta.full_name||meta.name||meta.user_name||'Ranger';
