@@ -444,6 +444,26 @@ body.no-ucp-glass .glass,body.no-ucp-glass .card,body.no-ucp-glass .panel{backdr
 .notification-empty{padding:30px 18px;text-align:center;color:#77736b;font-size:13px}
 @media(max-width:650px){.topbar{padding-left:16px!important;padding-right:16px!important}.topbar .online{display:none}.notification-panel{position:fixed;right:14px;top:65px;left:14px;width:auto}}
 
+
+/* Ranger-Aktivitätsübersicht */
+.admin-activity-panel{margin-top:14px}
+.admin-activity-updated{font-size:10px!important;color:#77736b!important;font-weight:500!important}
+.admin-activity-head,.admin-activity-row{display:grid;grid-template-columns:minmax(180px,1.5fr) minmax(130px,.85fr) minmax(145px,1fr) minmax(100px,.7fr);gap:12px;align-items:center}
+.admin-activity-head{padding:7px 10px;color:#77736b;font:600 10px "Barlow Condensed";letter-spacing:1px;border-bottom:1px solid rgba(229,173,85,.13)}
+.admin-activity-row{padding:12px 10px;border-bottom:1px solid rgba(229,173,85,.09)}
+.admin-activity-row:last-child{border-bottom:0}
+.admin-activity-person b{display:block;font:600 15px "Barlow Condensed";letter-spacing:.5px}
+.admin-activity-person small{display:block;color:#77736b;margin-top:2px}
+.activity-state{display:inline-flex;align-items:center;gap:6px;font-size:11px;color:#aaa49a}
+.activity-dot{width:7px;height:7px;border-radius:50%;background:#6f716d;box-shadow:0 0 0 3px rgba(111,113,109,.08)}
+.activity-state.online{color:#8fd39b}.activity-state.online .activity-dot{background:#6bc47a;box-shadow:0 0 0 3px rgba(107,196,122,.11)}
+.activity-state.recent{color:#d6b36a}.activity-state.recent .activity-dot{background:#d6b36a}
+.activity-stream b,.activity-hours b{display:block;font-size:13px}.activity-stream small,.activity-hours small{display:block;color:#77736b;font-size:10px;margin-top:2px}
+@media(max-width:820px){
+ .admin-activity-head{display:none}.admin-activity-row{grid-template-columns:1fr 1fr}
+ .admin-activity-person{grid-column:1/-1}
+}
+
 </style>
 
 <style id="global-readability-upgrade">
@@ -723,6 +743,17 @@ input::placeholder, textarea::placeholder { font-size: 16px !important; opacity:
       <div class="panel-title"><span>◷ NÄCHSTE TERMINE</span><button class="admin-link" type="button" onclick="openPage('termine')">DIENSTPLAN →</button></div>
       <div id="adminAppointmentList"><div class="muted">Wird geladen…</div></div>
     </div>
+  </div>
+
+  <div class="glass admin-panel admin-activity-panel">
+    <div class="panel-title">
+      <span>◎ RANGER-AKTIVITÄT</span>
+      <span id="adminActivityUpdated" class="admin-activity-updated">WIRD GELADEN…</span>
+    </div>
+    <div class="admin-activity-head">
+      <span>RANGER</span><span>UCP</span><span>LETZTER STREAM</span><span>30 TAGE</span>
+    </div>
+    <div id="adminActivityList"><div class="muted">Aktivität wird geladen…</div></div>
   </div>
 
   <div class="glass admin-panel admin-actions-panel">
@@ -1660,15 +1691,18 @@ button.danger,.danger-btn,.btn-danger,[data-action="delete-vote"],button[onclick
     const today=new Date();today.setHours(0,0,0,0);
     const todayISO=today.toISOString().slice(0,10);
     const in7=new Date(today);in7.setDate(in7.getDate()+7);const in7ISO=in7.toISOString().slice(0,10);
-    const [allowQ,usersQ,appointmentsQ,votesQ]=await Promise.all([
+    const monthAgo=new Date(today);monthAgo.setDate(monthAgo.getDate()-29);const monthAgoISO=monthAgo.toISOString().slice(0,10);
+    const [allowQ,usersQ,appointmentsQ,votesQ,presenceQ,streamsQ]=await Promise.all([
       client.from('ucp_allowlist').select('discord_id,display_name,twitch_name,joined_at,ranger_rang,rolle,enabled,created_at').order('created_at',{ascending:true}),
       client.from('ucp_users').select('discord_id,id,enabled'),
       client.from('ucp_termine').select('*').gte('datum',todayISO).order('datum',{ascending:true}).order('uhrzeit',{ascending:true}),
-      client.from('ucp_rat_abstimmungen').select('id,status,endet_am')
+      client.from('ucp_rat_abstimmungen').select('id,status,endet_am'),
+      client.from('ucp_presence').select('discord_id,last_seen'),
+      client.from('stream_sessions').select('discord_id,stream_date,duration_minutes').gte('stream_date',monthAgoISO).order('stream_date',{ascending:false})
     ]);
-    const err=allowQ.error||usersQ.error||appointmentsQ.error||votesQ.error;
+    const err=allowQ.error||usersQ.error||appointmentsQ.error||votesQ.error||presenceQ.error||streamsQ.error;
     if(err){if(notice)notice.textContent='Verwaltung konnte nicht geladen werden: '+err.message;return;}
-    const allow=allowQ.data||[],users=usersQ.data||[],appointments=appointmentsQ.data||[],votes=votesQ.data||[];
+    const allow=allowQ.data||[],users=usersQ.data||[],appointments=appointmentsQ.data||[],votes=votesQ.data||[],presence=presenceQ.data||[],streams=streamsQ.data||[];
     const logged=new Set(users.map(x=>x.discord_id));
     const active=allow.filter(x=>x.enabled);
     const pending=active.filter(x=>!logged.has(x.discord_id));
@@ -1687,6 +1721,20 @@ button.danger,.danger-btn,.btn-danger,[data-action="delete-vote"],button[onclick
 
     const apWrap=document.getElementById('adminAppointmentList');
     if(apWrap)apWrap.innerHTML=appointments.slice(0,5).map(a=>`<div class="admin-ap-row"><div class="admin-ap-main"><b>${escapeHtml(a.titel)}</b><small>${new Date(a.datum+'T12:00:00').toLocaleDateString('de-DE')} · ${escapeHtml((a.uhrzeit||'').slice(0,5))} Uhr${a.ort?' · '+escapeHtml(a.ort):''}</small></div></div>`).join('')||'<div class="dash-empty">Keine kommenden Termine.</div>';
+    const presenceMap={};presence.forEach(p=>{if(!presenceMap[p.discord_id]||new Date(p.last_seen)>new Date(presenceMap[p.discord_id]))presenceMap[p.discord_id]=p.last_seen;});
+    const streamMap={};streams.forEach(s=>{const x=streamMap[s.discord_id]||(streamMap[s.discord_id]={minutes:0,last:null,days:new Set()});x.minutes+=Number(s.duration_minutes||0);x.days.add(s.stream_date);if(!x.last||s.stream_date>x.last)x.last=s.stream_date;});
+    const activityWrap=document.getElementById('adminActivityList');
+    const activityUpdated=document.getElementById('adminActivityUpdated');
+    if(activityWrap)activityWrap.innerHTML=active.map(r=>{
+      const lastSeen=presenceMap[r.discord_id]||null,seenDate=lastSeen?new Date(lastSeen):null,age=seenDate?Date.now()-seenDate.getTime():Infinity;
+      const online=age<=2*60*1000,recent=age<=24*60*60*1000;
+      const stateClass=online?'online':recent?'recent':'';
+      const stateText=online?'JETZT ONLINE':seenDate?'Zuletzt '+seenDate.toLocaleString('de-DE',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'Noch nie im UCP';
+      const st=streamMap[r.discord_id],hours=st?st.minutes/60:0;
+      const lastStream=st?.last?new Date(st.last+'T12:00:00').toLocaleDateString('de-DE'):'Kein Stream';
+      return `<div class="admin-activity-row"><div class="admin-activity-person"><b>${escapeHtml(r.display_name||'Ranger')}</b><small>${escapeHtml(r.ranger_rang||'Kein Rang')}${r.twitch_name?' · '+escapeHtml(r.twitch_name):''}</small></div><div><span class="activity-state ${stateClass}"><i class="activity-dot"></i>${escapeHtml(stateText)}</span></div><div class="activity-stream"><b>${escapeHtml(lastStream)}</b><small>${st?st.days.size+' Streamtag'+(st.days.size===1?'':'e')+' in 30 Tagen':'Keine Aktivität in 30 Tagen'}</small></div><div class="activity-hours"><b>${hours.toLocaleString('de-DE',{minimumFractionDigits:1,maximumFractionDigits:1})} h</b><small>letzte 30 Tage</small></div></div>`;
+    }).join('')||'<div class="dash-empty">Keine aktiven Ranger.</div>';
+    if(activityUpdated)activityUpdated.textContent='AKTUALISIERT '+new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})+' UHR';
     if(notice)notice.textContent='Zuletzt aktualisiert: '+new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})+' Uhr';
   }
 
