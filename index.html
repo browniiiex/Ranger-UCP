@@ -389,6 +389,7 @@ input::placeholder, textarea::placeholder { font-size: 16px !important; opacity:
   <button data-page="aktivitaet">▰　STREAM-AKTIVITÄT</button>
   <button data-page="termine">◷　DIENSTPLAN</button>
   <button data-page="strafrechner">§　STRAFRECHNER</button>
+  <button data-page="rechteverlesung">⚖　RECHTEVERLESUNG</button>
   <button data-page="familien">◇　FAMILIEN</button>
   <button data-page="abstimmungen">●　RANGER-RAT</button>
   <button data-page="eid">★　RANGER-EID</button>
@@ -525,6 +526,21 @@ input::placeholder, textarea::placeholder { font-size: 16px !important; opacity:
   </div>
 </section>
 
+  <section class="page inner" id="rechteverlesung">
+  <h1>Rechteverlesung</h1>
+  <div class="sub">Die Rechte direkt ablesen oder für einen Tatvorwurf vorbereiten und kopieren.</div>
+  <div class="glass ranger-card" style="max-width:980px;padding:26px 28px;">
+    <div class="label">TATVORWURF · OPTIONAL</div>
+    <input class="r-input" id="rightsCharge" placeholder="z. B. Widerstand gegen Vollstreckungsbeamte" style="margin:10px 0 22px;">
+    <div class="label">RECHTEVERLESUNG</div>
+    <div id="rightsReadingText" style="margin-top:12px;font-size:1.18rem;line-height:1.75;letter-spacing:.01em;white-space:pre-wrap;">Sie sind vorläufig festgenommen aufgrund von [Tatvorwurf]. Sie haben das Recht zu schweigen. Alles, was Sie sagen, kann und wird vor Gericht gegen Sie verwendet werden. Sie haben das Recht auf einen Anwalt. Sofern sich ein Pflichtverteidiger des Department of Justice im aktiven Dienst befindet, wird Ihnen dieser gestellt, sollten Sie sich keinen eigenen Anwalt leisten können oder keinen erreichen, haben Sie das Recht sich selbst zu verteidigen. Haben Sie diese Rechte verstanden?</div>
+    <div style="display:flex;align-items:center;gap:14px;margin-top:22px;flex-wrap:wrap;">
+      <button type="button" class="btn" id="copyRightsReading">▣ RECHTE KOPIEREN</button>
+      <span id="rightsReadingStatus" class="muted"></span>
+    </div>
+  </div>
+</section>
+
   <section class="page inner" id="familien">
   <div class="family-titlebar"><div><h1>Familien</h1><div class="sub">Familien, Mitglieder und Standorte verwalten.</div></div><button type="button" class="btn" id="addFamily">＋ FAMILIE ANLEGEN</button></div>
   <div id="familyNotice" class="glass placeholder">Familien werden geladen…</div>
@@ -590,6 +606,26 @@ function openPage(id){
  window.scrollTo({top:0,behavior:'smooth'});
 }
 document.querySelectorAll('.nav button').forEach(b=>b.addEventListener('click',()=>openPage(b.dataset.page)));
+
+const rightsReadingBase = `Sie sind vorläufig festgenommen aufgrund von [Tatvorwurf]. Sie haben das Recht zu schweigen. Alles, was Sie sagen, kann und wird vor Gericht gegen Sie verwendet werden. Sie haben das Recht auf einen Anwalt. Sofern sich ein Pflichtverteidiger des Department of Justice im aktiven Dienst befindet, wird Ihnen dieser gestellt, sollten Sie sich keinen eigenen Anwalt leisten können oder keinen erreichen, haben Sie das Recht sich selbst zu verteidigen. Haben Sie diese Rechte verstanden?`;
+function updateRightsReading(){
+  const input=document.getElementById('rightsCharge');
+  const out=document.getElementById('rightsReadingText');
+  if(!out) return;
+  const charge=(input?.value||'').trim();
+  out.textContent=rightsReadingBase.replace('[Tatvorwurf]', charge || '[Tatvorwurf]');
+}
+document.getElementById('rightsCharge')?.addEventListener('input',updateRightsReading);
+document.getElementById('copyRightsReading')?.addEventListener('click',async()=>{
+  updateRightsReading();
+  const text=document.getElementById('rightsReadingText')?.textContent||rightsReadingBase;
+  const status=document.getElementById('rightsReadingStatus');
+  try{ await navigator.clipboard.writeText(text); if(status) status.textContent='Rechte kopiert ✓'; }
+  catch(e){ if(status) status.textContent='Kopieren nicht möglich.'; }
+  setTimeout(()=>{if(status) status.textContent='';},2200);
+});
+updateRightsReading();
+
 
 const moneyFmt = new Intl.NumberFormat('de-DE');
 const q = id => document.getElementById(id);
