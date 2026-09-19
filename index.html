@@ -420,6 +420,30 @@ body.no-ucp-glass .glass,body.no-ucp-glass .card,body.no-ucp-glass .panel{backdr
 @media(max-width:1000px){.admin-stats{grid-template-columns:repeat(2,1fr)}.admin-grid{grid-template-columns:1fr}.admin-actions{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:620px){.admin-stats,.admin-actions{grid-template-columns:1fr}}
 
+
+/* Benachrichtigungscenter */
+.topbar-right{display:flex;align-items:center;gap:15px}
+.notification-wrap{position:relative}
+.notification-bell{position:relative;width:39px;height:39px;min-height:39px!important;border-radius:50%;border:1px solid rgba(229,173,85,.28);background:rgba(5,9,7,.78);color:var(--gold2);font-size:22px!important;cursor:pointer;display:grid;place-items:center}
+.notification-bell:hover{border-color:var(--gold);background:rgba(229,173,85,.08)}
+.notification-badge{position:absolute;right:-5px;top:-5px;min-width:19px;height:19px;padding:0 5px;border-radius:12px;background:#a84337;color:#fff;border:2px solid #090d0b;font:700 10px/15px Arial,sans-serif;text-align:center}
+.notification-panel{display:none;position:absolute;right:0;top:48px;width:min(410px,calc(100vw - 28px));max-height:560px;overflow:hidden;border:1px solid rgba(229,173,85,.34);border-radius:11px;background:rgba(5,9,7,.97);box-shadow:0 22px 60px rgba(0,0,0,.52);backdrop-filter:blur(18px);z-index:100}
+.notification-panel.open{display:block}
+.notification-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:15px 16px;border-bottom:1px solid rgba(229,173,85,.15)}
+.notification-head span{display:block;color:var(--gold2);font:700 12px "Barlow Condensed";letter-spacing:1.4px}
+.notification-head small{display:block;color:#77736b;margin-top:2px}
+.notification-head button{min-height:30px!important;border:0;background:none;color:#b9a16d;font:600 10px "Barlow Condensed"!important;letter-spacing:.7px;cursor:pointer}
+.notification-list{max-height:475px;overflow:auto}
+.notification-item{display:grid;grid-template-columns:34px 1fr auto;gap:10px;align-items:start;padding:13px 15px;border-bottom:1px solid rgba(229,173,85,.09);cursor:pointer}
+.notification-item:hover{background:rgba(229,173,85,.055)}
+.notification-item.unread{background:linear-gradient(90deg,rgba(229,173,85,.10),rgba(229,173,85,.015))}
+.notification-icon{width:32px;height:32px;border-radius:8px;border:1px solid rgba(229,173,85,.23);display:grid;place-items:center;color:var(--gold2);font-size:15px}
+.notification-copy b{display:block;font:600 14px "Barlow Condensed";letter-spacing:.35px;color:#e6e1d8}
+.notification-copy p{margin:3px 0 0!important;color:#969087;font-size:12px!important;line-height:1.35}
+.notification-time{color:#6f6b64;font-size:10px;white-space:nowrap;margin-top:2px}
+.notification-empty{padding:30px 18px;text-align:center;color:#77736b;font-size:13px}
+@media(max-width:650px){.topbar{padding-left:16px!important;padding-right:16px!important}.topbar .online{display:none}.notification-panel{position:fixed;right:14px;top:65px;left:14px;width:auto}}
+
 </style>
 
 <style id="global-readability-upgrade">
@@ -477,7 +501,19 @@ input::placeholder, textarea::placeholder { font-size: 16px !important; opacity:
  <div class="account"><b>Ranger</b><small class="account-rank">RANG NICHT HINTERLEGT</small></div>
 </aside>
 <main class="main">
- <header class="topbar"><b id="pageName">COMMAND CENTER</b><span class="online">● NETZWERK AKTIV</span></header>
+ <header class="topbar">
+  <b id="pageName">COMMAND CENTER</b>
+  <div class="topbar-right">
+    <div class="notification-wrap">
+      <button type="button" id="notificationBell" class="notification-bell" aria-label="Benachrichtigungen">♢<span id="notificationBadge" class="notification-badge" style="display:none">0</span></button>
+      <div id="notificationPanel" class="notification-panel">
+        <div class="notification-head"><div><span>BENACHRICHTIGUNGEN</span><small id="notificationSub">Alles aktuell</small></div><button type="button" id="markAllNotificationsRead">ALLE GELESEN</button></div>
+        <div id="notificationList" class="notification-list"><div class="notification-empty">Keine neuen Benachrichtigungen.</div></div>
+      </div>
+    </div>
+    <span class="online">● NETZWERK AKTIV</span>
+  </div>
+</header>
  <div class="content">
   <section class="page active" id="dashboard">
    <div class="dashboard-top">
@@ -1094,6 +1130,68 @@ button.danger,.danger-btn,.btn-danger,[data-action="delete-vote"],button[onclick
   let presenceTimer=null,currentAvatarUrl='';
   const rangerRanks=['Ranger auf Probe','Ranger 1','Ranger 2','Ass. Chief','Chief'];
 
+  let notificationItems=[];
+  let notificationReadKeys=new Set();
+
+  function notificationReadStorageKey(){return 'ranger_ucp_notifications_read_'+(currentUser?.id||'guest');}
+  function loadNotificationReadState(){
+    try{notificationReadKeys=new Set(JSON.parse(localStorage.getItem(notificationReadStorageKey())||'[]'));}catch(e){notificationReadKeys=new Set();}
+  }
+  function saveNotificationReadState(){
+    try{localStorage.setItem(notificationReadStorageKey(),JSON.stringify([...notificationReadKeys].slice(-300)));}catch(e){}
+  }
+  function notificationWhenText(date){
+    if(!date)return '';
+    const d=new Date(date), now=new Date(), diff=d-now;
+    if(diff>0&&diff<86400000)return 'HEUTE';
+    if(diff>=86400000&&diff<172800000)return 'MORGEN';
+    return d.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'});
+  }
+  function renderNotifications(){
+    const list=document.getElementById('notificationList'),badge=document.getElementById('notificationBadge'),sub=document.getElementById('notificationSub');
+    if(!list)return;
+    const unread=notificationItems.filter(n=>!notificationReadKeys.has(n.key)).length;
+    if(badge){badge.textContent=unread>99?'99+':String(unread);badge.style.display=unread?'':'none';}
+    if(sub)sub.textContent=unread?unread+' ungelesen':'Alles aktuell';
+    list.innerHTML=notificationItems.length?notificationItems.map(n=>`<div class="notification-item ${notificationReadKeys.has(n.key)?'':'unread'}" data-notification="${escapeHtml(n.key)}" data-page-target="${escapeHtml(n.page||'dashboard')}"><div class="notification-icon">${n.icon}</div><div class="notification-copy"><b>${escapeHtml(n.title)}</b><p>${escapeHtml(n.text)}</p></div><span class="notification-time">${escapeHtml(n.when||'')}</span></div>`).join(''):'<div class="notification-empty">Keine aktuellen Benachrichtigungen.</div>';
+    list.querySelectorAll('.notification-item').forEach(el=>el.addEventListener('click',()=>{
+      notificationReadKeys.add(el.dataset.notification);saveNotificationReadState();renderNotifications();
+      document.getElementById('notificationPanel')?.classList.remove('open');
+      openPage(el.dataset.pageTarget||'dashboard');
+    }));
+  }
+  async function loadNotifications(){
+    if(!client||!currentUser)return;
+    loadNotificationReadState();
+    const now=new Date(),today=new Date();today.setHours(0,0,0,0);
+    const todayISO=today.toISOString().slice(0,10);
+    const in7=new Date(today);in7.setDate(in7.getDate()+7);const in7ISO=in7.toISOString().slice(0,10);
+    const queries=[];
+    if(currentPermissions?.dienstplan)queries.push(client.from('ucp_termine').select('id,titel,datum,uhrzeit,ort').gte('datum',todayISO).lte('datum',in7ISO).order('datum',{ascending:true}).order('uhrzeit',{ascending:true}));
+    else queries.push(Promise.resolve({data:[]}));
+    if(currentPermissions?.ranger_rat)queries.push(client.from('ucp_rat_abstimmungen').select('id,titel,status,endet_am,erstellt_am').order('erstellt_am',{ascending:false}));
+    else queries.push(Promise.resolve({data:[]}));
+    const [appointmentsQ,votesQ]=await Promise.all(queries);
+    const items=[];
+    (appointmentsQ.data||[]).forEach(a=>{
+      const dt=new Date(a.datum+'T'+((a.uhrzeit||'00:00').slice(0,5))+':00');
+      items.push({key:'termin:'+a.id+':'+a.datum+':'+a.uhrzeit,icon:'◷',title:a.titel,text:'Termin · '+dt.toLocaleDateString('de-DE')+' · '+(a.uhrzeit||'').slice(0,5)+' Uhr'+(a.ort?' · '+a.ort:''),when:notificationWhenText(dt),sort:dt.getTime(),page:'termine'});
+    });
+    (votesQ.data||[]).filter(v=>v.status!=='beendet'&&(!v.endet_am||new Date(v.endet_am)>now)).forEach(v=>{
+      const created=new Date(v.erstellt_am||now);
+      items.push({key:'rat:'+v.id,icon:'●',title:'Neue/aktive Ranger-Rat Abstimmung',text:v.titel+(v.endet_am?' · endet '+new Date(v.endet_am).toLocaleString('de-DE',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):''),when:notificationWhenText(created),sort:created.getTime(),page:'abstimmungen'});
+    });
+    notificationItems=items.sort((a,b)=>b.sort-a.sort).slice(0,30);
+    renderNotifications();
+  }
+  document.getElementById('notificationBell')?.addEventListener('click',e=>{e.stopPropagation();document.getElementById('notificationPanel')?.classList.toggle('open');});
+  document.getElementById('notificationPanel')?.addEventListener('click',e=>e.stopPropagation());
+  document.addEventListener('click',()=>document.getElementById('notificationPanel')?.classList.remove('open'));
+  document.getElementById('markAllNotificationsRead')?.addEventListener('click',()=>{
+    notificationItems.forEach(n=>notificationReadKeys.add(n.key));saveNotificationReadState();renderNotifications();
+  });
+
+
   const defaultNavOrder=['dashboard','profil','aktivitaet','termine','strafrechner','rechteverlesung','familien','abstimmungen','eid','verwaltung','rechte','einstellungen'];
   const navNames={dashboard:'Command Center',profil:'Mein Profil',aktivitaet:'Stream-Aktivität',termine:'Dienstplan',strafrechner:'Strafrechner',rechteverlesung:'Rechteverlesung',familien:'Familien',abstimmungen:'Ranger-Rat',eid:'Ranger-Eid',verwaltung:'Verwaltung',rechte:'Rechte & Rollen',einstellungen:'Einstellungen'};
   let personalNavOrder=[...defaultNavOrder];
@@ -1209,6 +1307,7 @@ button.danger,.danger-btn,.btn-danger,[data-action="delete-vote"],button[onclick
     if(currentPermissions.verwaltung) await loadAdministration();
     if(currentPermissions.stream_aktivitaet) await loadStreamActivity();
     if(currentPermissions.dashboard) await loadDashboard();
+    await loadNotifications();
     return true;
   }
   function escapeHtml(v){return String(v??'').replace(/[&<>'\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','\"':'&quot;'}[c]));}
@@ -1671,7 +1770,7 @@ button.danger,.danger-btn,.btn-danger,[data-action="delete-vote"],button[onclick
     const query=editingAppointmentId?client.from('ucp_termine').update(payload).eq('id',editingAppointmentId):client.from('ucp_termine').insert({...payload,erstellt_von:currentUser.id});
     const {error}=await query;btn.disabled=false;
     if(error){appointmentResult.textContent='Fehler: '+error.message;appointmentResult.className='appointment-result access-denied';return;}
-    appointmentModal.classList.remove('open');await loadAppointments();
+    appointmentModal.classList.remove('open');await loadAppointments();await loadNotifications();
   });
   async function deleteAppointment(item){
     if(!confirm('Termin „'+item.titel+'“ wirklich löschen?'))return;
