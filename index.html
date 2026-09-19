@@ -311,6 +311,20 @@ textarea.r-input{resize:vertical;min-height:76px}
 .rights-controls{grid-template-columns:repeat(2,minmax(180px,1fr)) minmax(180px,1fr) minmax(180px,1fr) auto!important}
 .rights-controls input{width:100%;margin-top:6px;background:#080d0a;border:1px solid rgba(239,191,97,.28);color:#fff;border-radius:7px;padding:11px;font-size:15px}
 .stream-activity-grid{display:grid;gap:18px;margin-top:18px}.stream-card{padding:22px}.stream-card-head{display:flex;justify-content:space-between;gap:18px;align-items:flex-start;margin-bottom:18px}.stream-card h3{margin:0;font:500 24px Georgia;color:#fff}.stream-meta{color:var(--muted);font-size:14px;margin-top:5px}.stream-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.stream-stat{padding:16px;border:1px solid rgba(239,191,97,.18);border-radius:12px;background:rgba(3,8,5,.55)}.stream-stat strong{display:block;font-size:24px;color:#efbf61}.stream-stat span{font-size:13px;color:#d8c9a7}.stream-days{margin-top:16px;display:flex;flex-wrap:wrap;gap:8px}.stream-day{padding:8px 11px;border-radius:999px;border:1px solid rgba(239,191,97,.25);background:rgba(239,191,97,.08);font-size:13px;color:#eee2c7}.stream-empty{color:var(--muted);font-size:14px;margin-top:14px}@media(max-width:1100px){.rights-controls{grid-template-columns:1fr 1fr!important}.stream-stats{grid-template-columns:1fr 1fr}}@media(max-width:650px){.rights-controls,.stream-stats{grid-template-columns:1fr!important}}
+
+/* Rechte & Rollen – kompakte aufklappbare Ranger */
+.rights-card{padding:0!important;overflow:hidden}
+.rights-head{margin:0!important;padding:18px 20px!important;cursor:pointer;user-select:none;transition:.2s ease}
+.rights-head:hover{background:rgba(239,191,97,.055)}
+.rights-head-main{display:flex;align-items:center;gap:14px;min-width:0}
+.rights-toggle{width:34px;height:34px;border-radius:50%;border:1px solid rgba(239,191,97,.42);background:rgba(239,191,97,.08);color:#efbf61;display:grid;place-items:center;font-size:17px;flex:0 0 auto;transition:transform .22s ease,background .22s ease}
+.rights-card.open .rights-toggle{transform:rotate(180deg);background:rgba(239,191,97,.16)}
+.rights-body{display:none;padding:0 20px 20px;border-top:1px solid rgba(239,191,97,.12)}
+.rights-card.open .rights-body{display:block;animation:rightsOpen .2s ease}
+@keyframes rightsOpen{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:none}}
+.rights-card .rights-controls{margin-top:18px}
+.rights-card .rights-result{margin-top:10px}
+
 </style>
 
 <style id="global-readability-upgrade">
@@ -893,8 +907,13 @@ button.danger,.danger-btn,.btn-danger,[data-action="delete-vote"],button[onclick
     wrap.innerHTML=rows.map(({allow:a,live:u})=>{
       const p=u?byUser[u.id]:a;
       const name=a.display_name||u?.display_name||u?.discord_name||'Noch nicht angemeldet';
-      return `<div class="glass rights-card" data-discord="${escapeHtml(a.discord_id)}" data-user="${escapeHtml(u?.id||'')}"><div class="rights-head"><div><div class="rights-name">${escapeHtml(name)}</div><div class="rights-meta">Discord-ID: ${escapeHtml(a.discord_id)} · ${u?'Discord verbunden':'noch nicht angemeldet'}${a.twitch_name?' · Twitch: '+escapeHtml(a.twitch_name):''}${a.joined_at?' · Dabei seit: '+new Date(a.joined_at+'T00:00:00').toLocaleDateString('de-DE'):''}</div></div><span class="label ${u?'':'pending-badge'}">${a.enabled?'FREIGESCHALTET':'GESPERRT'}</span></div><div class="rights-controls"><label>ZUGRIFF<select class="r-enabled"><option value="true" ${a.enabled?'selected':''}>Freigeschaltet</option><option value="false" ${!a.enabled?'selected':''}>Gesperrt</option></select></label><label>TWITCH<input class="r-twitch" value="${escapeHtml(a.twitch_name||'')}" placeholder="Twitch-Name"></label><label>DABEI SEIT<input class="r-joined" type="date" value="${escapeHtml(a.joined_at||'')}"></label><label>ROLLE<select class="r-role"><option value="mitglied" ${a.rolle==='mitglied'?'selected':''}>Mitglied</option><option value="administration" ${a.rolle==='administration'?'selected':''}>Administration</option></select></label><button class="rights-save" type="button">ÄNDERUNGEN SPEICHERN</button></div><div class="permission-grid">${permissionKeys.map(k=>`<label class="permission-item"><input type="checkbox" data-perm="${k}" ${p?.[k]?'checked':''}>${labels[k]}</label>`).join('')}</div><div class="rights-result"></div></div>`;
+      return `<div class="glass rights-card" data-discord="${escapeHtml(a.discord_id)}" data-user="${escapeHtml(u?.id||'')}"><div class="rights-head" role="button" tabindex="0" aria-expanded="false"><div class="rights-head-main"><span class="rights-toggle">⌄</span><div><div class="rights-name">${escapeHtml(name)}</div><div class="rights-meta">Discord-ID: ${escapeHtml(a.discord_id)} · ${u?'Discord verbunden':'noch nicht angemeldet'}${a.twitch_name?' · Twitch: '+escapeHtml(a.twitch_name):''}${a.joined_at?' · Dabei seit: '+new Date(a.joined_at+'T00:00:00').toLocaleDateString('de-DE'):''}</div></div></div><span class="label ${u?'':'pending-badge'}">${a.enabled?'FREIGESCHALTET':'GESPERRT'}</span></div><div class="rights-body"><div class="rights-controls"><label>ZUGRIFF<select class="r-enabled"><option value="true" ${a.enabled?'selected':''}>Freigeschaltet</option><option value="false" ${!a.enabled?'selected':''}>Gesperrt</option></select></label><label>TWITCH<input class="r-twitch" value="${escapeHtml(a.twitch_name||'')}" placeholder="Twitch-Name"></label><label>DABEI SEIT<input class="r-joined" type="date" value="${escapeHtml(a.joined_at||'')}"></label><label>ROLLE<select class="r-role"><option value="mitglied" ${a.rolle==='mitglied'?'selected':''}>Mitglied</option><option value="administration" ${a.rolle==='administration'?'selected':''}>Administration</option></select></label><button class="rights-save" type="button">ÄNDERUNGEN SPEICHERN</button></div><div class="permission-grid">${permissionKeys.map(k=>`<label class="permission-item"><input type="checkbox" data-perm="${k}" ${p?.[k]?'checked':''}>${labels[k]}</label>`).join('')}</div><div class="rights-result"></div></div></div>`;
     }).join('');
+    wrap.querySelectorAll('.rights-head').forEach(head=>{
+      const toggle=()=>{const card=head.closest('.rights-card');const open=card.classList.toggle('open');head.setAttribute('aria-expanded',String(open));};
+      head.addEventListener('click',toggle);
+      head.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();toggle();}});
+    });
     wrap.querySelectorAll('.rights-save').forEach(btn=>btn.addEventListener('click',()=>saveRights(btn.closest('.rights-card'))));
   }
   async function saveRights(card){
