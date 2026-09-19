@@ -887,6 +887,11 @@ button.danger,.danger-btn,.btn-danger,[data-action="delete-vote"],button[onclick
   // Stream-Aktivität
   async function loadStreamActivity(){
     const wrap=document.getElementById('streamActivity'), notice=document.getElementById('streamNotice'); if(!wrap||!notice)return;
+    notice.textContent='Twitch wird synchronisiert…';
+    try {
+      const syncRes=await fetch('/api/sync-twitch',{method:'POST'});
+      if(!syncRes.ok) console.warn('Twitch-Sync fehlgeschlagen',await syncRes.text());
+    } catch(e){ console.warn('Twitch-Sync nicht erreichbar',e); }
     notice.textContent='Stream-Aktivität wird geladen…';
     const [{data:people,error:pe},{data:sessions,error:se}]=await Promise.all([
       client.from('ucp_allowlist').select('discord_id,display_name,twitch_name,joined_at,enabled').eq('enabled',true).not('twitch_name','is',null).order('display_name',{ascending:true}),
