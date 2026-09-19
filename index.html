@@ -376,8 +376,20 @@ textarea.r-input{resize:vertical;min-height:76px}
 #designPrefsStatus{font-size:13px;color:#8fd39b}
 body.no-ucp-animations *,body.no-ucp-animations *:before,body.no-ucp-animations *:after{animation:none!important;transition:none!important}
 body.no-ucp-glass .glass,body.no-ucp-glass .card,body.no-ucp-glass .panel{backdrop-filter:none!important;-webkit-backdrop-filter:none!important;background:rgba(5,8,6,.94)!important}
-body:before{background:rgba(0,0,0,var(--user-bg-darkness,.42))!important}
+
 @media(max-width:760px){.design-settings-grid{grid-template-columns:1fr}}
+
+
+/* FIX: persönliche Hintergrund-Abdunklung */
+#userDarknessOverlay{
+  position:fixed;
+  inset:0;
+  z-index:0;
+  pointer-events:none;
+  background:#000;
+  opacity:var(--user-bg-darkness,.42);
+}
+.sidebar,.main,.app,.shell,#app,.login-gate{position:relative;z-index:1}
 
 </style>
 
@@ -415,6 +427,7 @@ input::placeholder, textarea::placeholder { font-size: 16px !important; opacity:
 </style>
 </head>
 <body>
+<div id="userDarknessOverlay" aria-hidden="true"></div>
 <div class="shell">
 <aside class="sidebar">
  <div class="logo"><div class="logo-mark"><span>★</span></div><small>RETRO ROLEPLAY</small><strong>RETRO<br>RANGER</strong></div>
