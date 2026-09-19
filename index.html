@@ -464,6 +464,28 @@ body.no-ucp-glass .glass,body.no-ucp-glass .card,body.no-ucp-glass .panel{backdr
  .admin-activity-person{grid-column:1/-1}
 }
 
+
+/* Globale Suche */
+.global-search-wrap{position:relative}
+.global-search-button{width:39px;height:39px;min-height:39px!important;border-radius:50%;border:1px solid rgba(229,173,85,.28);background:rgba(5,9,7,.78);color:var(--gold2);font-size:23px!important;cursor:pointer;display:grid;place-items:center}
+.global-search-button:hover{border-color:var(--gold);background:rgba(229,173,85,.08)}
+.global-search-panel{display:none;position:absolute;right:0;top:48px;width:min(520px,calc(100vw - 28px));max-height:610px;overflow:hidden;border:1px solid rgba(229,173,85,.34);border-radius:11px;background:rgba(5,9,7,.98);box-shadow:0 22px 60px rgba(0,0,0,.52);backdrop-filter:blur(18px);z-index:101}
+.global-search-panel.open{display:block}
+.global-search-input-wrap{display:flex;align-items:center;gap:10px;padding:13px;border-bottom:1px solid rgba(229,173,85,.16)}
+.global-search-input-wrap>span{color:var(--gold2);font-size:22px}
+.global-search-input-wrap input{width:100%;min-height:42px!important;border:1px solid rgba(229,173,85,.22);border-radius:8px;background:rgba(0,0,0,.32);color:#eee8de;padding:8px 11px;outline:none}
+.global-search-input-wrap input:focus{border-color:var(--gold)}
+.global-search-results{max-height:525px;overflow:auto;padding:6px}
+.global-search-group-title{padding:10px 10px 5px;color:#827c72;font:700 10px "Barlow Condensed";letter-spacing:1.2px}
+.global-search-result{display:grid;grid-template-columns:34px 1fr auto;gap:10px;align-items:center;width:100%;min-height:58px!important;padding:9px 10px;border:0;border-bottom:1px solid rgba(229,173,85,.08);background:transparent;color:#ddd8cf;text-align:left;cursor:pointer;border-radius:7px}
+.global-search-result:hover{background:rgba(229,173,85,.07)}
+.global-search-icon{width:32px;height:32px;border:1px solid rgba(229,173,85,.22);border-radius:8px;display:grid;place-items:center;color:var(--gold2)}
+.global-search-copy b{display:block;font:600 14px "Barlow Condensed";letter-spacing:.4px}
+.global-search-copy small{display:block;color:#77736b;margin-top:2px;font-size:11px!important}
+.global-search-go{color:#9d8c67;font-size:16px}
+.global-search-empty{padding:30px 16px;text-align:center;color:#77736b;font-size:13px}
+@media(max-width:650px){.global-search-panel{position:fixed;left:14px;right:14px;top:65px;width:auto}}
+
 </style>
 
 <style id="global-readability-upgrade">
@@ -524,6 +546,18 @@ input::placeholder, textarea::placeholder { font-size: 16px !important; opacity:
  <header class="topbar">
   <b id="pageName">COMMAND CENTER</b>
   <div class="topbar-right">
+    <div class="global-search-wrap">
+      <button type="button" id="globalSearchButton" class="global-search-button" aria-label="UCP durchsuchen">⌕</button>
+      <div id="globalSearchPanel" class="global-search-panel">
+        <div class="global-search-input-wrap">
+          <span>⌕</span>
+          <input id="globalSearchInput" type="search" autocomplete="off" placeholder="Ranger, Familien, Termine, Straftaten …">
+        </div>
+        <div id="globalSearchResults" class="global-search-results">
+          <div class="global-search-empty">Tippe etwas ein, um das UCP zu durchsuchen.</div>
+        </div>
+      </div>
+    </div>
     <div class="notification-wrap">
       <button type="button" id="notificationBell" class="notification-bell" aria-label="Benachrichtigungen">♢<span id="notificationBadge" class="notification-badge" style="display:none">0</span></button>
       <div id="notificationPanel" class="notification-panel">
@@ -1161,6 +1195,88 @@ button.danger,.danger-btn,.btn-danger,[data-action="delete-vote"],button[onclick
   let presenceTimer=null,currentAvatarUrl='';
   const rangerRanks=['Ranger auf Probe','Ranger 1','Ranger 2','Ass. Chief','Chief'];
 
+
+  let globalSearchData={rangers:[],families:[],appointments:[],offenses:[]};
+  let globalSearchLoaded=false;
+
+  async function loadGlobalSearchData(force=false){
+    if(globalSearchLoaded&&!force)return;
+    const jobs=[
+      currentPermissions?.profil||currentPermissions?.rechte_rollen||currentPermissions?.verwaltung
+        ? client.from('ucp_allowlist').select('discord_id,display_name,ranger_rang,twitch_name').eq('enabled',true)
+        : Promise.resolve({data:[]}),
+      currentPermissions?.familien
+        ? client.from('familien').select('*')
+        : Promise.resolve({data:[]}),
+      currentPermissions?.dienstplan
+        ? client.from('ucp_termine').select('id,titel,datum,uhrzeit,ort,beschreibung')
+        : Promise.resolve({data:[]}),
+      currentPermissions?.strafrechner
+        ? client.from('strafkatalog').select('id,kategorie,straftat,beschreibung,geldstrafe,hafteinheiten').eq('aktiv',true)
+        : Promise.resolve({data:[]})
+    ];
+    const [r,f,a,o]=await Promise.all(jobs);
+    globalSearchData={rangers:r.data||[],families:f.data||[],appointments:a.data||[],offenses:o.data||[]};
+    globalSearchLoaded=true;
+  }
+
+  function searchText(v){return String(v??'').toLocaleLowerCase('de-DE');}
+  function globalSearchMatches(q){
+    const needle=searchText(q).trim();if(!needle)return [];
+    const results=[];
+    globalSearchData.rangers.forEach(x=>{
+      const hay=[x.display_name,x.ranger_rang,x.twitch_name,x.discord_id].map(searchText).join(' ');
+      if(hay.includes(needle))results.push({group:'RANGER',icon:'♟',title:x.display_name||'Ranger',sub:[x.ranger_rang,x.twitch_name?'Twitch: '+x.twitch_name:null].filter(Boolean).join(' · '),page:currentPermissions?.rechte_rollen?'rechte':'profil'});
+    });
+    globalSearchData.families.forEach(x=>{
+      const title=x.name||x.familienname||x.titel||'Familie';
+      const hay=Object.values(x).map(searchText).join(' ');
+      if(hay.includes(needle))results.push({group:'FAMILIEN',icon:'◇',title,sub:x.ort||x.location||x.beschreibung||'Familie',page:'familien'});
+    });
+    globalSearchData.appointments.forEach(x=>{
+      const hay=[x.titel,x.ort,x.beschreibung,x.datum].map(searchText).join(' ');
+      if(hay.includes(needle))results.push({group:'TERMINE',icon:'◷',title:x.titel,sub:(x.datum?new Date(x.datum+'T12:00:00').toLocaleDateString('de-DE'):'')+(x.uhrzeit?' · '+String(x.uhrzeit).slice(0,5)+' Uhr':'')+(x.ort?' · '+x.ort:''),page:'termine'});
+    });
+    globalSearchData.offenses.forEach(x=>{
+      const hay=[x.kategorie,x.straftat,x.beschreibung].map(searchText).join(' ');
+      if(hay.includes(needle))results.push({group:'STRAFKATALOG',icon:'§',title:x.straftat,sub:[x.kategorie,Number(x.geldstrafe||0).toLocaleString('de-DE')+' $',Number(x.hafteinheiten||0)+' HE'].filter(Boolean).join(' · '),page:'strafrechner'});
+    });
+    return results.slice(0,30);
+  }
+
+  function renderGlobalSearch(q){
+    const wrap=document.getElementById('globalSearchResults');if(!wrap)return;
+    if(!String(q||'').trim()){wrap.innerHTML='<div class="global-search-empty">Tippe etwas ein, um das UCP zu durchsuchen.</div>';return;}
+    const results=globalSearchMatches(q);
+    if(!results.length){wrap.innerHTML='<div class="global-search-empty">Keine passenden Ergebnisse gefunden.</div>';return;}
+    const groups=[...new Set(results.map(x=>x.group))];
+    wrap.innerHTML=groups.map(group=>`<div class="global-search-group-title">${group}</div>`+results.filter(x=>x.group===group).map((x,i)=>`<button type="button" class="global-search-result" data-search-page="${escapeHtml(x.page)}"><span class="global-search-icon">${x.icon}</span><span class="global-search-copy"><b>${escapeHtml(x.title)}</b><small>${escapeHtml(x.sub||'')}</small></span><span class="global-search-go">›</span></button>`).join('')).join('');
+    wrap.querySelectorAll('.global-search-result').forEach(b=>b.addEventListener('click',()=>{
+      document.getElementById('globalSearchPanel')?.classList.remove('open');
+      openPage(b.dataset.searchPage);
+    }));
+  }
+
+  document.getElementById('globalSearchButton')?.addEventListener('click',async e=>{
+    e.stopPropagation();
+    const panel=document.getElementById('globalSearchPanel');
+    const opening=!panel?.classList.contains('open');
+    document.getElementById('notificationPanel')?.classList.remove('open');
+    panel?.classList.toggle('open');
+    if(opening){
+      await loadGlobalSearchData(true);
+      const input=document.getElementById('globalSearchInput');
+      setTimeout(()=>input?.focus(),20);
+      renderGlobalSearch(input?.value||'');
+    }
+  });
+  document.getElementById('globalSearchPanel')?.addEventListener('click',e=>e.stopPropagation());
+  document.getElementById('globalSearchInput')?.addEventListener('input',e=>renderGlobalSearch(e.target.value));
+  document.addEventListener('keydown',e=>{
+    if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();document.getElementById('globalSearchButton')?.click();}
+    if(e.key==='Escape')document.getElementById('globalSearchPanel')?.classList.remove('open');
+  });
+
   let notificationItems=[];
   let notificationReadKeys=new Set();
 
@@ -1217,7 +1333,7 @@ button.danger,.danger-btn,.btn-danger,[data-action="delete-vote"],button[onclick
   }
   document.getElementById('notificationBell')?.addEventListener('click',e=>{e.stopPropagation();document.getElementById('notificationPanel')?.classList.toggle('open');});
   document.getElementById('notificationPanel')?.addEventListener('click',e=>e.stopPropagation());
-  document.addEventListener('click',()=>document.getElementById('notificationPanel')?.classList.remove('open'));
+  document.addEventListener('click',()=>{document.getElementById('notificationPanel')?.classList.remove('open');document.getElementById('globalSearchPanel')?.classList.remove('open');});
   document.getElementById('markAllNotificationsRead')?.addEventListener('click',()=>{
     notificationItems.forEach(n=>notificationReadKeys.add(n.key));saveNotificationReadState();renderNotifications();
   });
