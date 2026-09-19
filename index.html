@@ -336,6 +336,9 @@ textarea.r-input{resize:vertical;min-height:76px}
 .rights-delete{border:1px solid rgba(255,100,100,.55);background:rgba(145,35,35,.22);color:#ffaaaa;border-radius:999px;padding:11px 18px;font-weight:900;cursor:pointer}
 .rights-delete:hover{background:rgba(175,45,45,.38)}
 .rights-delete:disabled{opacity:.45;cursor:not-allowed}
+
+/* Mein Profil */
+.profile-page-grid{display:grid;grid-template-columns:320px 1fr;gap:18px;margin-top:24px}.profile-main-card,.profile-details-card{padding:24px}.profile-main-card{text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:220px}.profile-page-avatar{width:78px;height:78px;border:1px solid var(--gold);border-radius:50%;display:grid;place-items:center;font:500 32px Georgia;color:var(--gold2);background:rgba(229,173,85,.08);box-shadow:0 0 28px rgba(229,173,85,.08)}.profile-page-name{font:500 28px Georgia;margin-top:14px}.profile-page-rank{color:var(--gold2);font-size:17px;margin-top:4px}.profile-page-status{margin-top:15px;color:var(--green);font-size:14px;letter-spacing:1.3px}.profile-section-title{color:var(--gold);font-size:11px;letter-spacing:2px;margin-bottom:18px}.profile-detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.profile-detail-grid>div{padding:16px;border:1px solid rgba(229,173,85,.17);background:rgba(0,0,0,.2);border-radius:10px}.profile-detail-grid span,.profile-stat span{display:block;color:var(--muted);font-size:11px;letter-spacing:1.4px}.profile-detail-grid strong{display:block;margin-top:6px;font-size:18px;font-weight:500}.profile-stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:14px}.profile-stat{padding:18px 20px;min-height:112px}.profile-stat strong{display:block;font:500 27px Georgia;color:#fff;margin:8px 0 3px}.profile-stat strong.rank-text{font-size:21px;color:var(--gold2)}.profile-stat small{color:var(--muted);font-size:13px}@media(max-width:1000px){.profile-page-grid{grid-template-columns:1fr}.profile-stat-grid{grid-template-columns:1fr 1fr}}@media(max-width:620px){.profile-detail-grid,.profile-stat-grid{grid-template-columns:1fr}}
 </style>
 
 <style id="global-readability-upgrade">
@@ -414,7 +417,32 @@ input::placeholder, textarea::placeholder { font-size: 16px !important; opacity:
     <div class="glass panel"><div class="panel-title"><span>ϟ　SCHNELLZUGRIFF</span></div><div class="quick"><button onclick="openPage('termine')"><span>▣</span>DIENSTPLAN</button><button onclick="openPage('strafrechner')"><span>§</span>STRAFRECHNER</button><button onclick="openPage('abstimmungen')"><span>◎</span>RANGER-RAT</button></div></div>
    </div>
   </section>
-  <section class="page inner" id="profil"><h1>Mein Profil</h1><div class="sub">Ranger-Profil und persönliche Übersicht.</div><div class="glass placeholder" id="profileIdentity">Ranger · Rang nicht hinterlegt</div></section>
+  <section class="page inner" id="profil">
+  <h1>Mein Profil</h1><div class="sub">Deine Ranger-Identität und persönliche Aktivität auf einen Blick.</div>
+  <div class="profile-page-grid">
+    <div class="glass profile-main-card">
+      <div class="profile-page-avatar" id="profileAvatar">R</div>
+      <div class="profile-page-name" id="profileName">Ranger</div>
+      <div class="profile-page-rank" id="profileRank">Rang nicht hinterlegt</div>
+      <div class="profile-page-status">● IM DIENST</div>
+    </div>
+    <div class="glass profile-details-card">
+      <div class="profile-section-title">RANGER-DATEN</div>
+      <div class="profile-detail-grid">
+        <div><span>DISCORD</span><strong id="profileDiscord">–</strong></div>
+        <div><span>TWITCH</span><strong id="profileTwitch">–</strong></div>
+        <div><span>DABEI SEIT</span><strong id="profileJoined">–</strong></div>
+        <div><span>UCP-ROLLE</span><strong id="profileUcpRole">–</strong></div>
+      </div>
+    </div>
+  </div>
+  <div class="profile-stat-grid">
+    <div class="glass profile-stat"><span>STREAMSTUNDEN</span><strong id="profileHours">0 h</strong><small>Gesamt</small></div>
+    <div class="glass profile-stat"><span>STREAMTAGE</span><strong id="profileDays">0</strong><small>Gesamt</small></div>
+    <div class="glass profile-stat"><span>LETZTE 30 TAGE</span><strong id="profileHours30">0 h</strong><small id="profileDays30">0 Streamtage</small></div>
+    <div class="glass profile-stat"><span>RANGER-RANG</span><strong class="rank-text" id="profileRankStat">–</strong><small>Aktueller Rang</small></div>
+  </div>
+</section>
   <section class="page inner" id="aktivitaet"><h1>Stream-Aktivität</h1><div class="sub">Streamstunden, Streamtage und die einzelnen Streaming-Tage der Ranger.</div><div id="streamNotice" class="glass placeholder">Stream-Aktivität wird geladen…</div><div id="streamActivity" class="stream-activity-grid"></div></section>
   <section class="page inner" id="termine">
   <div class="appointment-titlebar"><div><h1>Dienstplan</h1><div class="sub">Termine und Ranger-Einsätze verwalten.</div></div><button class="rights-add" id="addAppointment" type="button">+ TERMIN ANLEGEN</button></div>
@@ -893,6 +921,7 @@ button.danger,.danger-btn,.btn-danger,[data-action="delete-vote"],button[onclick
     const {data:allowSelf}=await client.from('ucp_allowlist').select('ranger_rang').eq('discord_id',userRow.discord_id).maybeSingle();
     currentRangerRank=allowSelf?.ranger_rang||'';
     hideGate(); applyPermissions();
+    if(currentPermissions.profil) await loadProfile();
     const meta=session.user.user_metadata||{};
     const discordName=userRow.display_name||userRow.discord_name||meta.full_name||meta.name||meta.user_name||'Ranger';
     document.querySelectorAll('.profile-name').forEach(x=>x.textContent=discordName);
@@ -986,6 +1015,26 @@ button.danger,.danger-btn,.btn-danger,[data-action="delete-vote"],button[onclick
     setTimeout(()=>addModal.classList.remove('open'),500); await loadRightsUsers();
   });
 
+
+  // Mein Profil
+  async function loadProfile(){
+    if(!client||!currentUser||!currentAccess)return;
+    const {data:allow}=await client.from('ucp_allowlist').select('display_name,twitch_name,joined_at,ranger_rang,rolle,discord_id').eq('discord_id',currentAccess.discord_id).maybeSingle();
+    const {data:sessions}=await client.from('stream_sessions').select('stream_date,duration_minutes').eq('discord_id',currentAccess.discord_id).order('stream_date',{ascending:false});
+    const name=allow?.display_name||currentAccess.display_name||currentAccess.discord_name||'Ranger';
+    const rank=allow?.ranger_rang||currentRangerRank||'Rang nicht hinterlegt';
+    const role=(allow?.rolle||currentAccess.rolle)==='administration'?'Administration':'Mitglied';
+    const set=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v};
+    set('profileName',name);set('profileAvatar',(name.trim()[0]||'R').toUpperCase());set('profileRank',rank);set('profileRankStat',rank);
+    set('profileDiscord',currentAccess.discord_name||name);set('profileTwitch',allow?.twitch_name||'Nicht hinterlegt');set('profileUcpRole',role);
+    set('profileJoined',allow?.joined_at?new Date(allow.joined_at+'T12:00:00').toLocaleDateString('de-DE'):'Nicht hinterlegt');
+    const all=sessions||[], mins=all.reduce((n,x)=>n+Number(x.duration_minutes||0),0), days=new Set(all.map(x=>x.stream_date)).size;
+    const cut=new Date();cut.setDate(cut.getDate()-29);cut.setHours(0,0,0,0);
+    const last30=all.filter(x=>new Date(x.stream_date+'T12:00:00')>=cut);
+    const mins30=last30.reduce((n,x)=>n+Number(x.duration_minutes||0),0),days30=new Set(last30.map(x=>x.stream_date)).size;
+    const h=m=>(m/60).toLocaleString('de-DE',{minimumFractionDigits:0,maximumFractionDigits:1})+' h';
+    set('profileHours',h(mins));set('profileDays',days);set('profileHours30',h(mins30));set('profileDays30',days30+' Streamtag'+(days30===1?'':'e'));
+  }
 
   // Stream-Aktivität
   async function loadStreamActivity(){
