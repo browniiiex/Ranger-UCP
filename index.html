@@ -621,6 +621,25 @@ loadOffenses();
 .discord-login:hover{filter:brightness(1.06)}
 #authMsg{min-height:20px;margin-top:12px;font-size:12px;color:#ff9a9a}
 #logoutBtn{margin-top:10px;width:100%;background:transparent;border:1px solid rgba(239,191,97,.25);color:#d8c9a7;border-radius:7px;padding:9px;cursor:pointer}
+
+/* Lesbarkeit in allen Formularfeldern */
+input, textarea, select, .r-input,
+.rights-form-grid input, .rights-form-grid select,
+.appointment-form input, .appointment-form textarea {
+  font-family: "Barlow Condensed", Arial, sans-serif !important;
+  font-size: 17px !important;
+  line-height: 1.35 !important;
+  min-height: 46px;
+  padding: 12px 14px !important;
+  color: #fff !important;
+}
+textarea, textarea.r-input, .appointment-form textarea { min-height: 110px; }
+input::placeholder, textarea::placeholder { color: rgba(255,255,255,.58) !important; opacity: 1; }
+.appointment-form label, .rights-form-grid label, .rights-controls label, .form-grid label {
+  font-size: 13px !important;
+  line-height: 1.35;
+}
+.appointment-result, .rights-create-result, .copy-status { font-size: 14px !important; }
 </style>
 <div class="rights-modal" id="rightsAddModal"><div class="rights-modal-box"><div class="rights-modal-head"><h3>Benutzer hinzufügen</h3><button type="button" class="rights-close" id="rightsAddClose">×</button></div><div class="rights-form-grid"><label>DISCORD-ID<input id="newDiscordId" inputmode="numeric" placeholder="z. B. 123456789012345678"></label><label>ANZEIGENAME<input id="newDisplayName" placeholder="Name im UCP"></label><label>ROLLE<select id="newRole"><option value="mitglied">Mitglied</option><option value="administration">Administration</option></select></label><label>ZUGRIFF<select id="newEnabled"><option value="true">Freigeschaltet</option><option value="false">Gesperrt</option></select></label></div><div class="permission-grid" id="newPermissionGrid"></div><button type="button" class="rights-create" id="createRightsUser">BENUTZER ANLEGEN</button><div class="rights-create-result" id="createRightsResult"></div></div></div><div class="appointment-modal" id="appointmentModal"><div class="appointment-modal-box"><div class="rights-modal-head"><h3 id="appointmentModalTitle">Termin anlegen</h3><button class="rights-close" id="appointmentClose" type="button">×</button></div><div class="appointment-form"><label>TITEL<input class="r-input" id="appointmentTitle" placeholder="z. B. Ranger-Besprechung"></label><label>ORT<input class="r-input" id="appointmentPlace" placeholder="z. B. Ranger HQ"></label><label>DATUM<input class="r-input" id="appointmentDate" type="date"></label><label>UHRZEIT<input class="r-input" id="appointmentTime" type="time"></label><label class="span2">BESCHREIBUNG<textarea class="r-input" id="appointmentDescription" rows="4" placeholder="Weitere Informationen…"></textarea></label></div><button class="appointment-save" id="appointmentSave" type="button">TERMIN SPEICHERN</button><div class="appointment-result" id="appointmentResult"></div></div></div>
 <div id="authGate">
