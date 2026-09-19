@@ -328,6 +328,14 @@ textarea.r-input{resize:vertical;min-height:76px}
 
 /* Live Command Center */
 .dash-link{cursor:pointer;color:var(--gold);font-size:13px;white-space:nowrap}.dash-link:hover{text-decoration:underline}.dash-empty{padding:18px 4px;color:#b7b7b7}.dash-mini-row{display:flex;align-items:center;gap:12px;padding:12px 2px;border-bottom:1px solid rgba(255,255,255,.08)}.dash-mini-row:last-child{border-bottom:0}.dash-mini-date{width:46px;min-width:46px;text-align:center;color:var(--gold);font-weight:800;line-height:1.05}.dash-mini-date strong{display:block;font-size:22px}.dash-mini-main{min-width:0;flex:1}.dash-mini-main b{display:block;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.dash-mini-main small{display:block;color:#aaa;margin-top:3px}.dash-pill{border:1px solid rgba(210,169,69,.5);border-radius:999px;padding:5px 9px;color:var(--gold);font-size:11px;font-weight:800;white-space:nowrap}
+
+/* Ranger-Ränge / Upranks / Benutzer löschen */
+.rights-rank-actions{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-top:14px}
+.rights-rank-actions label{min-width:240px;flex:1;display:flex;flex-direction:column;gap:6px;color:#d8c9a7;font-size:12px;font-weight:700}
+.rights-rank-actions select{background:#080d0a;border:1px solid rgba(239,191,97,.28);color:#fff;border-radius:7px;padding:11px;font-size:15px}
+.rights-delete{border:1px solid rgba(255,100,100,.55);background:rgba(145,35,35,.22);color:#ffaaaa;border-radius:999px;padding:11px 18px;font-weight:900;cursor:pointer}
+.rights-delete:hover{background:rgba(175,45,45,.38)}
+.rights-delete:disabled{opacity:.45;cursor:not-allowed}
 </style>
 
 <style id="global-readability-upgrade">
@@ -380,7 +388,7 @@ input::placeholder, textarea::placeholder { font-size: 16px !important; opacity:
   <button data-page="rechte">⌘　RECHTE & ROLLEN</button>
   <button data-page="einstellungen">＋　EINSTELLUNGEN</button>
  </nav>
- <div class="account"><b>Brownie</b><small>RANGER-LEITUNG</small></div>
+ <div class="account"><b>Ranger</b><small class="account-rank">RANG NICHT HINTERLEGT</small></div>
 </aside>
 <main class="main">
  <header class="topbar"><b id="pageName">COMMAND CENTER</b><span class="online">● NETZWERK AKTIV</span></header>
@@ -406,7 +414,7 @@ input::placeholder, textarea::placeholder { font-size: 16px !important; opacity:
     <div class="glass panel"><div class="panel-title"><span>ϟ　SCHNELLZUGRIFF</span></div><div class="quick"><button onclick="openPage('termine')"><span>▣</span>DIENSTPLAN</button><button onclick="openPage('strafrechner')"><span>§</span>STRAFRECHNER</button><button onclick="openPage('abstimmungen')"><span>◎</span>RANGER-RAT</button></div></div>
    </div>
   </section>
-  <section class="page inner" id="profil"><h1>Mein Profil</h1><div class="sub">Ranger-Profil und persönliche Übersicht.</div><div class="glass placeholder">Brownie · Ranger-Leitung</div></section>
+  <section class="page inner" id="profil"><h1>Mein Profil</h1><div class="sub">Ranger-Profil und persönliche Übersicht.</div><div class="glass placeholder" id="profileIdentity">Ranger · Rang nicht hinterlegt</div></section>
   <section class="page inner" id="aktivitaet"><h1>Stream-Aktivität</h1><div class="sub">Streamstunden, Streamtage und die einzelnen Streaming-Tage der Ranger.</div><div id="streamNotice" class="glass placeholder">Stream-Aktivität wird geladen…</div><div id="streamActivity" class="stream-activity-grid"></div></section>
   <section class="page inner" id="termine">
   <div class="appointment-titlebar"><div><h1>Dienstplan</h1><div class="sub">Termine und Ranger-Einsätze verwalten.</div></div><button class="rights-add" id="addAppointment" type="button">+ TERMIN ANLEGEN</button></div>
@@ -831,7 +839,7 @@ button.danger,.danger-btn,.btn-danger,[data-action="delete-vote"],button[onclick
 #familyModal #familyClose{position:absolute!important;top:14px!important;right:14px!important;left:auto!important}
 @media(max-width:700px){#familyModal>.rights-modal-card{width:100%!important;max-width:100%!important}#familyModal .rights-create-grid{grid-template-columns:1fr!important}#familyModal .rights-create-grid>.span2{grid-column:1!important}}
 </style>
-<div class="rights-modal" id="rightsAddModal"><div class="rights-modal-box"><div class="rights-modal-head"><h3>Benutzer hinzufügen</h3><button type="button" class="rights-close" id="rightsAddClose">×</button></div><div class="rights-form-grid"><label>DISCORD-ID<input id="newDiscordId" inputmode="numeric" placeholder="z. B. 123456789012345678"></label><label>ANZEIGENAME<input id="newDisplayName" placeholder="Name im UCP"></label><label>TWITCH-NAME<input id="newTwitchName" placeholder="z. B. Browniiiex"></label><label>DABEI SEIT<input id="newJoinedAt" type="date"></label><label>ROLLE<select id="newRole"><option value="mitglied">Mitglied</option><option value="administration">Administration</option></select></label><label>ZUGRIFF<select id="newEnabled"><option value="true">Freigeschaltet</option><option value="false">Gesperrt</option></select></label></div><div class="permission-grid" id="newPermissionGrid"></div><button type="button" class="rights-create" id="createRightsUser">BENUTZER ANLEGEN</button><div class="rights-create-result" id="createRightsResult"></div></div></div><div class="appointment-modal" id="appointmentModal"><div class="appointment-modal-box"><div class="rights-modal-head"><h3 id="appointmentModalTitle">Termin anlegen</h3><button class="rights-close" id="appointmentClose" type="button">×</button></div><div class="appointment-form"><label>TITEL<input class="r-input" id="appointmentTitle" placeholder="z. B. Ranger-Besprechung"></label><label>ORT<input class="r-input" id="appointmentPlace" placeholder="z. B. Ranger HQ"></label><label>DATUM<input class="r-input" id="appointmentDate" type="date"></label><label>UHRZEIT<input class="r-input" id="appointmentTime" type="time"></label><label class="span2">BESCHREIBUNG<textarea class="r-input" id="appointmentDescription" rows="4" placeholder="Weitere Informationen…"></textarea></label></div><button class="appointment-save" id="appointmentSave" type="button">TERMIN SPEICHERN</button><div class="appointment-result" id="appointmentResult"></div></div></div>
+<div class="rights-modal" id="rightsAddModal"><div class="rights-modal-box"><div class="rights-modal-head"><h3>Benutzer hinzufügen</h3><button type="button" class="rights-close" id="rightsAddClose">×</button></div><div class="rights-form-grid"><label>DISCORD-ID<input id="newDiscordId" inputmode="numeric" placeholder="z. B. 123456789012345678"></label><label>ANZEIGENAME<input id="newDisplayName" placeholder="Name im UCP"></label><label>TWITCH-NAME<input id="newTwitchName" placeholder="z. B. Browniiiex"></label><label>DABEI SEIT<input id="newJoinedAt" type="date"></label><label>RANGER-RANG<select id="newRangerRank"><option value="">Kein Rang</option><option>Ranger auf Probe</option><option>Ranger 1</option><option>Ranger 2</option><option>Ass. Chief</option><option>Chief</option></select></label><label>ROLLE<select id="newRole"><option value="mitglied">Mitglied</option><option value="administration">Administration</option></select></label><label>ZUGRIFF<select id="newEnabled"><option value="true">Freigeschaltet</option><option value="false">Gesperrt</option></select></label></div><div class="permission-grid" id="newPermissionGrid"></div><button type="button" class="rights-create" id="createRightsUser">BENUTZER ANLEGEN</button><div class="rights-create-result" id="createRightsResult"></div></div></div><div class="appointment-modal" id="appointmentModal"><div class="appointment-modal-box"><div class="rights-modal-head"><h3 id="appointmentModalTitle">Termin anlegen</h3><button class="rights-close" id="appointmentClose" type="button">×</button></div><div class="appointment-form"><label>TITEL<input class="r-input" id="appointmentTitle" placeholder="z. B. Ranger-Besprechung"></label><label>ORT<input class="r-input" id="appointmentPlace" placeholder="z. B. Ranger HQ"></label><label>DATUM<input class="r-input" id="appointmentDate" type="date"></label><label>UHRZEIT<input class="r-input" id="appointmentTime" type="time"></label><label class="span2">BESCHREIBUNG<textarea class="r-input" id="appointmentDescription" rows="4" placeholder="Weitere Informationen…"></textarea></label></div><button class="appointment-save" id="appointmentSave" type="button">TERMIN SPEICHERN</button><div class="appointment-result" id="appointmentResult"></div></div></div>
 <div id="authGate">
   <div class="auth-box">
     <div class="auth-mark">◆</div>
@@ -852,7 +860,8 @@ button.danger,.danger-btn,.btn-danger,[data-action="delete-vote"],button[onclick
   const permissionKeys=['dashboard','profil','stream_aktivitaet','dienstplan','strafrechner','familien','ranger_rat','ranger_eid','verwaltung','rechte_rollen','einstellungen'];
   const pagePermission={dashboard:'dashboard',profil:'profil',aktivitaet:'stream_aktivitaet',termine:'dienstplan',strafrechner:'strafrechner',familien:'familien',abstimmungen:'ranger_rat',eid:'ranger_eid',verwaltung:'verwaltung',rechte:'rechte_rollen',einstellungen:'einstellungen'};
   const labels={dashboard:'Command Center',profil:'Mein Profil',stream_aktivitaet:'Stream-Aktivität',dienstplan:'Dienstplan',strafrechner:'Strafrechner',familien:'Familien',ranger_rat:'Ranger-Rat',ranger_eid:'Ranger-Eid',verwaltung:'Verwaltung',rechte_rollen:'Rechte & Rollen',einstellungen:'Einstellungen'};
-  let client=null,currentUser=null,currentAccess=null,currentPermissions=null;
+  let client=null,currentUser=null,currentAccess=null,currentPermissions=null,currentRangerRank='';
+  const rangerRanks=['Ranger auf Probe','Ranger 1','Ranger 2','Ass. Chief','Chief'];
   const addModal=document.getElementById('rightsAddModal'), addBtn=document.getElementById('addRightsUser'), addClose=document.getElementById('rightsAddClose'), createBtn=document.getElementById('createRightsUser'), createResult=document.getElementById('createRightsResult');
   const newPermissionGrid=document.getElementById('newPermissionGrid');
   if(newPermissionGrid) newPermissionGrid.innerHTML=permissionKeys.map(k=>`<label class="permission-item"><input type="checkbox" data-new-perm="${k}" ${['dashboard','profil','stream_aktivitaet','dienstplan','strafrechner','ranger_eid','einstellungen'].includes(k)?'checked':''}>${labels[k]}</label>`).join('');
@@ -881,11 +890,14 @@ button.danger,.danger-btn,.btn-danger,[data-action="delete-vote"],button[onclick
     const {data:perms,error:permErr}=await client.from('ucp_permissions').select('*').eq('user_id',session.user.id).maybeSingle();
     if(permErr || !perms){ showGate('Deine UCP-Rechte konnten nicht geladen werden.',false); return false; }
     currentAccess=userRow; currentPermissions=perms;
+    const {data:allowSelf}=await client.from('ucp_allowlist').select('ranger_rang').eq('discord_id',userRow.discord_id).maybeSingle();
+    currentRangerRank=allowSelf?.ranger_rang||'';
     hideGate(); applyPermissions();
     const meta=session.user.user_metadata||{};
     const discordName=userRow.display_name||userRow.discord_name||meta.full_name||meta.name||meta.user_name||'Ranger';
     document.querySelectorAll('.profile-name').forEach(x=>x.textContent=discordName);
-    const account=document.querySelector('.account'); if(account) account.innerHTML='<b>'+escapeHtml(discordName)+'</b><small>'+escapeHtml(userRow.rolle==='administration'?'ADMINISTRATION':'MITGLIED')+'</small>';
+    const account=document.querySelector('.account'); if(account) account.innerHTML='<b>'+escapeHtml(discordName)+'</b><small class="account-rank">'+escapeHtml((currentRangerRank||'Rang nicht hinterlegt').toUpperCase())+'</small>';
+    const profileIdentity=document.getElementById('profileIdentity'); if(profileIdentity) profileIdentity.textContent=discordName+' · '+(currentRangerRank||'Rang nicht hinterlegt');
     if(currentPermissions.rechte_rollen) await loadRightsUsers();
     if(currentPermissions.dienstplan) await loadAppointments();
     if(currentPermissions.familien) await loadFamilies();
@@ -912,7 +924,7 @@ button.danger,.danger-btn,.btn-danger,[data-action="delete-vote"],button[onclick
     wrap.innerHTML=rows.map(({allow:a,live:u})=>{
       const p=u?byUser[u.id]:a;
       const name=a.display_name||u?.display_name||u?.discord_name||'Noch nicht angemeldet';
-      return `<div class="glass rights-card" data-discord="${escapeHtml(a.discord_id)}" data-user="${escapeHtml(u?.id||'')}"><div class="rights-head" role="button" tabindex="0" aria-expanded="false"><div class="rights-head-main"><span class="rights-toggle">⌄</span><div><div class="rights-name">${escapeHtml(name)}</div><div class="rights-meta">Discord-ID: ${escapeHtml(a.discord_id)} · ${u?'Discord verbunden':'noch nicht angemeldet'}${a.twitch_name?' · Twitch: '+escapeHtml(a.twitch_name):''}${a.joined_at?' · Dabei seit: '+new Date(a.joined_at+'T00:00:00').toLocaleDateString('de-DE'):''}</div></div></div><span class="label ${u?'':'pending-badge'}">${a.enabled?'FREIGESCHALTET':'GESPERRT'}</span></div><div class="rights-body"><div class="rights-controls"><label>ZUGRIFF<select class="r-enabled"><option value="true" ${a.enabled?'selected':''}>Freigeschaltet</option><option value="false" ${!a.enabled?'selected':''}>Gesperrt</option></select></label><label>TWITCH<input class="r-twitch" value="${escapeHtml(a.twitch_name||'')}" placeholder="Twitch-Name"></label><label>DABEI SEIT<input class="r-joined" type="date" value="${escapeHtml(a.joined_at||'')}"></label><label>ROLLE<select class="r-role"><option value="mitglied" ${a.rolle==='mitglied'?'selected':''}>Mitglied</option><option value="administration" ${a.rolle==='administration'?'selected':''}>Administration</option></select></label><button class="rights-save" type="button">ÄNDERUNGEN SPEICHERN</button></div><div class="permission-grid">${permissionKeys.map(k=>`<label class="permission-item"><input type="checkbox" data-perm="${k}" ${p?.[k]?'checked':''}>${labels[k]}</label>`).join('')}</div><div class="rights-result"></div></div></div>`;
+      return `<div class="glass rights-card" data-discord="${escapeHtml(a.discord_id)}" data-user="${escapeHtml(u?.id||'')}" data-rank="${escapeHtml(a.ranger_rang||'')}"><div class="rights-head" role="button" tabindex="0" aria-expanded="false"><div class="rights-head-main"><span class="rights-toggle">⌄</span><div><div class="rights-name">${escapeHtml(name)}</div><div class="rights-meta">Discord-ID: ${escapeHtml(a.discord_id)} · ${u?'Discord verbunden':'noch nicht angemeldet'}${a.twitch_name?' · Twitch: '+escapeHtml(a.twitch_name):''}${a.joined_at?' · Dabei seit: '+new Date(a.joined_at+'T00:00:00').toLocaleDateString('de-DE'):''}</div></div></div><span class="label ${u?'':'pending-badge'}">${a.enabled?'FREIGESCHALTET':'GESPERRT'}</span></div><div class="rights-body"><div class="rights-controls"><label>ZUGRIFF<select class="r-enabled"><option value="true" ${a.enabled?'selected':''}>Freigeschaltet</option><option value="false" ${!a.enabled?'selected':''}>Gesperrt</option></select></label><label>TWITCH<input class="r-twitch" value="${escapeHtml(a.twitch_name||'')}" placeholder="Twitch-Name"></label><label>DABEI SEIT<input class="r-joined" type="date" value="${escapeHtml(a.joined_at||'')}"></label><label>ROLLE<select class="r-role"><option value="mitglied" ${a.rolle==='mitglied'?'selected':''}>Mitglied</option><option value="administration" ${a.rolle==='administration'?'selected':''}>Administration</option></select></label><button class="rights-save" type="button">ÄNDERUNGEN SPEICHERN</button></div><div class="rights-rank-actions"><label>RANGER-RANG<select class="r-ranger-rank"><option value="">Kein Rang hinterlegt</option>${rangerRanks.map(r=>`<option value="${r}" ${a.ranger_rang===r?'selected':''}>${r}</option>`).join('')}</select></label><button class="rights-delete" type="button" ${u?.id===currentUser?.id?'disabled title="Eigenen Account kannst du nicht löschen"':''}>BENUTZER LÖSCHEN</button></div><div class="permission-grid">${permissionKeys.map(k=>`<label class="permission-item"><input type="checkbox" data-perm="${k}" ${p?.[k]?'checked':''}>${labels[k]}</label>`).join('')}</div><div class="rights-result"></div></div></div>`;
     }).join('');
     wrap.querySelectorAll('.rights-head').forEach(head=>{
       const toggle=()=>{const card=head.closest('.rights-card');const open=card.classList.toggle('open');head.setAttribute('aria-expanded',String(open));};
@@ -920,34 +932,57 @@ button.danger,.danger-btn,.btn-danger,[data-action="delete-vote"],button[onclick
       head.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();toggle();}});
     });
     wrap.querySelectorAll('.rights-save').forEach(btn=>btn.addEventListener('click',()=>saveRights(btn.closest('.rights-card'))));
+    wrap.querySelectorAll('.rights-delete').forEach(btn=>btn.addEventListener('click',()=>deleteRightsUser(btn.closest('.rights-card'))));
   }
   async function saveRights(card){
     const id=card.dataset.user, discordId=card.dataset.discord, btn=card.querySelector('.rights-save'), result=card.querySelector('.rights-result');
     btn.disabled=true; result.textContent='Speichert…';
     const enabled=card.querySelector('.r-enabled').value==='true', rolle=card.querySelector('.r-role').value;
     const twitch_name=card.querySelector('.r-twitch')?.value.trim()||null, joined_at=card.querySelector('.r-joined')?.value||null;
+    const ranger_rang=card.querySelector('.r-ranger-rank')?.value||null, oldRank=card.dataset.rank||'';
     const permissionUpdate={}; card.querySelectorAll('[data-perm]').forEach(x=>permissionUpdate[x.dataset.perm]=x.checked);
-    const allowUpdate={enabled,rolle,twitch_name,joined_at,...permissionUpdate,updated_at:new Date().toISOString()};
+    const allowUpdate={enabled,rolle,twitch_name,joined_at,ranger_rang,...permissionUpdate,updated_at:new Date().toISOString()};
     const {error:e0}=await client.from('ucp_allowlist').update(allowUpdate).eq('discord_id',discordId);
     let e1=null,e2=null;
     if(id){ ({error:e1}=await client.from('ucp_users').update({enabled,rolle}).eq('id',id)); ({error:e2}=await client.from('ucp_permissions').update({...permissionUpdate,updated_at:new Date().toISOString()}).eq('user_id',id)); }
     if(e0||e1||e2){result.textContent='Speichern fehlgeschlagen: '+(e0?.message||e1?.message||e2?.message);result.className='rights-result access-denied';}
-    else{result.textContent='✓ Gespeichert';result.className='rights-result access-ok'; if(id===currentUser?.id){currentAccess.enabled=enabled;currentAccess.rolle=rolle;Object.assign(currentPermissions,permissionUpdate);applyPermissions();}}
+    else{
+      result.textContent='✓ Gespeichert';result.className='rights-result access-ok';
+      if((oldRank||'')!==(ranger_rang||'')){ await notifyRankChange(discordId,card.querySelector('.rights-name')?.textContent||'Ranger',oldRank,ranger_rang); card.dataset.rank=ranger_rang||''; }
+      if(id===currentUser?.id){currentAccess.enabled=enabled;currentAccess.rolle=rolle;currentRangerRank=ranger_rang||'';Object.assign(currentPermissions,permissionUpdate);applyPermissions();const account=document.querySelector('.account-rank');if(account)account.textContent=(currentRangerRank||'Rang nicht hinterlegt').toUpperCase();const pi=document.getElementById('profileIdentity');if(pi)pi.textContent=(currentAccess.display_name||currentAccess.discord_name||'Ranger')+' · '+(currentRangerRank||'Rang nicht hinterlegt');}
+    }
     btn.disabled=false;
+  }
+  async function notifyRankChange(discordId,name,oldRank,newRank){
+    try{
+      const {data:{session}}=await client.auth.getSession(); if(!session?.access_token)return;
+      await fetch('/api/uprank-notify',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+session.access_token},body:JSON.stringify({discord_id:discordId,name,old_rank:oldRank||null,new_rank:newRank||null})});
+    }catch(e){console.warn('Discord Rangbenachrichtigung fehlgeschlagen',e);}
+  }
+  async function deleteRightsUser(card){
+    if(currentAccess?.rolle!=='administration')return;
+    const id=card.dataset.user, discordId=card.dataset.discord, name=card.querySelector('.rights-name')?.textContent||'diesen Benutzer';
+    if(id===currentUser?.id){alert('Deinen eigenen Account kannst du nicht löschen.');return;}
+    if(!confirm(name+' wirklich aus dem Ranger UCP entfernen?\n\nDer Zugriff wird sofort entzogen.'))return;
+    const result=card.querySelector('.rights-result'); result.textContent='Wird gelöscht…';
+    if(id){const {error:e1}=await client.from('ucp_users').update({enabled:false}).eq('id',id);if(e1){result.textContent='Löschen fehlgeschlagen: '+e1.message;return;}}
+    const {error}=await client.from('ucp_allowlist').delete().eq('discord_id',discordId);
+    if(error){result.textContent='Löschen fehlgeschlagen: '+error.message;return;}
+    await loadRightsUsers();
   }
   createBtn?.addEventListener('click',async()=>{
     const discordId=document.getElementById('newDiscordId').value.trim(), displayName=document.getElementById('newDisplayName').value.trim();
     const rolle=document.getElementById('newRole').value, enabled=document.getElementById('newEnabled').value==='true';
-    const twitchName=document.getElementById('newTwitchName').value.trim(), joinedAt=document.getElementById('newJoinedAt').value||null;
+    const twitchName=document.getElementById('newTwitchName').value.trim(), joinedAt=document.getElementById('newJoinedAt').value||null, rangerRank=document.getElementById('newRangerRank')?.value||null;
     if(!/^\d{15,22}$/.test(discordId)){createResult.textContent='Bitte eine gültige Discord-ID eingeben.';createResult.className='rights-create-result access-denied';return;}
-    const payload={discord_id:discordId,display_name:displayName||null,twitch_name:twitchName||null,joined_at:joinedAt,rolle,enabled};
+    const payload={discord_id:discordId,display_name:displayName||null,twitch_name:twitchName||null,joined_at:joinedAt,ranger_rang:rangerRank,rolle,enabled};
     document.querySelectorAll('[data-new-perm]').forEach(x=>payload[x.dataset.newPerm]=x.checked);
     createBtn.disabled=true;createResult.textContent='Wird angelegt…';
     const {error}=await client.from('ucp_allowlist').insert(payload);
     createBtn.disabled=false;
     if(error){createResult.textContent=error.code==='23505'?'Diese Discord-ID ist bereits eingetragen.':'Anlegen fehlgeschlagen: '+error.message;createResult.className='rights-create-result access-denied';return;}
     createResult.textContent='✓ Benutzer wurde angelegt.';createResult.className='rights-create-result access-ok';
-    document.getElementById('newDiscordId').value='';document.getElementById('newDisplayName').value='';document.getElementById('newTwitchName').value='';document.getElementById('newJoinedAt').value='';
+    document.getElementById('newDiscordId').value='';document.getElementById('newDisplayName').value='';document.getElementById('newTwitchName').value='';document.getElementById('newJoinedAt').value='';if(document.getElementById('newRangerRank'))document.getElementById('newRangerRank').value='';
     setTimeout(()=>addModal.classList.remove('open'),500); await loadRightsUsers();
   });
 
@@ -1140,7 +1175,7 @@ button.danger,.danger-btn,.btn-danger,[data-action="delete-vote"],button[onclick
     const name=currentAccess?.display_name||currentAccess?.discord_name||'Ranger';
     const nameEl=document.getElementById('dashName'), roleEl=document.getElementById('dashRole'), avatar=document.getElementById('dashAvatar');
     if(nameEl)nameEl.textContent=name;
-    if(roleEl)roleEl.textContent=currentAccess?.rolle==='administration'?'Administration':'Mitglied';
+    if(roleEl)roleEl.textContent=currentRangerRank||'Rang nicht hinterlegt';
     if(avatar)avatar.textContent=(name.trim()[0]||'R').toUpperCase();
     const today=new Date(); today.setHours(0,0,0,0);
     const todayISO=today.toISOString().slice(0,10);
