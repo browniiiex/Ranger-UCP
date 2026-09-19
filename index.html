@@ -661,7 +661,7 @@ input::placeholder, textarea::placeholder { font-size: 16px !important; opacity:
       <div class="profile-photo-actions"><input id="profilePhotoInput" type="file" accept="image/png,image/jpeg,image/webp" hidden><button class="profile-photo-btn" id="profilePhotoButton" type="button">PROFILBILD ÄNDERN</button></div>
       <div class="profile-photo-note" id="profilePhotoNote">JPG, PNG oder WEBP · max. 5 MB</div>
       <div class="profile-page-name" id="profileName">Ranger</div>
-      <div class="profile-page-rank" id="profileRank">Rang nicht hinterlegt</div>
+      <div class="profile-page-rank" id="profileRank">Ranger auf Probe</div>
       <div class="profile-page-status">● IM DIENST</div>
     </div>
     <div class="glass profile-details-card">
@@ -1348,7 +1348,7 @@ button.danger,.danger-btn,.btn-danger,[data-action="delete-vote"],button[onclick
 #familyModal #familyClose{position:absolute!important;top:14px!important;right:14px!important;left:auto!important}
 @media(max-width:700px){#familyModal>.rights-modal-card{width:100%!important;max-width:100%!important}#familyModal .rights-create-grid{grid-template-columns:1fr!important}#familyModal .rights-create-grid>.span2{grid-column:1!important}}
 </style>
-<div class="rights-modal" id="rightsAddModal"><div class="rights-modal-box"><div class="rights-modal-head"><h3>Benutzer hinzufügen</h3><button type="button" class="rights-close" id="rightsAddClose">×</button></div><div class="rights-form-grid"><label>DISCORD-ID<input id="newDiscordId" inputmode="numeric" placeholder="z. B. 123456789012345678"></label><label>ANZEIGENAME<input id="newDisplayName" placeholder="Name im UCP"></label><label>TWITCH-NAME<input id="newTwitchName" placeholder="z. B. Browniiiex"></label><label>DABEI SEIT<input id="newJoinedAt" type="date"></label><label>RANGER-RANG<select id="newRangerRank"><option value="">Kein Rang</option><option>Ranger auf Probe</option><option>Ranger 1</option><option>Ranger 2</option><option>Ass. Chief</option><option>Chief</option></select></label><label>ROLLE<select id="newRole"><option value="mitglied">Mitglied</option><option value="administration">Administration</option></select></label><label>ZUGRIFF<select id="newEnabled"><option value="true">Freigeschaltet</option><option value="false">Gesperrt</option></select></label></div><div class="permission-grid" id="newPermissionGrid"></div><button type="button" class="rights-create" id="createRightsUser">BENUTZER ANLEGEN</button><div class="rights-create-result" id="createRightsResult"></div></div></div><div class="appointment-modal" id="appointmentModal"><div class="appointment-modal-box"><div class="rights-modal-head"><h3 id="appointmentModalTitle">Termin anlegen</h3><button class="rights-close" id="appointmentClose" type="button">×</button></div><div class="appointment-form"><label>TITEL<input class="r-input" id="appointmentTitle" placeholder="z. B. Ranger-Besprechung"></label><label>ORT<input class="r-input" id="appointmentPlace" placeholder="z. B. Ranger HQ"></label><label>DATUM<input class="r-input" id="appointmentDate" type="date"></label><label>UHRZEIT<input class="r-input" id="appointmentTime" type="time"></label><label class="span2">BESCHREIBUNG<textarea class="r-input" id="appointmentDescription" rows="4" placeholder="Weitere Informationen…"></textarea></label></div><button class="appointment-save" id="appointmentSave" type="button">TERMIN SPEICHERN</button><div class="appointment-result" id="appointmentResult"></div></div></div>
+<div class="rights-modal" id="rightsAddModal"><div class="rights-modal-box"><div class="rights-modal-head"><h3>Benutzer hinzufügen</h3><button type="button" class="rights-close" id="rightsAddClose">×</button></div><div class="rights-form-grid"><label>DISCORD-ID<input id="newDiscordId" inputmode="numeric" placeholder="z. B. 123456789012345678"></label><label>ANZEIGENAME<input id="newDisplayName" placeholder="Name im UCP"></label><label>TWITCH-NAME<input id="newTwitchName" placeholder="z. B. Browniiiex"></label><label>DABEI SEIT<input id="newJoinedAt" type="date"></label><label>RANGER-RANG<select id="newRangerRank"><option selected>Ranger auf Probe</option><option>Ranger 1</option><option>Ranger 2</option><option>Ass. Chief</option><option>Chief</option></select></label><label>ROLLE<select id="newRole"><option value="mitglied">Mitglied</option><option value="administration">Administration</option></select></label><label>ZUGRIFF<select id="newEnabled"><option value="true">Freigeschaltet</option><option value="false">Gesperrt</option></select></label></div><div class="permission-grid" id="newPermissionGrid"></div><button type="button" class="rights-create" id="createRightsUser">BENUTZER ANLEGEN</button><div class="rights-create-result" id="createRightsResult"></div></div></div><div class="appointment-modal" id="appointmentModal"><div class="appointment-modal-box"><div class="rights-modal-head"><h3 id="appointmentModalTitle">Termin anlegen</h3><button class="rights-close" id="appointmentClose" type="button">×</button></div><div class="appointment-form"><label>TITEL<input class="r-input" id="appointmentTitle" placeholder="z. B. Ranger-Besprechung"></label><label>ORT<input class="r-input" id="appointmentPlace" placeholder="z. B. Ranger HQ"></label><label>DATUM<input class="r-input" id="appointmentDate" type="date"></label><label>UHRZEIT<input class="r-input" id="appointmentTime" type="time"></label><label class="span2">BESCHREIBUNG<textarea class="r-input" id="appointmentDescription" rows="4" placeholder="Weitere Informationen…"></textarea></label></div><button class="appointment-save" id="appointmentSave" type="button">TERMIN SPEICHERN</button><div class="appointment-result" id="appointmentResult"></div></div></div>
 <div id="authGate">
   <div class="auth-box">
     <div class="auth-mark">◆</div>
@@ -1679,14 +1679,14 @@ button.danger,.danger-btn,.btn-danger,[data-action="delete-vote"],button[onclick
     if(permErr || !perms){ showGate('Deine UCP-Rechte konnten nicht geladen werden.',false); return false; }
     currentAccess=userRow; currentPermissions=perms;
     const {data:allowSelf}=await client.from('ucp_allowlist').select('ranger_rang').eq('discord_id',userRow.discord_id).maybeSingle();
-    currentRangerRank=allowSelf?.ranger_rang||'';
+    currentRangerRank=allowSelf?.ranger_rang||'Ranger auf Probe';
     hideGate(); applyPermissions(); await loadNavPreferences(); await loadDesignPrefs(); startPresence();
     if(currentPermissions.profil) await loadProfile();
     const meta=session.user.user_metadata||{};
     const discordName=userRow.display_name||userRow.discord_name||meta.full_name||meta.name||meta.user_name||'Ranger';
     document.querySelectorAll('.profile-name').forEach(x=>x.textContent=discordName);
-    const account=document.querySelector('.account'); if(account) account.innerHTML='<b>'+escapeHtml(discordName)+'</b><small class="account-rank">'+escapeHtml((currentRangerRank||'Rang nicht hinterlegt').toUpperCase())+'</small>';
-    const profileIdentity=document.getElementById('profileIdentity'); if(profileIdentity) profileIdentity.textContent=discordName+' · '+(currentRangerRank||'Rang nicht hinterlegt');
+    const account=document.querySelector('.account'); if(account) account.innerHTML='<b>'+escapeHtml(discordName)+'</b><small class="account-rank">'+escapeHtml((currentRangerRank||'Ranger auf Probe').toUpperCase())+'</small>';
+    const profileIdentity=document.getElementById('profileIdentity'); if(profileIdentity) profileIdentity.textContent=discordName+' · '+(currentRangerRank||'Ranger auf Probe');
     if(currentPermissions.rechte_rollen) await loadRightsUsers();
     if(currentPermissions.dienstplan) await loadAppointments();
     if(currentPermissions.familien) await loadFamilies();
@@ -1715,7 +1715,7 @@ button.danger,.danger-btn,.btn-danger,[data-action="delete-vote"],button[onclick
     wrap.innerHTML=rows.map(({allow:a,live:u})=>{
       const p=u?byUser[u.id]:a;
       const name=a.display_name||u?.display_name||u?.discord_name||'Noch nicht angemeldet';
-      return `<div class="glass rights-card" data-discord="${escapeHtml(a.discord_id)}" data-user="${escapeHtml(u?.id||'')}" data-rank="${escapeHtml(a.ranger_rang||'')}"><div class="rights-head" role="button" tabindex="0" aria-expanded="false"><div class="rights-head-main"><span class="rights-toggle">⌄</span><div><div class="rights-name">${escapeHtml(name)}</div><div class="rights-meta">Discord-ID: ${escapeHtml(a.discord_id)} · ${u?'Discord verbunden':'noch nicht angemeldet'}${a.twitch_name?' · Twitch: '+escapeHtml(a.twitch_name):''}${a.joined_at?' · Dabei seit: '+new Date(a.joined_at+'T00:00:00').toLocaleDateString('de-DE'):''}</div></div></div><span class="label ${u?'':'pending-badge'}">${a.enabled?'FREIGESCHALTET':'GESPERRT'}</span></div><div class="rights-body"><div class="rights-controls"><label>ZUGRIFF<select class="r-enabled"><option value="true" ${a.enabled?'selected':''}>Freigeschaltet</option><option value="false" ${!a.enabled?'selected':''}>Gesperrt</option></select></label><label>TWITCH<input class="r-twitch" value="${escapeHtml(a.twitch_name||'')}" placeholder="Twitch-Name"></label><label>DABEI SEIT<input class="r-joined" type="date" value="${escapeHtml(a.joined_at||'')}"></label><label>ROLLE<select class="r-role"><option value="mitglied" ${a.rolle==='mitglied'?'selected':''}>Mitglied</option><option value="administration" ${a.rolle==='administration'?'selected':''}>Administration</option></select></label><button class="rights-save" type="button">ÄNDERUNGEN SPEICHERN</button></div><div class="rights-rank-actions"><label>RANGER-RANG<select class="r-ranger-rank"><option value="">Kein Rang hinterlegt</option>${rangerRanks.map(r=>`<option value="${r}" ${a.ranger_rang===r?'selected':''}>${r}</option>`).join('')}</select></label><button class="rights-notes-open" type="button">📋 RANGER-AKTE</button><button class="rights-delete" type="button" ${u?.id===currentUser?.id?'disabled title="Eigenen Account kannst du nicht löschen"':''}>BENUTZER LÖSCHEN</button></div><div class="permission-grid">${permissionKeys.map(k=>`<label class="permission-item"><input type="checkbox" data-perm="${k}" ${p?.[k]?'checked':''}>${labels[k]}</label>`).join('')}</div><div class="rights-result"></div></div></div>`;
+      return `<div class="glass rights-card" data-discord="${escapeHtml(a.discord_id)}" data-user="${escapeHtml(u?.id||'')}" data-rank="${escapeHtml(a.ranger_rang||'Ranger auf Probe')}"><div class="rights-head" role="button" tabindex="0" aria-expanded="false"><div class="rights-head-main"><span class="rights-toggle">⌄</span><div><div class="rights-name">${escapeHtml(name)}</div><div class="rights-meta">Discord-ID: ${escapeHtml(a.discord_id)} · ${u?'Discord verbunden':'noch nicht angemeldet'}${a.twitch_name?' · Twitch: '+escapeHtml(a.twitch_name):''}${a.joined_at?' · Dabei seit: '+new Date(a.joined_at+'T00:00:00').toLocaleDateString('de-DE'):''}</div></div></div><span class="label ${u?'':'pending-badge'}">${a.enabled?'FREIGESCHALTET':'GESPERRT'}</span></div><div class="rights-body"><div class="rights-controls"><label>ZUGRIFF<select class="r-enabled"><option value="true" ${a.enabled?'selected':''}>Freigeschaltet</option><option value="false" ${!a.enabled?'selected':''}>Gesperrt</option></select></label><label>TWITCH<input class="r-twitch" value="${escapeHtml(a.twitch_name||'')}" placeholder="Twitch-Name"></label><label>DABEI SEIT<input class="r-joined" type="date" value="${escapeHtml(a.joined_at||'')}"></label><label>ROLLE<select class="r-role"><option value="mitglied" ${a.rolle==='mitglied'?'selected':''}>Mitglied</option><option value="administration" ${a.rolle==='administration'?'selected':''}>Administration</option></select></label><button class="rights-save" type="button">ÄNDERUNGEN SPEICHERN</button></div><div class="rights-rank-actions"><label>RANGER-RANG<select class="r-ranger-rank">${rangerRanks.map(r=>`<option value="${r}" ${(a.ranger_rang||'Ranger auf Probe')===r?'selected':''}>${r}</option>`).join('')}</select></label><button class="rights-notes-open" type="button">📋 RANGER-AKTE</button><button class="rights-delete" type="button" ${u?.id===currentUser?.id?'disabled title="Eigenen Account kannst du nicht löschen"':''}>BENUTZER LÖSCHEN</button></div><div class="permission-grid">${permissionKeys.map(k=>`<label class="permission-item"><input type="checkbox" data-perm="${k}" ${p?.[k]?'checked':''}>${labels[k]}</label>`).join('')}</div><div class="rights-result"></div></div></div>`;
     }).join('');
     wrap.querySelectorAll('.rights-head').forEach(head=>{
       const toggle=()=>{const card=head.closest('.rights-card');const open=card.classList.toggle('open');head.setAttribute('aria-expanded',String(open));};
@@ -1732,7 +1732,7 @@ button.danger,.danger-btn,.btn-danger,[data-action="delete-vote"],button[onclick
     btn.disabled=true; result.textContent='Speichert…';
     const enabled=card.querySelector('.r-enabled').value==='true', rolle=card.querySelector('.r-role').value;
     const twitch_name=card.querySelector('.r-twitch')?.value.trim()||null, joined_at=card.querySelector('.r-joined')?.value||null;
-    const ranger_rang=card.querySelector('.r-ranger-rank')?.value||null, oldRank=card.dataset.rank||'';
+    const ranger_rang=card.querySelector('.r-ranger-rank')?.value||'Ranger auf Probe', oldRank=card.dataset.rank||'Ranger auf Probe';
     const permissionUpdate={}; card.querySelectorAll('[data-perm]').forEach(x=>permissionUpdate[x.dataset.perm]=x.checked);
     const allowUpdate={enabled,rolle,twitch_name,joined_at,ranger_rang,...permissionUpdate,updated_at:new Date().toISOString()};
     const {error:e0}=await client.from('ucp_allowlist').update(allowUpdate).eq('discord_id',discordId);
@@ -1742,7 +1742,7 @@ button.danger,.danger-btn,.btn-danger,[data-action="delete-vote"],button[onclick
     else{
       result.textContent='✓ Gespeichert';result.className='rights-result access-ok';
       if((oldRank||'')!==(ranger_rang||'')){ await notifyRankChange(discordId,card.querySelector('.rights-name')?.textContent||'Ranger',oldRank,ranger_rang); card.dataset.rank=ranger_rang||''; }
-      if(id===currentUser?.id){currentAccess.enabled=enabled;currentAccess.rolle=rolle;currentRangerRank=ranger_rang||'';Object.assign(currentPermissions,permissionUpdate);applyPermissions();const account=document.querySelector('.account-rank');if(account)account.textContent=(currentRangerRank||'Rang nicht hinterlegt').toUpperCase();const pi=document.getElementById('profileIdentity');if(pi)pi.textContent=(currentAccess.display_name||currentAccess.discord_name||'Ranger')+' · '+(currentRangerRank||'Rang nicht hinterlegt');}
+      if(id===currentUser?.id){currentAccess.enabled=enabled;currentAccess.rolle=rolle;currentRangerRank=ranger_rang||'Ranger auf Probe';Object.assign(currentPermissions,permissionUpdate);applyPermissions();const account=document.querySelector('.account-rank');if(account)account.textContent=currentRangerRank.toUpperCase();const pi=document.getElementById('profileIdentity');if(pi)pi.textContent=(currentAccess.display_name||currentAccess.discord_name||'Ranger')+' · '+currentRangerRank;}
     }
     btn.disabled=false;
   }
@@ -1831,7 +1831,7 @@ button.danger,.danger-btn,.btn-danger,[data-action="delete-vote"],button[onclick
     }
     const discordId=document.getElementById('newDiscordId').value.trim(), displayName=document.getElementById('newDisplayName').value.trim();
     const rolle=document.getElementById('newRole').value, enabled=document.getElementById('newEnabled').value==='true';
-    const twitchName=document.getElementById('newTwitchName').value.trim(), joinedAt=document.getElementById('newJoinedAt').value||null, rangerRank=document.getElementById('newRangerRank')?.value||null;
+    const twitchName=document.getElementById('newTwitchName').value.trim(), joinedAt=document.getElementById('newJoinedAt').value||null, rangerRank=document.getElementById('newRangerRank')?.value||'Ranger auf Probe';
     if(!/^\d{15,22}$/.test(discordId)){createResult.textContent='Bitte eine gültige Discord-ID eingeben.';createResult.className='rights-create-result access-denied';return;}
     const payload={discord_id:discordId,display_name:displayName||null,twitch_name:twitchName||null,joined_at:joinedAt,ranger_rang:rangerRank,rolle,enabled};
     document.querySelectorAll('[data-new-perm]').forEach(x=>payload[x.dataset.newPerm]=x.checked);
@@ -1840,7 +1840,7 @@ button.danger,.danger-btn,.btn-danger,[data-action="delete-vote"],button[onclick
     createBtn.disabled=false;
     if(error){createResult.textContent=error.code==='23505'?'Diese Discord-ID ist bereits eingetragen.':'Anlegen fehlgeschlagen: '+error.message;createResult.className='rights-create-result access-denied';return;}
     createResult.textContent='✓ Benutzer wurde angelegt.';createResult.className='rights-create-result access-ok';
-    document.getElementById('newDiscordId').value='';document.getElementById('newDisplayName').value='';document.getElementById('newTwitchName').value='';document.getElementById('newJoinedAt').value='';if(document.getElementById('newRangerRank'))document.getElementById('newRangerRank').value='';
+    document.getElementById('newDiscordId').value='';document.getElementById('newDisplayName').value='';document.getElementById('newTwitchName').value='';document.getElementById('newJoinedAt').value='';if(document.getElementById('newRangerRank'))document.getElementById('newRangerRank').value='Ranger auf Probe';
     setTimeout(()=>addModal.classList.remove('open'),500); await loadRightsUsers();
   });
 
@@ -1895,7 +1895,7 @@ button.danger,.danger-btn,.btn-danger,[data-action="delete-vote"],button[onclick
     const pm=Object.fromEntries((people||[]).map(x=>[x.discord_id,x])), am=Object.fromEntries((profiles||[]).map(x=>[x.user_id,x.avatar_url]));
     const online=(pres||[]).filter(x=>pm[x.discord_id]);
     if(count)count.textContent=online.length+' ONLINE';
-    list.innerHTML=online.map(x=>{const p=pm[x.discord_id],url=am[x.user_id]||'',initial=(p.display_name||'R')[0].toUpperCase();return `<div class="online-ranger"><div class="online-avatar" ${url?`style="background-image:url('${escapeHtml(url)}')"`:''}>${url?'':escapeHtml(initial)}</div><div class="online-info"><b>${escapeHtml(p.display_name||'Ranger')}</b><small>${escapeHtml(p.ranger_rang||'Rang nicht hinterlegt')}</small></div><i class="online-dot"></i></div>`}).join('')||'<div class="dash-empty">Aktuell ist niemand online.</div>';
+    list.innerHTML=online.map(x=>{const p=pm[x.discord_id],url=am[x.user_id]||'',initial=(p.display_name||'R')[0].toUpperCase();return `<div class="online-ranger"><div class="online-avatar" ${url?`style="background-image:url('${escapeHtml(url)}')"`:''}>${url?'':escapeHtml(initial)}</div><div class="online-info"><b>${escapeHtml(p.display_name||'Ranger')}</b><small>${escapeHtml(p.ranger_rang||'Ranger auf Probe')}</small></div><i class="online-dot"></i></div>`}).join('')||'<div class="dash-empty">Aktuell ist niemand online.</div>';
   }
 
   // Mein Profil
@@ -1905,7 +1905,7 @@ button.danger,.danger-btn,.btn-danger,[data-action="delete-vote"],button[onclick
     const avatarUrl=await loadMyAvatar();
     const {data:sessions}=await client.from('stream_sessions').select('stream_date,duration_minutes').eq('discord_id',currentAccess.discord_id).order('stream_date',{ascending:false});
     const name=allow?.display_name||currentAccess.display_name||currentAccess.discord_name||'Ranger';
-    const rank=allow?.ranger_rang||currentRangerRank||'Rang nicht hinterlegt';
+    const rank=allow?.ranger_rang||currentRangerRank||'Ranger auf Probe';
     const role=(allow?.rolle||currentAccess.rolle)==='administration'?'Administration':'Mitglied';
     const set=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v};
     set('profileName',name);paintAvatar(document.getElementById('profileAvatar'),avatarUrl,name);set('profileRank',rank);set('profileRankStat',rank);
@@ -2206,7 +2206,7 @@ button.danger,.danger-btn,.btn-danger,[data-action="delete-vote"],button[onclick
     const name=currentAccess?.display_name||currentAccess?.discord_name||'Ranger';
     const nameEl=document.getElementById('dashName'), roleEl=document.getElementById('dashRole'), avatar=document.getElementById('dashAvatar');
     if(nameEl)nameEl.textContent=name;
-    if(roleEl)roleEl.textContent=currentRangerRank||'Rang nicht hinterlegt';
+    if(roleEl)roleEl.textContent=currentRangerRank||'Ranger auf Probe';
     const avatarUrl=currentAvatarUrl||await loadMyAvatar(); paintAvatar(avatar,avatarUrl,name);
     const today=new Date(); today.setHours(0,0,0,0);
     const todayISO=today.toISOString().slice(0,10);
