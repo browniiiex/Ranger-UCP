@@ -301,6 +301,8 @@ textarea.r-input{resize:vertical;min-height:76px}
 /* Dienstplan */
 .appointment-titlebar{display:flex;align-items:flex-start;justify-content:space-between;gap:18px}.appointment-notice{padding:14px 18px;margin:18px 0;color:#91e3a4}.appointment-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.appointment-card{padding:20px;position:relative}.appointment-card-top{display:flex;justify-content:space-between;gap:15px;align-items:flex-start}.appointment-date{min-width:66px;text-align:center;border:1px solid rgba(239,191,97,.35);border-radius:8px;padding:9px 7px;background:rgba(239,191,97,.07);color:#efbf61;font-weight:900;line-height:1.1}.appointment-date strong{display:block;font-size:25px}.appointment-info{flex:1}.appointment-info h3{font:500 21px Georgia;margin:0 0 7px}.appointment-meta{font-size:11px;color:#d8c9a7;line-height:1.7}.appointment-desc{font-size:12px;color:var(--muted);margin-top:12px;white-space:pre-wrap}.appointment-actions{display:flex;gap:8px;margin-top:16px}.appointment-actions button{border:1px solid rgba(239,191,97,.35);background:rgba(3,8,5,.7);color:#efbf61;border-radius:6px;padding:8px 11px;font-weight:800;cursor:pointer}.appointment-actions .danger{color:#ffaaaa;border-color:rgba(255,120,120,.28)}.appointment-empty{grid-column:1/-1;padding:34px;text-align:center;color:var(--muted)}
 .appointment-modal{position:fixed;inset:0;z-index:100001;display:none;align-items:center;justify-content:center;padding:24px;background:rgba(0,0,0,.72);backdrop-filter:blur(8px)}.appointment-modal.open{display:flex}.appointment-modal-box{width:min(700px,100%);padding:24px;border:1px solid rgba(239,191,97,.42);border-radius:12px;background:rgba(5,10,7,.98);box-shadow:0 30px 90px #000}.appointment-form{display:grid;grid-template-columns:1fr 1fr;gap:12px}.appointment-form label{font-size:10px;letter-spacing:.8px;color:#d8c9a7}.appointment-form .span2{grid-column:1/-1}.appointment-form input,.appointment-form textarea{margin-top:6px}.appointment-save{width:100%;margin-top:16px;height:44px;border:1px solid rgba(239,191,97,.55);border-radius:7px;background:#efbf61;color:#10120f;font-weight:900;cursor:pointer}.appointment-result{min-height:18px;margin-top:9px;font-size:12px}@media(max-width:900px){.appointment-grid,.appointment-form{grid-template-columns:1fr}.appointment-form .span2{grid-column:auto}.appointment-titlebar{flex-direction:column}}
+
+.family-titlebar{display:flex;justify-content:space-between;gap:18px;align-items:flex-end;margin-bottom:18px}.family-list{display:grid;gap:18px;margin-top:18px}.family-card{padding:22px}.family-head{display:flex;justify-content:space-between;gap:18px;align-items:flex-start}.family-name{font-family:Georgia,serif;font-size:26px;font-weight:700}.family-location{margin-top:6px;color:#d6c28d;font-size:16px}.family-text{margin-top:14px;font-size:17px;line-height:1.55;color:#e7e7e7}.family-actions,.member-actions{display:flex;gap:9px;flex-wrap:wrap}.family-actions button,.member-actions button{border:1px solid rgba(212,177,90,.5);background:rgba(0,0,0,.38);color:#fff;padding:10px 13px;cursor:pointer;font:700 14px 'Barlow Condensed',sans-serif;letter-spacing:.6px}.family-actions .danger,.member-actions .danger{border-color:rgba(220,90,90,.55)}.members-box{margin-top:18px;border-top:1px solid rgba(212,177,90,.28);padding-top:16px}.members-title{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:11px;font-weight:700;font-size:18px}.member-row{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:12px 0;border-top:1px solid rgba(255,255,255,.08)}.member-row:first-of-type{border-top:0}.member-name{font-size:17px;font-weight:700}.member-position{font-size:15px;color:#bdbdbd;margin-top:2px}.family-empty{padding:24px;font-size:17px}@media(max-width:700px){.family-titlebar,.family-head,.member-row{align-items:stretch;flex-direction:column}.family-actions,.member-actions{width:100%}}
 </style>
 
 <style id="global-readability-upgrade">
@@ -319,6 +321,8 @@ textarea { min-height: 110px; }
 button { min-height: 42px; line-height: 1.25; }
 input::placeholder, textarea::placeholder { font-size: 16px !important; opacity: .82; }
 @media (max-width: 900px) { html { font-size: 16px; } }
+
+.family-titlebar{display:flex;justify-content:space-between;gap:18px;align-items:flex-end;margin-bottom:18px}.family-list{display:grid;gap:18px;margin-top:18px}.family-card{padding:22px}.family-head{display:flex;justify-content:space-between;gap:18px;align-items:flex-start}.family-name{font-family:Georgia,serif;font-size:26px;font-weight:700}.family-location{margin-top:6px;color:#d6c28d;font-size:16px}.family-text{margin-top:14px;font-size:17px;line-height:1.55;color:#e7e7e7}.family-actions,.member-actions{display:flex;gap:9px;flex-wrap:wrap}.family-actions button,.member-actions button{border:1px solid rgba(212,177,90,.5);background:rgba(0,0,0,.38);color:#fff;padding:10px 13px;cursor:pointer;font:700 14px 'Barlow Condensed',sans-serif;letter-spacing:.6px}.family-actions .danger,.member-actions .danger{border-color:rgba(220,90,90,.55)}.members-box{margin-top:18px;border-top:1px solid rgba(212,177,90,.28);padding-top:16px}.members-title{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:11px;font-weight:700;font-size:18px}.member-row{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:12px 0;border-top:1px solid rgba(255,255,255,.08)}.member-row:first-of-type{border-top:0}.member-name{font-size:17px;font-weight:700}.member-position{font-size:15px;color:#bdbdbd;margin-top:2px}.family-empty{padding:24px;font-size:17px}@media(max-width:700px){.family-titlebar,.family-head,.member-row{align-items:stretch;flex-direction:column}.family-actions,.member-actions{width:100%}}
 </style>
 </head>
 <body>
@@ -438,7 +442,38 @@ input::placeholder, textarea::placeholder { font-size: 16px !important; opacity:
   </div>
 </section>
 
-  <section class="page inner" id="familien"><h1>Familien</h1><div class="sub">Familien, Mitglieder und Standorte.</div><div class="glass placeholder">Familienübersicht</div></section>
+  <section class="page inner" id="familien">
+  <div class="family-titlebar"><div><h1>Familien</h1><div class="sub">Familien, Mitglieder und Standorte verwalten.</div></div><button type="button" class="btn" id="addFamily">＋ FAMILIE ANLEGEN</button></div>
+  <div id="familyNotice" class="glass placeholder">Familien werden geladen…</div>
+  <div id="familyList" class="family-list"></div>
+</section>
+
+<div class="rights-modal" id="familyModal">
+ <div class="rights-modal-card glass">
+  <button type="button" class="rights-modal-close" id="familyClose">×</button>
+  <div class="label">FAMILIENVERWALTUNG</div><h2 id="familyModalTitle">Familie anlegen</h2>
+  <div class="rights-create-grid">
+   <label>Familienname<input id="familyName" placeholder="z. B. Washington"></label>
+   <label>Standort<input id="familyLocation" placeholder="z. B. Paleto Bay"></label>
+   <label class="span2">Beschreibung<textarea id="familyDescription" rows="3" placeholder="Kurze Beschreibung"></textarea></label>
+   <label class="span2">Notizen<textarea id="familyNotes" rows="3" placeholder="Interne Notizen"></textarea></label>
+  </div>
+  <div class="rights-create-actions"><button type="button" class="rights-save" id="familySave">SPEICHERN</button><div id="familyResult" class="rights-create-result"></div></div>
+ </div>
+</div>
+
+<div class="rights-modal" id="memberModal">
+ <div class="rights-modal-card glass">
+  <button type="button" class="rights-modal-close" id="memberClose">×</button>
+  <div class="label">FAMILIENMITGLIED</div><h2 id="memberModalTitle">Mitglied hinzufügen</h2>
+  <div class="rights-create-grid">
+   <label>Name<input id="memberName" placeholder="Vor- und Nachname"></label>
+   <label>Position<input id="memberPosition" placeholder="z. B. Leitung / Mitglied"></label>
+   <label class="span2">Notizen<textarea id="memberNotes" rows="3" placeholder="Interne Notizen"></textarea></label>
+  </div>
+  <div class="rights-create-actions"><button type="button" class="rights-save" id="memberSave">SPEICHERN</button><div id="memberResult" class="rights-create-result"></div></div>
+ </div>
+</div>
   <section class="page inner" id="abstimmungen"><h1>Ranger-Rat</h1><div class="sub">Interne Entscheidungen und Abstimmungen.</div><div class="glass placeholder"><b>Soll Max Mustermann als Ranger aufgenommen werden?</b><p class="muted">Abstimmung läuft.</p><button class="btn">✓ JA</button> <button class="btn">× NEIN</button> <button class="btn">– ENTHALTUNG</button></div></section>
   <section class="page inner" id="eid"><h1>Ranger-Eid</h1><div class="sub">Interner Eid · Platzhalter bis zur finalen Fassung.</div><div class="glass placeholder">Der finale Ranger-Eid wird hier hinterlegt.</div></section>
   <section class="page inner" id="verwaltung"><h1>Verwaltung</h1><div class="sub">Mitglieder und Rollen verwalten.</div><div class="glass placeholder">Administration · Mitglied</div></section>
@@ -628,6 +663,8 @@ loadOffenses();
 
 <style>
 .rights-users{display:grid;gap:14px;margin-top:14px}.rights-card{padding:20px}.rights-head{display:flex;justify-content:space-between;gap:16px;align-items:center;margin-bottom:16px}.rights-name{font:500 21px Georgia;color:#fff}.rights-meta{font-size:11px;color:var(--muted);margin-top:4px}.rights-controls{display:grid;grid-template-columns:180px 180px 1fr;gap:12px;align-items:end}.rights-controls label,.permission-grid label{font-size:10px;letter-spacing:.8px;color:#d8c9a7}.permission-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin-top:15px}.permission-item{display:flex!important;align-items:center;gap:9px;padding:10px;border:1px solid rgba(239,191,97,.15);border-radius:7px;background:rgba(3,8,5,.45);cursor:pointer}.permission-item input{width:16px!important;height:16px;margin:0!important;accent-color:#efbf61}.rights-save{height:42px!important;text-align:center!important;border:1px solid rgba(239,191,97,.55)!important;border-radius:7px!important;background:#efbf61!important;color:#10120f!important;font-weight:900!important}.rights-save:disabled{opacity:.5;cursor:not-allowed}.access-denied{color:#ffaaaa}.access-ok{color:#91e3a4}.rights-toolbar{display:flex;justify-content:flex-end;margin:16px 0 12px}.rights-add{border:1px solid rgba(239,191,97,.55);background:#efbf61;color:#10120f;border-radius:7px;padding:12px 18px;font-weight:900;letter-spacing:.04em;cursor:pointer}.rights-add:hover{filter:brightness(1.06)}.pending-badge{color:#efbf61}.rights-modal{position:fixed;inset:0;z-index:100000;display:none;align-items:center;justify-content:center;padding:24px;background:rgba(0,0,0,.72);backdrop-filter:blur(8px)}.rights-modal.open{display:flex}.rights-modal-box{width:min(760px,100%);max-height:90vh;overflow:auto;padding:24px;border:1px solid rgba(239,191,97,.42);border-radius:12px;background:rgba(5,10,7,.98);box-shadow:0 30px 90px #000}.rights-modal-head{display:flex;align-items:center;justify-content:space-between;gap:15px;margin-bottom:18px}.rights-modal-head h3{font:500 25px Georgia;margin:0}.rights-close{border:0;background:transparent;color:#fff;font-size:25px;cursor:pointer}.rights-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.rights-form-grid label{font-size:10px;letter-spacing:.8px;color:#d8c9a7}.rights-form-grid input,.rights-form-grid select{width:100%;margin-top:6px;background:#080d0a;border:1px solid rgba(239,191,97,.28);color:#fff;border-radius:7px;padding:11px}.rights-create{width:100%;margin-top:16px;height:44px;border:1px solid rgba(239,191,97,.55);border-radius:7px;background:#efbf61;color:#10120f;font-weight:900;cursor:pointer}.rights-create-result{min-height:20px;margin-top:10px;font-size:12px}@media(max-width:900px){.rights-controls,.permission-grid,.rights-form-grid{grid-template-columns:1fr}}
+
+.family-titlebar{display:flex;justify-content:space-between;gap:18px;align-items:flex-end;margin-bottom:18px}.family-list{display:grid;gap:18px;margin-top:18px}.family-card{padding:22px}.family-head{display:flex;justify-content:space-between;gap:18px;align-items:flex-start}.family-name{font-family:Georgia,serif;font-size:26px;font-weight:700}.family-location{margin-top:6px;color:#d6c28d;font-size:16px}.family-text{margin-top:14px;font-size:17px;line-height:1.55;color:#e7e7e7}.family-actions,.member-actions{display:flex;gap:9px;flex-wrap:wrap}.family-actions button,.member-actions button{border:1px solid rgba(212,177,90,.5);background:rgba(0,0,0,.38);color:#fff;padding:10px 13px;cursor:pointer;font:700 14px 'Barlow Condensed',sans-serif;letter-spacing:.6px}.family-actions .danger,.member-actions .danger{border-color:rgba(220,90,90,.55)}.members-box{margin-top:18px;border-top:1px solid rgba(212,177,90,.28);padding-top:16px}.members-title{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:11px;font-weight:700;font-size:18px}.member-row{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:12px 0;border-top:1px solid rgba(255,255,255,.08)}.member-row:first-of-type{border-top:0}.member-name{font-size:17px;font-weight:700}.member-position{font-size:15px;color:#bdbdbd;margin-top:2px}.family-empty{padding:24px;font-size:17px}@media(max-width:700px){.family-titlebar,.family-head,.member-row{align-items:stretch;flex-direction:column}.family-actions,.member-actions{width:100%}}
 </style>
 <style>
 #authGate{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;padding:24px;background:linear-gradient(rgba(2,7,5,.58),rgba(2,7,5,.88)),var(--bg-image,none);backdrop-filter:blur(12px)}
@@ -658,6 +695,8 @@ input::placeholder, textarea::placeholder { color: rgba(255,255,255,.58) !import
   line-height: 1.35;
 }
 .appointment-result, .rights-create-result, .copy-status { font-size: 14px !important; }
+
+.family-titlebar{display:flex;justify-content:space-between;gap:18px;align-items:flex-end;margin-bottom:18px}.family-list{display:grid;gap:18px;margin-top:18px}.family-card{padding:22px}.family-head{display:flex;justify-content:space-between;gap:18px;align-items:flex-start}.family-name{font-family:Georgia,serif;font-size:26px;font-weight:700}.family-location{margin-top:6px;color:#d6c28d;font-size:16px}.family-text{margin-top:14px;font-size:17px;line-height:1.55;color:#e7e7e7}.family-actions,.member-actions{display:flex;gap:9px;flex-wrap:wrap}.family-actions button,.member-actions button{border:1px solid rgba(212,177,90,.5);background:rgba(0,0,0,.38);color:#fff;padding:10px 13px;cursor:pointer;font:700 14px 'Barlow Condensed',sans-serif;letter-spacing:.6px}.family-actions .danger,.member-actions .danger{border-color:rgba(220,90,90,.55)}.members-box{margin-top:18px;border-top:1px solid rgba(212,177,90,.28);padding-top:16px}.members-title{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:11px;font-weight:700;font-size:18px}.member-row{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:12px 0;border-top:1px solid rgba(255,255,255,.08)}.member-row:first-of-type{border-top:0}.member-name{font-size:17px;font-weight:700}.member-position{font-size:15px;color:#bdbdbd;margin-top:2px}.family-empty{padding:24px;font-size:17px}@media(max-width:700px){.family-titlebar,.family-head,.member-row{align-items:stretch;flex-direction:column}.family-actions,.member-actions{width:100%}}
 </style>
 <div class="rights-modal" id="rightsAddModal"><div class="rights-modal-box"><div class="rights-modal-head"><h3>Benutzer hinzufügen</h3><button type="button" class="rights-close" id="rightsAddClose">×</button></div><div class="rights-form-grid"><label>DISCORD-ID<input id="newDiscordId" inputmode="numeric" placeholder="z. B. 123456789012345678"></label><label>ANZEIGENAME<input id="newDisplayName" placeholder="Name im UCP"></label><label>ROLLE<select id="newRole"><option value="mitglied">Mitglied</option><option value="administration">Administration</option></select></label><label>ZUGRIFF<select id="newEnabled"><option value="true">Freigeschaltet</option><option value="false">Gesperrt</option></select></label></div><div class="permission-grid" id="newPermissionGrid"></div><button type="button" class="rights-create" id="createRightsUser">BENUTZER ANLEGEN</button><div class="rights-create-result" id="createRightsResult"></div></div></div><div class="appointment-modal" id="appointmentModal"><div class="appointment-modal-box"><div class="rights-modal-head"><h3 id="appointmentModalTitle">Termin anlegen</h3><button class="rights-close" id="appointmentClose" type="button">×</button></div><div class="appointment-form"><label>TITEL<input class="r-input" id="appointmentTitle" placeholder="z. B. Ranger-Besprechung"></label><label>ORT<input class="r-input" id="appointmentPlace" placeholder="z. B. Ranger HQ"></label><label>DATUM<input class="r-input" id="appointmentDate" type="date"></label><label>UHRZEIT<input class="r-input" id="appointmentTime" type="time"></label><label class="span2">BESCHREIBUNG<textarea class="r-input" id="appointmentDescription" rows="4" placeholder="Weitere Informationen…"></textarea></label></div><button class="appointment-save" id="appointmentSave" type="button">TERMIN SPEICHERN</button><div class="appointment-result" id="appointmentResult"></div></div></div>
 <div id="authGate">
@@ -716,6 +755,7 @@ input::placeholder, textarea::placeholder { color: rgba(255,255,255,.58) !import
     const account=document.querySelector('.account'); if(account) account.innerHTML='<b>'+escapeHtml(discordName)+'</b><small>'+escapeHtml(userRow.rolle==='administration'?'ADMINISTRATION':'MITGLIED')+'</small>';
     if(currentPermissions.rechte_rollen) await loadRightsUsers();
     if(currentPermissions.dienstplan) await loadAppointments();
+    if(currentPermissions.familien) await loadFamilies();
     return true;
   }
   function escapeHtml(v){return String(v??'').replace(/[&<>'\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','\"':'&quot;'}[c]));}
@@ -767,6 +807,75 @@ input::placeholder, textarea::placeholder { color: rgba(255,255,255,.58) !import
     document.getElementById('newDiscordId').value='';document.getElementById('newDisplayName').value='';
     setTimeout(()=>addModal.classList.remove('open'),500); await loadRightsUsers();
   });
+
+
+  // Familien
+  let editingFamilyId=null, activeFamilyId=null, editingMemberId=null;
+  const familyModal=document.getElementById('familyModal'), memberModal=document.getElementById('memberModal');
+  const famVal=id=>document.getElementById(id)?.value?.trim()||'';
+  function openFamilyModal(item=null){
+    editingFamilyId=item?.id||null;
+    document.getElementById('familyModalTitle').textContent=item?'Familie bearbeiten':'Familie anlegen';
+    document.getElementById('familyName').value=item?.familienname||'';
+    document.getElementById('familyLocation').value=item?.standort||'';
+    document.getElementById('familyDescription').value=item?.beschreibung||'';
+    document.getElementById('familyNotes').value=item?.notizen||'';
+    document.getElementById('familyResult').textContent=''; familyModal.classList.add('open');
+  }
+  function openMemberModal(familyId,item=null){
+    activeFamilyId=familyId; editingMemberId=item?.id||null;
+    document.getElementById('memberModalTitle').textContent=item?'Mitglied bearbeiten':'Mitglied hinzufügen';
+    document.getElementById('memberName').value=item?.name||'';
+    document.getElementById('memberPosition').value=item?.position||'';
+    document.getElementById('memberNotes').value=item?.notizen||'';
+    document.getElementById('memberResult').textContent=''; memberModal.classList.add('open');
+  }
+  document.getElementById('addFamily')?.addEventListener('click',()=>openFamilyModal());
+  document.getElementById('familyClose')?.addEventListener('click',()=>familyModal.classList.remove('open'));
+  document.getElementById('memberClose')?.addEventListener('click',()=>memberModal.classList.remove('open'));
+  familyModal?.addEventListener('click',e=>{if(e.target===familyModal)familyModal.classList.remove('open')});
+  memberModal?.addEventListener('click',e=>{if(e.target===memberModal)memberModal.classList.remove('open')});
+  async function loadFamilies(){
+    if(!client||!currentPermissions?.familien)return;
+    const wrap=document.getElementById('familyList'),notice=document.getElementById('familyNotice'); if(!wrap)return;
+    notice.textContent='Familien werden geladen…';
+    const [{data:families,error},{data:members,error:me}]=await Promise.all([
+      client.from('familien').select('*').order('familienname',{ascending:true}),
+      client.from('familien_mitglieder').select('*').order('name',{ascending:true})
+    ]);
+    if(error||me){notice.textContent='Familien konnten nicht geladen werden: '+(error?.message||me?.message);return;}
+    notice.textContent=(families?.length||0)+' Familie'+((families?.length||0)===1?'':'n')+' eingetragen.';
+    if(!families?.length){wrap.innerHTML='<div class="glass family-empty">Noch keine Familien eingetragen.</div>';return;}
+    wrap.innerHTML=families.map(f=>{
+      const ms=(members||[]).filter(m=>String(m.familie_id)===String(f.id));
+      return `<div class="glass family-card" data-family="${f.id}"><div class="family-head"><div><div class="family-name">${escapeHtml(f.familienname)}</div><div class="family-location">◇ ${escapeHtml(f.standort||'Kein Standort eingetragen')}</div></div><div class="family-actions"><button type="button" class="fam-edit">BEARBEITEN</button><button type="button" class="fam-delete danger">LÖSCHEN</button></div></div>${f.beschreibung?`<div class="family-text">${escapeHtml(f.beschreibung)}</div>`:''}${f.notizen?`<div class="family-text"><b>Notiz:</b> ${escapeHtml(f.notizen)}</div>`:''}<div class="members-box"><div class="members-title"><span>MITGLIEDER · ${ms.length}</span><button type="button" class="btn add-member">＋ MITGLIED</button></div>${ms.length?ms.map(m=>`<div class="member-row" data-member="${m.id}"><div><div class="member-name">${escapeHtml(m.name)}</div><div class="member-position">${escapeHtml(m.position||'Keine Position')}${m.notizen?' · '+escapeHtml(m.notizen):''}</div></div><div class="member-actions"><button type="button" class="mem-edit">BEARBEITEN</button><button type="button" class="mem-delete danger">LÖSCHEN</button></div></div>`).join(''):'<div class="muted">Noch keine Mitglieder.</div>'}</div></div>`;
+    }).join('');
+    wrap.querySelectorAll('.family-card').forEach(card=>{
+      const fid=Number(card.dataset.family), f=families.find(x=>Number(x.id)===fid), ms=(members||[]).filter(m=>Number(m.familie_id)===fid);
+      card.querySelector('.fam-edit')?.addEventListener('click',()=>openFamilyModal(f));
+      card.querySelector('.fam-delete')?.addEventListener('click',()=>deleteFamily(f));
+      card.querySelector('.add-member')?.addEventListener('click',()=>openMemberModal(fid));
+      card.querySelectorAll('.member-row').forEach(row=>{const m=ms.find(x=>Number(x.id)===Number(row.dataset.member));row.querySelector('.mem-edit')?.addEventListener('click',()=>openMemberModal(fid,m));row.querySelector('.mem-delete')?.addEventListener('click',()=>deleteMember(m));});
+    });
+  }
+  document.getElementById('familySave')?.addEventListener('click',async()=>{
+    const result=document.getElementById('familyResult'),btn=document.getElementById('familySave');
+    const payload={familienname:famVal('familyName'),standort:famVal('familyLocation')||null,beschreibung:famVal('familyDescription')||null,notizen:famVal('familyNotes')||null};
+    if(!payload.familienname){result.textContent='Familienname eingeben.';result.className='rights-create-result access-denied';return;}
+    btn.disabled=true;result.textContent='Speichert…';
+    const {error}=editingFamilyId?await client.from('familien').update(payload).eq('id',editingFamilyId):await client.from('familien').insert(payload);btn.disabled=false;
+    if(error){result.textContent='Fehler: '+error.message;result.className='rights-create-result access-denied';return;} familyModal.classList.remove('open');await loadFamilies();
+  });
+  document.getElementById('memberSave')?.addEventListener('click',async()=>{
+    const result=document.getElementById('memberResult'),btn=document.getElementById('memberSave');
+    const payload={familie_id:activeFamilyId,name:famVal('memberName'),position:famVal('memberPosition')||null,notizen:famVal('memberNotes')||null};
+    if(!payload.name){result.textContent='Name eingeben.';result.className='rights-create-result access-denied';return;}
+    btn.disabled=true;result.textContent='Speichert…';
+    const {error}=editingMemberId?await client.from('familien_mitglieder').update(payload).eq('id',editingMemberId):await client.from('familien_mitglieder').insert(payload);btn.disabled=false;
+    if(error){result.textContent='Fehler: '+error.message;result.className='rights-create-result access-denied';return;} memberModal.classList.remove('open');await loadFamilies();
+  });
+  async function deleteFamily(f){if(!confirm('Familie „'+f.familienname+'“ wirklich löschen? Mitglieder werden ebenfalls gelöscht.'))return;const {error}=await client.from('familien').delete().eq('id',f.id);if(error){document.getElementById('familyNotice').textContent='Löschen fehlgeschlagen: '+error.message;return;}await loadFamilies();}
+  async function deleteMember(m){if(!confirm('Mitglied „'+m.name+'“ wirklich löschen?'))return;const {error}=await client.from('familien_mitglieder').delete().eq('id',m.id);if(error){document.getElementById('familyNotice').textContent='Löschen fehlgeschlagen: '+error.message;return;}await loadFamilies();}
 
   // Dienstplan
   let editingAppointmentId=null;
