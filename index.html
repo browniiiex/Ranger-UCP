@@ -416,7 +416,7 @@ textarea.r-input{resize:vertical;min-height:76px}
   <section class="page inner" id="abstimmungen"><h1>Ranger-Rat</h1><div class="sub">Interne Entscheidungen und Abstimmungen.</div><div class="glass placeholder"><b>Soll Max Mustermann als Ranger aufgenommen werden?</b><p class="muted">Abstimmung läuft.</p><button class="btn">✓ JA</button> <button class="btn">× NEIN</button> <button class="btn">– ENTHALTUNG</button></div></section>
   <section class="page inner" id="eid"><h1>Ranger-Eid</h1><div class="sub">Interner Eid · Platzhalter bis zur finalen Fassung.</div><div class="glass placeholder">Der finale Ranger-Eid wird hier hinterlegt.</div></section>
   <section class="page inner" id="verwaltung"><h1>Verwaltung</h1><div class="sub">Mitglieder und Rollen verwalten.</div><div class="glass placeholder">Administration · Mitglied</div></section>
-  <section class="page inner" id="rechte"><h1>Rechte & Rollen</h1><div class="sub">Individuelle Sicht- und Verwaltungsrechte.</div><div class="glass placeholder">Administration kann – sofern freigegeben – Rechte verteilen. Der Inhaberin-Status bleibt geschützt.</div></section>
+  <section class="page inner" id="rechte"><h1>Rechte & Rollen</h1><div class="sub">Discord-Nutzer freischalten und Berechtigungen individuell verwalten.</div><div id="rightsNotice" class="glass placeholder">Benutzer werden geladen…</div><div id="rightsUsers" class="rights-users"></div></section>
   <section class="page inner" id="einstellungen"><h1>Einstellungen</h1><div class="sub">Persönliche UCP-Einstellungen.</div><div class="glass placeholder">Akzentfarbe und Anzeigeoptionen</div></section>
  </div>
 </main>
@@ -599,6 +599,10 @@ loadOffenses();
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+.rights-users{display:grid;gap:14px;margin-top:14px}.rights-card{padding:20px}.rights-head{display:flex;justify-content:space-between;gap:16px;align-items:center;margin-bottom:16px}.rights-name{font:500 21px Georgia;color:#fff}.rights-meta{font-size:11px;color:var(--muted);margin-top:4px}.rights-controls{display:grid;grid-template-columns:180px 180px 1fr;gap:12px;align-items:end}.rights-controls label,.permission-grid label{font-size:10px;letter-spacing:.8px;color:#d8c9a7}.permission-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin-top:15px}.permission-item{display:flex!important;align-items:center;gap:9px;padding:10px;border:1px solid rgba(239,191,97,.15);border-radius:7px;background:rgba(3,8,5,.45);cursor:pointer}.permission-item input{width:16px!important;height:16px;margin:0!important;accent-color:#efbf61}.rights-save{height:42px!important;text-align:center!important;border:1px solid rgba(239,191,97,.55)!important;border-radius:7px!important;background:#efbf61!important;color:#10120f!important;font-weight:900!important}.rights-save:disabled{opacity:.5;cursor:not-allowed}.access-denied{color:#ffaaaa}.access-ok{color:#91e3a4}@media(max-width:900px){.rights-controls,.permission-grid{grid-template-columns:1fr}}
+</style>
 <style>
 #authGate{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;padding:24px;background:linear-gradient(rgba(2,7,5,.58),rgba(2,7,5,.88)),var(--bg-image,none);backdrop-filter:blur(12px)}
 #authGate.hidden{display:none}
@@ -627,39 +631,83 @@ loadOffenses();
   const gate=document.getElementById('authGate');
   const msg=document.getElementById('authMsg');
   const login=document.getElementById('discordLogin');
+  const permissionKeys=['dashboard','profil','stream_aktivitaet','dienstplan','strafrechner','familien','ranger_rat','ranger_eid','verwaltung','rechte_rollen','einstellungen'];
+  const pagePermission={dashboard:'dashboard',profil:'profil',aktivitaet:'stream_aktivitaet',termine:'dienstplan',strafrechner:'strafrechner',familien:'familien',abstimmungen:'ranger_rat',eid:'ranger_eid',verwaltung:'verwaltung',rechte:'rechte_rollen',einstellungen:'einstellungen'};
+  const labels={dashboard:'Command Center',profil:'Mein Profil',stream_aktivitaet:'Stream-Aktivität',dienstplan:'Dienstplan',strafrechner:'Strafrechner',familien:'Familien',ranger_rat:'Ranger-Rat',ranger_eid:'Ranger-Eid',verwaltung:'Verwaltung',rechte_rollen:'Rechte & Rollen',einstellungen:'Einstellungen'};
+  let client=null,currentUser=null,currentAccess=null,currentPermissions=null;
 
-  if(!window.supabase){
-    msg.textContent='Login konnte nicht geladen werden.';
-    return;
-  }
-  const client=window.supabase.createClient(SB_URL,SB_KEY);
-
-  login.addEventListener('click',async()=>{
-    login.disabled=true;
-    login.textContent='WEITERLEITUNG...';
-    const {error}=await client.auth.signInWithOAuth({
-      provider:'discord',
-      options:{redirectTo:'https://ranger-ucp.vercel.app/'}
+  function showGate(text,allowLogin=true){ gate.classList.remove('hidden'); msg.textContent=text||''; login.style.display=allowLogin?'block':'none'; }
+  function hideGate(){ gate.classList.add('hidden'); }
+  function applyPermissions(){
+    document.querySelectorAll('.nav button[data-page]').forEach(btn=>{
+      const key=pagePermission[btn.dataset.page];
+      btn.style.display=(key && currentPermissions && currentPermissions[key])?'':'none';
     });
-    if(error){
-      msg.textContent=error.message;
-      login.disabled=false;
-      login.textContent='MIT DISCORD ANMELDEN';
+    const active=document.querySelector('.page.active');
+    if(active){ const key=pagePermission[active.id]; if(key && !currentPermissions?.[key]) openPage('dashboard'); }
+  }
+  async function checkAccess(session){
+    if(!session){ showGate('',true); return false; }
+    currentUser=session.user;
+    const {data:userRow,error:userErr}=await client.from('ucp_users').select('*').eq('id',session.user.id).maybeSingle();
+    if(userErr){ showGate('Zugriff konnte nicht geprüft werden.',false); return false; }
+    if(!userRow || !userRow.enabled){
+      await client.auth.signOut();
+      showGate('Dein Discord-Account ist noch nicht für das Ranger UCP freigeschaltet.',true);
+      return false;
     }
-  });
-
-  const {data:{session}}=await client.auth.getSession();
-  if(session){
-    gate.classList.add('hidden');
+    const {data:perms,error:permErr}=await client.from('ucp_permissions').select('*').eq('user_id',session.user.id).maybeSingle();
+    if(permErr || !perms){ showGate('Deine UCP-Rechte konnten nicht geladen werden.',false); return false; }
+    currentAccess=userRow; currentPermissions=perms;
+    hideGate(); applyPermissions();
     const meta=session.user.user_metadata||{};
-    const discordName=meta.full_name||meta.name||meta.user_name||meta.preferred_username||'Ranger';
+    const discordName=userRow.display_name||userRow.discord_name||meta.full_name||meta.name||meta.user_name||'Ranger';
     document.querySelectorAll('.profile-name').forEach(x=>x.textContent=discordName);
+    const account=document.querySelector('.account'); if(account) account.innerHTML='<b>'+escapeHtml(discordName)+'</b><small>'+escapeHtml(userRow.rolle==='administration'?'ADMINISTRATION':'MITGLIED')+'</small>';
+    if(currentPermissions.rechte_rollen) await loadRightsUsers();
+    return true;
+  }
+  function escapeHtml(v){return String(v??'').replace(/[&<>'\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','\"':'&quot;'}[c]));}
+  async function loadRightsUsers(){
+    const wrap=document.getElementById('rightsUsers'), notice=document.getElementById('rightsNotice'); if(!wrap||!notice)return;
+    if(currentAccess?.rolle!=='administration'){ notice.innerHTML='<span class="access-denied">Nur die Administration kann Rechte verändern.</span>'; wrap.innerHTML=''; return; }
+    notice.textContent='Benutzer werden geladen…';
+    const {data:users,error}=await client.from('ucp_users').select('*').order('created_at',{ascending:true});
+    if(error){notice.textContent='Benutzer konnten nicht geladen werden.';return;}
+    const {data:perms,error:pe}=await client.from('ucp_permissions').select('*');
+    if(pe){notice.textContent='Rechte konnten nicht geladen werden.';return;}
+    const byUser=Object.fromEntries((perms||[]).map(p=>[p.user_id,p]));
+    notice.innerHTML='<span class="access-ok">'+users.length+' Discord-Benutzer gefunden.</span>';
+    wrap.innerHTML=users.map(u=>{
+      const p=byUser[u.id]||{};
+      return `<div class="glass rights-card" data-user="${escapeHtml(u.id)}"><div class="rights-head"><div><div class="rights-name">${escapeHtml(u.display_name||u.discord_name||'Discord Benutzer')}</div><div class="rights-meta">Discord-ID: ${escapeHtml(u.discord_id)}</div></div><span class="label">${u.enabled?'FREIGESCHALTET':'GESPERRT'}</span></div><div class="rights-controls"><label>ZUGRIFF<select class="r-enabled"><option value="true" ${u.enabled?'selected':''}>Freigeschaltet</option><option value="false" ${!u.enabled?'selected':''}>Gesperrt</option></select></label><label>ROLLE<select class="r-role"><option value="mitglied" ${u.rolle==='mitglied'?'selected':''}>Mitglied</option><option value="administration" ${u.rolle==='administration'?'selected':''}>Administration</option></select></label><button class="rights-save" type="button">ÄNDERUNGEN SPEICHERN</button></div><div class="permission-grid">${permissionKeys.map(k=>`<label class="permission-item"><input type="checkbox" data-perm="${k}" ${p[k]?'checked':''}>${labels[k]}</label>`).join('')}</div><div class="rights-result"></div></div>`;
+    }).join('');
+    wrap.querySelectorAll('.rights-save').forEach(btn=>btn.addEventListener('click',()=>saveRights(btn.closest('.rights-card'))));
+  }
+  async function saveRights(card){
+    const id=card.dataset.user, btn=card.querySelector('.rights-save'), result=card.querySelector('.rights-result');
+    btn.disabled=true; result.textContent='Speichert…';
+    const enabled=card.querySelector('.r-enabled').value==='true', rolle=card.querySelector('.r-role').value;
+    const permissionUpdate={updated_at:new Date().toISOString()};
+    card.querySelectorAll('[data-perm]').forEach(x=>permissionUpdate[x.dataset.perm]=x.checked);
+    const {error:e1}=await client.from('ucp_users').update({enabled,rolle}).eq('id',id);
+    const {error:e2}=await client.from('ucp_permissions').update(permissionUpdate).eq('user_id',id);
+    if(e1||e2){result.textContent='Speichern fehlgeschlagen: '+(e1?.message||e2?.message);result.className='rights-result access-denied';}
+    else{result.textContent='✓ Gespeichert';result.className='rights-result access-ok'; if(id===currentUser.id){currentAccess.enabled=enabled;currentAccess.rolle=rolle;Object.assign(currentPermissions,permissionUpdate);applyPermissions();}}
+    btn.disabled=false;
   }
 
-  client.auth.onAuthStateChange((_event,session)=>{
-    if(session) gate.classList.add('hidden');
-    else gate.classList.remove('hidden');
+  if(!window.supabase){ msg.textContent='Login konnte nicht geladen werden.'; return; }
+  client=window.supabase.createClient(SB_URL,SB_KEY);
+  window.rangerSupabase=client;
+  login.addEventListener('click',async()=>{
+    login.disabled=true; login.textContent='WEITERLEITUNG...';
+    const {error}=await client.auth.signInWithOAuth({provider:'discord',options:{redirectTo:'https://ranger-ucp.vercel.app/'}});
+    if(error){msg.textContent=error.message;login.disabled=false;login.textContent='MIT DISCORD ANMELDEN';}
   });
+  const {data:{session}}=await client.auth.getSession();
+  await checkAccess(session);
+  client.auth.onAuthStateChange((event,session)=>{ if(event==='SIGNED_IN') setTimeout(()=>checkAccess(session),0); if(event==='SIGNED_OUT') showGate('',true); });
 })();
 </script>
 
