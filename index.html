@@ -297,6 +297,10 @@ textarea.r-input{resize:vertical;min-height:76px}
 .copy-status{min-height:20px;margin-top:10px;color:#6ee58f;font-size:12px}
 @media(max-width:1000px){.calc-layout,.form-grid{grid-template-columns:1fr}.form-grid .span2{grid-column:auto}.offense-list{grid-template-columns:1fr}.calc-head{align-items:flex-start;flex-direction:column}.search{max-width:none}}
 
+
+/* Dienstplan */
+.appointment-titlebar{display:flex;align-items:flex-start;justify-content:space-between;gap:18px}.appointment-notice{padding:14px 18px;margin:18px 0;color:#91e3a4}.appointment-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.appointment-card{padding:20px;position:relative}.appointment-card-top{display:flex;justify-content:space-between;gap:15px;align-items:flex-start}.appointment-date{min-width:66px;text-align:center;border:1px solid rgba(239,191,97,.35);border-radius:8px;padding:9px 7px;background:rgba(239,191,97,.07);color:#efbf61;font-weight:900;line-height:1.1}.appointment-date strong{display:block;font-size:25px}.appointment-info{flex:1}.appointment-info h3{font:500 21px Georgia;margin:0 0 7px}.appointment-meta{font-size:11px;color:#d8c9a7;line-height:1.7}.appointment-desc{font-size:12px;color:var(--muted);margin-top:12px;white-space:pre-wrap}.appointment-actions{display:flex;gap:8px;margin-top:16px}.appointment-actions button{border:1px solid rgba(239,191,97,.35);background:rgba(3,8,5,.7);color:#efbf61;border-radius:6px;padding:8px 11px;font-weight:800;cursor:pointer}.appointment-actions .danger{color:#ffaaaa;border-color:rgba(255,120,120,.28)}.appointment-empty{grid-column:1/-1;padding:34px;text-align:center;color:var(--muted)}
+.appointment-modal{position:fixed;inset:0;z-index:100001;display:none;align-items:center;justify-content:center;padding:24px;background:rgba(0,0,0,.72);backdrop-filter:blur(8px)}.appointment-modal.open{display:flex}.appointment-modal-box{width:min(700px,100%);padding:24px;border:1px solid rgba(239,191,97,.42);border-radius:12px;background:rgba(5,10,7,.98);box-shadow:0 30px 90px #000}.appointment-form{display:grid;grid-template-columns:1fr 1fr;gap:12px}.appointment-form label{font-size:10px;letter-spacing:.8px;color:#d8c9a7}.appointment-form .span2{grid-column:1/-1}.appointment-form input,.appointment-form textarea{margin-top:6px}.appointment-save{width:100%;margin-top:16px;height:44px;border:1px solid rgba(239,191,97,.55);border-radius:7px;background:#efbf61;color:#10120f;font-weight:900;cursor:pointer}.appointment-result{min-height:18px;margin-top:9px;font-size:12px}@media(max-width:900px){.appointment-grid,.appointment-form{grid-template-columns:1fr}.appointment-form .span2{grid-column:auto}.appointment-titlebar{flex-direction:column}}
 </style>
 </head>
 <body>
@@ -338,12 +342,16 @@ textarea.r-input{resize:vertical;min-height:76px}
    <div class="lower">
     <div class="glass panel"><div class="panel-title"><span>▣　NÄCHSTE EINSÄTZE & TERMINE</span><span>Alle anzeigen →</span></div><div class="row"><div class="date">20<br>SEP</div><div style="flex:1"><b>Ranger-Besprechung</b><small>20.09.2026 · 20:00 Uhr · Ranger HQ</small></div><button class="btn">TERMIN</button></div><div class="row"><div class="date">24<br>SEP</div><div style="flex:1"><b>Interne Schulung</b><small>24.09.2026 · 19:30 Uhr · Trainingsgelände</small></div><button class="btn">TERMIN</button></div></div>
     <div class="glass panel"><div class="panel-title"><span>⚑　AKTUELLE MITTEILUNGEN</span><span>Alle anzeigen →</span></div><div class="row"><div><b>Neue Einsatzrichtlinien</b><small>Interne Ranger-Mitteilung</small></div><span>›</span></div><div class="row"><div><b>Ranger-Rat geöffnet</b><small>Aufnahme-Abstimmung aktiv</small></div><span>›</span></div></div>
-    <div class="glass panel"><div class="panel-title"><span>ϟ　SCHNELLZUGRIFF</span></div><div class="quick"><button onclick="openPage('termine')"><span>▣</span>TERMIN ERSTELLEN</button><button onclick="openPage('strafrechner')"><span>§</span>STRAFRECHNER</button><button onclick="openPage('akten')"><span>▤</span>AKTENARCHIV</button><button onclick="openPage('abstimmungen')"><span>◎</span>ABSTIMMUNG STARTEN</button></div></div>
+    <div class="glass panel"><div class="panel-title"><span>ϟ　SCHNELLZUGRIFF</span></div><div class="quick"><button onclick="openPage('termine')"><span>▣</span>TERMIN ERSTELLEN</button><button onclick="openPage('strafrechner')"><span>§</span>STRAFRECHNER</button><button onclick="openPage('abstimmungen')"><span>◎</span>ABSTIMMUNG STARTEN</button></div></div>
    </div>
   </section>
   <section class="page inner" id="profil"><h1>Mein Profil</h1><div class="sub">Ranger-Profil und persönliche Übersicht.</div><div class="glass placeholder">Brownie · Ranger-Leitung</div></section>
   <section class="page inner" id="aktivitaet"><h1>Stream-Aktivität</h1><div class="sub">Später automatisch mit Twitch verbunden.</div><div class="glass placeholder">Streamzeit, letzter Stream und 7/30-Tage-Aktivität werden hier angezeigt.</div></section>
-  <section class="page inner" id="termine"><h1>Dienstplan</h1><div class="sub">Termine und Ranger-Einsätze.</div><div class="glass placeholder" id="appointmentList"></div></section>
+  <section class="page inner" id="termine">
+  <div class="appointment-titlebar"><div><h1>Dienstplan</h1><div class="sub">Termine und Ranger-Einsätze verwalten.</div></div><button class="rights-add" id="addAppointment" type="button">+ TERMIN ANLEGEN</button></div>
+  <div id="appointmentNotice" class="glass appointment-notice">Termine werden geladen…</div>
+  <div id="appointmentList" class="appointment-grid"></div>
+</section>
   
 <section class="page inner" id="strafrechner">
   <h1>Strafrechner</h1>
@@ -614,7 +622,8 @@ loadOffenses();
 #authMsg{min-height:20px;margin-top:12px;font-size:12px;color:#ff9a9a}
 #logoutBtn{margin-top:10px;width:100%;background:transparent;border:1px solid rgba(239,191,97,.25);color:#d8c9a7;border-radius:7px;padding:9px;cursor:pointer}
 </style>
-<div class="rights-modal" id="rightsAddModal"><div class="rights-modal-box"><div class="rights-modal-head"><h3>Benutzer hinzufügen</h3><button type="button" class="rights-close" id="rightsAddClose">×</button></div><div class="rights-form-grid"><label>DISCORD-ID<input id="newDiscordId" inputmode="numeric" placeholder="z. B. 123456789012345678"></label><label>ANZEIGENAME<input id="newDisplayName" placeholder="Name im UCP"></label><label>ROLLE<select id="newRole"><option value="mitglied">Mitglied</option><option value="administration">Administration</option></select></label><label>ZUGRIFF<select id="newEnabled"><option value="true">Freigeschaltet</option><option value="false">Gesperrt</option></select></label></div><div class="permission-grid" id="newPermissionGrid"></div><button type="button" class="rights-create" id="createRightsUser">BENUTZER ANLEGEN</button><div class="rights-create-result" id="createRightsResult"></div></div></div><div id="authGate">
+<div class="rights-modal" id="rightsAddModal"><div class="rights-modal-box"><div class="rights-modal-head"><h3>Benutzer hinzufügen</h3><button type="button" class="rights-close" id="rightsAddClose">×</button></div><div class="rights-form-grid"><label>DISCORD-ID<input id="newDiscordId" inputmode="numeric" placeholder="z. B. 123456789012345678"></label><label>ANZEIGENAME<input id="newDisplayName" placeholder="Name im UCP"></label><label>ROLLE<select id="newRole"><option value="mitglied">Mitglied</option><option value="administration">Administration</option></select></label><label>ZUGRIFF<select id="newEnabled"><option value="true">Freigeschaltet</option><option value="false">Gesperrt</option></select></label></div><div class="permission-grid" id="newPermissionGrid"></div><button type="button" class="rights-create" id="createRightsUser">BENUTZER ANLEGEN</button><div class="rights-create-result" id="createRightsResult"></div></div></div><div class="appointment-modal" id="appointmentModal"><div class="appointment-modal-box"><div class="rights-modal-head"><h3 id="appointmentModalTitle">Termin anlegen</h3><button class="rights-close" id="appointmentClose" type="button">×</button></div><div class="appointment-form"><label>TITEL<input class="r-input" id="appointmentTitle" placeholder="z. B. Ranger-Besprechung"></label><label>ORT<input class="r-input" id="appointmentPlace" placeholder="z. B. Ranger HQ"></label><label>DATUM<input class="r-input" id="appointmentDate" type="date"></label><label>UHRZEIT<input class="r-input" id="appointmentTime" type="time"></label><label class="span2">BESCHREIBUNG<textarea class="r-input" id="appointmentDescription" rows="4" placeholder="Weitere Informationen…"></textarea></label></div><button class="appointment-save" id="appointmentSave" type="button">TERMIN SPEICHERN</button><div class="appointment-result" id="appointmentResult"></div></div></div>
+<div id="authGate">
   <div class="auth-box">
     <div class="auth-mark">◆</div>
     <div class="label">RETRO RANGER</div>
@@ -669,6 +678,7 @@ loadOffenses();
     document.querySelectorAll('.profile-name').forEach(x=>x.textContent=discordName);
     const account=document.querySelector('.account'); if(account) account.innerHTML='<b>'+escapeHtml(discordName)+'</b><small>'+escapeHtml(userRow.rolle==='administration'?'ADMINISTRATION':'MITGLIED')+'</small>';
     if(currentPermissions.rechte_rollen) await loadRightsUsers();
+    if(currentPermissions.dienstplan) await loadAppointments();
     return true;
   }
   function escapeHtml(v){return String(v??'').replace(/[&<>'\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','\"':'&quot;'}[c]));}
@@ -720,6 +730,52 @@ loadOffenses();
     document.getElementById('newDiscordId').value='';document.getElementById('newDisplayName').value='';
     setTimeout(()=>addModal.classList.remove('open'),500); await loadRightsUsers();
   });
+
+  // Dienstplan
+  let editingAppointmentId=null;
+  const appointmentModal=document.getElementById('appointmentModal');
+  const appointmentResult=document.getElementById('appointmentResult');
+  const apVal=id=>document.getElementById(id)?.value?.trim()||'';
+  function openAppointmentModal(item=null){
+    editingAppointmentId=item?.id||null;
+    document.getElementById('appointmentModalTitle').textContent=item?'Termin bearbeiten':'Termin anlegen';
+    document.getElementById('appointmentTitle').value=item?.titel||'';
+    document.getElementById('appointmentPlace').value=item?.ort||'';
+    document.getElementById('appointmentDate').value=item?.datum||'';
+    document.getElementById('appointmentTime').value=(item?.uhrzeit||'').slice(0,5);
+    document.getElementById('appointmentDescription').value=item?.beschreibung||'';
+    appointmentResult.textContent=''; appointmentModal.classList.add('open');
+  }
+  document.getElementById('addAppointment')?.addEventListener('click',()=>openAppointmentModal());
+  document.getElementById('appointmentClose')?.addEventListener('click',()=>appointmentModal.classList.remove('open'));
+  appointmentModal?.addEventListener('click',e=>{if(e.target===appointmentModal)appointmentModal.classList.remove('open')});
+  function fmtAppointmentDate(date){const d=new Date(date+'T12:00:00');return {day:String(d.getDate()).padStart(2,'0'),mon:['JAN','FEB','MÄR','APR','MAI','JUN','JUL','AUG','SEP','OKT','NOV','DEZ'][d.getMonth()]};}
+  async function loadAppointments(){
+    if(!client||!currentPermissions?.dienstplan)return;
+    const wrap=document.getElementById('appointmentList'),notice=document.getElementById('appointmentNotice'); if(!wrap)return;
+    notice.textContent='Termine werden geladen…';
+    const {data,error}=await client.from('ucp_termine').select('*').order('datum',{ascending:true}).order('uhrzeit',{ascending:true});
+    if(error){notice.textContent='Termine konnten nicht geladen werden: '+error.message;return;}
+    notice.textContent=(data?.length||0)+' Termin'+((data?.length||0)===1?'':'e')+' eingetragen.';
+    if(!data?.length){wrap.innerHTML='<div class="glass appointment-empty">Noch keine Termine eingetragen.</div>';return;}
+    wrap.innerHTML=data.map(a=>{const d=fmtAppointmentDate(a.datum);return `<div class="glass appointment-card" data-id="${a.id}"><div class="appointment-card-top"><div class="appointment-date"><strong>${d.day}</strong>${d.mon}</div><div class="appointment-info"><h3>${escapeHtml(a.titel)}</h3><div class="appointment-meta">◷ ${escapeHtml((a.uhrzeit||'').slice(0,5))} Uhr${a.ort?'　◇ '+escapeHtml(a.ort):''}</div>${a.beschreibung?`<div class="appointment-desc">${escapeHtml(a.beschreibung)}</div>`:''}</div></div><div class="appointment-actions"><button class="ap-edit" type="button">BEARBEITEN</button><button class="ap-delete danger" type="button">LÖSCHEN</button></div></div>`}).join('');
+    wrap.querySelectorAll('.ap-edit').forEach((b,i)=>b.addEventListener('click',()=>openAppointmentModal(data[i])));
+    wrap.querySelectorAll('.ap-delete').forEach((b,i)=>b.addEventListener('click',()=>deleteAppointment(data[i])));
+  }
+  document.getElementById('appointmentSave')?.addEventListener('click',async()=>{
+    const payload={titel:apVal('appointmentTitle'),ort:apVal('appointmentPlace')||null,datum:apVal('appointmentDate'),uhrzeit:apVal('appointmentTime'),beschreibung:apVal('appointmentDescription')||null};
+    if(!payload.titel||!payload.datum||!payload.uhrzeit){appointmentResult.textContent='Titel, Datum und Uhrzeit ausfüllen.';appointmentResult.className='appointment-result access-denied';return;}
+    const btn=document.getElementById('appointmentSave');btn.disabled=true;appointmentResult.textContent='Speichert…';
+    const query=editingAppointmentId?client.from('ucp_termine').update(payload).eq('id',editingAppointmentId):client.from('ucp_termine').insert({...payload,erstellt_von:currentUser.id});
+    const {error}=await query;btn.disabled=false;
+    if(error){appointmentResult.textContent='Fehler: '+error.message;appointmentResult.className='appointment-result access-denied';return;}
+    appointmentModal.classList.remove('open');await loadAppointments();
+  });
+  async function deleteAppointment(item){
+    if(!confirm('Termin „'+item.titel+'“ wirklich löschen?'))return;
+    const {error}=await client.from('ucp_termine').delete().eq('id',item.id);
+    if(error){document.getElementById('appointmentNotice').textContent='Löschen fehlgeschlagen: '+error.message;return;} await loadAppointments();
+  }
 
   if(!window.supabase){ msg.textContent='Login konnte nicht geladen werden.'; return; }
   client=window.supabase.createClient(SB_URL,SB_KEY);
