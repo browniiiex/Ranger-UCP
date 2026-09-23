@@ -703,7 +703,7 @@ input::placeholder, textarea::placeholder { font-size: 16px !important; opacity:
           <div class="label">STRAFTATEN</div>
           <h2>Strafkatalog</h2>
         </div>
-        <input id="offenseSearch" class="r-input search" placeholder="Straftat suchen...">
+        <div class="catalog-head-actions"><input id="offenseSearch" class="r-input search" placeholder="Straftat suchen..."><button type="button" class="btn permission-hidden" id="manageCatalogBtn">＋ STRAFTAT HINZUFÜGEN</button></div>
       </div>
 
       <div class="tatfinder">
@@ -1261,6 +1261,11 @@ function offenseRow(item){
 
   span.append(b,small);
   label.append(cb,span);
+  if(typeof window.__editCatalogOffense==='function'){
+    const edit=document.createElement('button');edit.type='button';edit.className='catalog-edit';edit.textContent='BEARBEITEN';
+    edit.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();window.__editCatalogOffense(item)});
+    label.appendChild(edit);
+  }
   return label;
 }
 
@@ -1428,7 +1433,9 @@ button.danger,.danger-btn,.btn-danger,[data-action="delete-vote"],button[onclick
 #familyModal textarea{min-height:78px!important;height:78px!important}
 #familyModal #familyClose{position:absolute!important;top:14px!important;right:14px!important;left:auto!important}
 @media(max-width:700px){#familyModal>.rights-modal-card{width:100%!important;max-width:100%!important}#familyModal .rights-create-grid{grid-template-columns:1fr!important}#familyModal .rights-create-grid>.span2{grid-column:1!important}}
+.catalog-head-actions{display:flex;align-items:center;justify-content:flex-end;gap:10px;flex-wrap:wrap}.catalog-edit{margin-left:auto;border:1px solid rgba(239,191,97,.32);border-radius:6px;background:rgba(239,191,97,.08);color:#efbf61;padding:7px 9px;font-size:10px;font-weight:900;cursor:pointer}.catalog-disable{display:none;width:100%;margin-top:9px;height:42px;border:1px solid rgba(255,120,120,.4);border-radius:7px;background:rgba(255,80,80,.08);color:#ffaaaa;font-weight:900;cursor:pointer}
 </style>
+<div class="rights-modal" id="catalogModal"><div class="rights-modal-box"><div class="rights-modal-head"><h3 id="catalogModalTitle">Straftat hinzufügen</h3><button type="button" class="rights-close" id="catalogModalClose">×</button></div><div class="rights-form-grid"><label>KATEGORIE<input id="catalogCategory" placeholder="z. B. Verkehrsdelikte"></label><label>STRAFTAT<input id="catalogName" placeholder="Bezeichnung"></label><label>GELDSTRAFE<input id="catalogMoney" type="number" min="0" step="1" placeholder="0"></label><label>HAFTEINHEITEN<input id="catalogHE" type="number" min="0" step="1" placeholder="0"></label><label style="grid-column:1/-1">BESCHREIBUNG<input id="catalogDescription" placeholder="Optional"></label></div><button type="button" class="rights-create" id="catalogSave">STRAFTAT SPEICHERN</button><button type="button" class="catalog-disable" id="catalogDisable">STRAFTAT DEAKTIVIEREN</button><div class="rights-create-result" id="catalogResult"></div></div></div>
 <div class="rights-modal" id="rightsAddModal"><div class="rights-modal-box"><div class="rights-modal-head"><h3>Benutzer hinzufügen</h3><button type="button" class="rights-close" id="rightsAddClose">×</button></div><div class="rights-form-grid"><label>DISCORD-ID<input id="newDiscordId" inputmode="numeric" placeholder="z. B. 123456789012345678"></label><label>ANZEIGENAME<input id="newDisplayName" placeholder="Name im UCP"></label><label>TWITCH-NAME<input id="newTwitchName" placeholder="z. B. Browniiiex"></label><label>DABEI SEIT<input id="newJoinedAt" type="date"></label><label>RANGER-RANG<select id="newRangerRank"><option selected>Ranger auf Probe</option><option>Ranger 1</option><option>Ranger 2</option><option>Ass. Chief</option><option>Chief</option></select></label><label>ROLLE<select id="newRole"><option value="mitglied">Mitglied</option><option value="administration">Administration</option></select></label><label>ZUGRIFF<select id="newEnabled"><option value="true">Freigeschaltet</option><option value="false">Gesperrt</option></select></label></div><div class="permission-grid" id="newPermissionGrid"></div><button type="button" class="rights-create" id="createRightsUser">BENUTZER ANLEGEN</button><div class="rights-create-result" id="createRightsResult"></div></div></div><div class="appointment-modal" id="appointmentModal"><div class="appointment-modal-box"><div class="rights-modal-head"><h3 id="appointmentModalTitle">Termin anlegen</h3><button class="rights-close" id="appointmentClose" type="button">×</button></div><div class="appointment-form"><label>TITEL<input class="r-input" id="appointmentTitle" placeholder="z. B. Ranger-Besprechung"></label><label>ORT<input class="r-input" id="appointmentPlace" placeholder="z. B. Ranger HQ"></label><label>DATUM<input class="r-input" id="appointmentDate" type="date"></label><label>UHRZEIT<input class="r-input" id="appointmentTime" type="time"></label><label class="span2">BESCHREIBUNG<textarea class="r-input" id="appointmentDescription" rows="4" placeholder="Weitere Informationen…"></textarea></label></div><button class="appointment-save" id="appointmentSave" type="button">TERMIN SPEICHERN</button><div class="appointment-result" id="appointmentResult"></div></div></div>
 <div id="authGate">
   <div class="auth-box">
@@ -1453,6 +1460,14 @@ button.danger,.danger-btn,.btn-danger,[data-action="delete-vote"],button[onclick
   let client=null,currentUser=null,currentAccess=null,currentPermissions=null,currentRangerRank='';
   let presenceTimer=null,currentAvatarUrl='';
   const rangerRanks=['Ranger auf Probe','Ranger 1','Ranger 2','Ass. Chief','Chief'];
+  const catalogModal=document.getElementById('catalogModal'),catalogManage=document.getElementById('manageCatalogBtn'),catalogClose=document.getElementById('catalogModalClose'),catalogSave=document.getElementById('catalogSave'),catalogDisable=document.getElementById('catalogDisable'),catalogResult=document.getElementById('catalogResult');
+  let editingCatalogId=null;
+  function canManageCatalog(){return currentAccess?.rolle==='administration'&&!!currentPermissions?.strafrechner}
+  function openCatalogEditor(item=null){if(!canManageCatalog())return;editingCatalogId=item?.id??null;document.getElementById('catalogModalTitle').textContent=item?'Straftat bearbeiten':'Straftat hinzufügen';document.getElementById('catalogCategory').value=item?.kategorie||'';document.getElementById('catalogName').value=item?.straftat||'';document.getElementById('catalogMoney').value=Number(item?.geldstrafe)||0;document.getElementById('catalogHE').value=Number(item?.hafteinheiten)||0;document.getElementById('catalogDescription').value=item?.beschreibung||'';catalogDisable.style.display=item?'block':'none';catalogResult.textContent='';catalogModal.classList.add('open')}
+  window.__editCatalogOffense=item=>openCatalogEditor(item);
+  catalogManage?.addEventListener('click',()=>openCatalogEditor());catalogClose?.addEventListener('click',()=>catalogModal.classList.remove('open'));catalogModal?.addEventListener('click',e=>{if(e.target===catalogModal)catalogModal.classList.remove('open')});
+  catalogSave?.addEventListener('click',async()=>{if(!canManageCatalog())return;const payload={kategorie:document.getElementById('catalogCategory').value.trim(),straftat:document.getElementById('catalogName').value.trim(),beschreibung:document.getElementById('catalogDescription').value.trim()||null,geldstrafe:Math.max(0,Number(document.getElementById('catalogMoney').value)||0),hafteinheiten:Math.max(0,Number(document.getElementById('catalogHE').value)||0),aktiv:true};if(!payload.kategorie||!payload.straftat){catalogResult.textContent='Kategorie und Straftat sind erforderlich.';return}catalogSave.disabled=true;catalogResult.textContent='Speichert…';const query=editingCatalogId?client.from('strafkatalog').update(payload).eq('id',editingCatalogId):client.from('strafkatalog').insert(payload);const{error}=await query;catalogSave.disabled=false;if(error){catalogResult.textContent='Fehler: '+error.message;return}catalogModal.classList.remove('open');globalSearchLoaded=false;await loadOffenses()});
+  catalogDisable?.addEventListener('click',async()=>{if(!canManageCatalog()||!editingCatalogId)return;if(!confirm('Diese Straftat wirklich deaktivieren?'))return;const{error}=await client.from('strafkatalog').update({aktiv:false}).eq('id',editingCatalogId);if(error){catalogResult.textContent='Fehler: '+error.message;return}catalogModal.classList.remove('open');globalSearchLoaded=false;await loadOffenses()});
 
 
   let globalSearchData={rangers:[],families:[],appointments:[],offenses:[]};
@@ -1716,6 +1731,7 @@ button.danger,.danger-btn,.btn-danger,[data-action="delete-vote"],button[onclick
     if(active){ const key=pagePermission[active.id]; if(key && !currentPermissions?.[key]) openPage(window.__ucpFirstAllowedPage()); }
     const mayManageRights=!!(currentPermissions?.rechte_rollen && currentAccess?.rolle==='administration');
     if(addBtn) addBtn.classList.toggle('permission-hidden',!mayManageRights);
+    if(catalogManage)catalogManage.classList.toggle('permission-hidden',!canManageCatalog());
     if(!mayManageRights) addModal?.classList.remove('open');
   }
   window.__ucpCanOpenPage=id=>{
@@ -1778,6 +1794,7 @@ button.danger,.danger-btn,.btn-danger,[data-action="delete-vote"],button[onclick
     }
     currentRangerRank=allowSelf?.ranger_rang||'Ranger auf Probe';
     hideGate(); applyPermissions(); await loadNavPreferences(); await loadDesignPrefs(); startPresence();
+    if(currentPermissions.strafrechner)await loadOffenses();
     if(currentPermissions.profil) await loadProfile();
     const discordName=userRow.display_name||userRow.discord_name||meta.full_name||meta.name||meta.user_name||'Ranger';
     document.querySelectorAll('.profile-name').forEach(x=>x.textContent=discordName);
@@ -2172,6 +2189,15 @@ button.danger,.danger-btn,.btn-danger,[data-action="delete-vote"],button[onclick
       card.querySelector('.vote-delete')?.addEventListener('click',()=>deleteVote(id));
     });
   }
+  // Hält Discord- und UCP-Stimmen automatisch synchron, solange der
+  // Ranger-Rat geöffnet ist. Dadurch erscheinen Discord-Stimmen ohne Reload.
+  let voteRefreshBusy=false;
+  setInterval(async()=>{
+    if(voteRefreshBusy||document.hidden||!currentUser||!currentPermissions?.ranger_rat)return;
+    if(!document.getElementById('abstimmungen')?.classList.contains('active'))return;
+    voteRefreshBusy=true;
+    try{await loadVotes();}finally{voteRefreshBusy=false;}
+  },5000);
   async function castVote(id,choice){
     const {error}=await client.from('ucp_rat_stimmen').upsert({abstimmung_id:id,user_id:currentUser.id,stimme:choice},{onConflict:'abstimmung_id,user_id'});
     if(error){document.getElementById('voteNotice').textContent='Abstimmen fehlgeschlagen: '+error.message;return;} await loadVotes();
