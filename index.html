@@ -1200,6 +1200,23 @@ const finderSynonyms=[
   ['maskierung','maskiert','vermummt','maske']
 ].map(group=>group.map(finderNormalize));
 
+function finderStem(word){
+  let w=finderNormalize(word);
+  for(const ending of ['ungen','ern','est','ern','en','er','es','em','e','n','s'])if(w.length-ending.length>=4&&w.endsWith(ending)){w=w.slice(0,-ending.length);break}
+  return w;
+}
+function finderDistance(a,b){
+  if(a===b)return 0;if(!a.length)return b.length;if(!b.length)return a.length;
+  const prev=Array.from({length:b.length+1},(_,i)=>i),cur=new Array(b.length+1);
+  for(let i=1;i<=a.length;i++){cur[0]=i;for(let j=1;j<=b.length;j++)cur[j]=Math.min(cur[j-1]+1,prev[j]+1,prev[j-1]+(a[i-1]===b[j-1]?0:1));for(let j=0;j<=b.length;j++)prev[j]=cur[j]}
+  return prev[b.length];
+}
+function finderTokenMatch(a,b){
+  const x=finderStem(a),y=finderStem(b);if(!x||!y)return 0;if(x===y)return 1;
+  if(x.length>=4&&y.length>=4&&(x.startsWith(y)||y.startsWith(x)))return .82;
+  const longest=Math.max(x.length,y.length),distance=finderDistance(x,y);
+  if(longest>=7&&distance<=2)return .72;if(longest>=5&&distance===1)return .7;return 0;
+}
 function finderTerms(text){
   const normalized=finderNormalize(text),terms=normalized.split(' ').filter(x=>x.length>2&&!finderStop.has(x));
   const expanded=new Set(terms);
@@ -1210,12 +1227,22 @@ function findMatchingOffenses(description){
   const query=finderTerms(description);
   if(query.terms.length<1)return [];
   return offenseCatalog.map(item=>{
-    const title=finderNormalize(item.straftat),category=finderNormalize(item.kategorie),details=finderNormalize(item.beschreibung),hay=title+' '+category+' '+details;
+    const title=finderNormalize(item.straftat),category=finderNormalize(item.kategorie),details=finderNormalize(item.beschreibung);
+    const titleTokens=title.split(' ').filter(Boolean),categoryTokens=category.split(' ').filter(Boolean),detailTokens=details.split(' ').filter(Boolean);
     let score=0,matches=0;
-    query.terms.forEach(term=>{if(title.includes(term)){score+=6;matches++;}else if(category.includes(term)){score+=3;matches++;}else if(details.includes(term)){score+=2;matches++;}});
-    if(title&&query.normalized.includes(title))score+=14;
-    return {item,score,matches};
-  }).filter(x=>x.score>0).sort((a,b)=>b.score-a.score||b.matches-a.matches).slice(0,6);
+    query.terms.forEach(term=>{
+      const titleMatch=Math.max(0,...titleTokens.map(token=>finderTokenMatch(term,token)));
+      const categoryMatch=Math.max(0,...categoryTokens.map(token=>finderTokenMatch(term,token)));
+      const detailMatch=Math.max(0,...detailTokens.map(token=>finderTokenMatch(term,token)));
+      const best=Math.max(titleMatch,categoryMatch,detailMatch);
+      if(best>0){matches++;score+=titleMatch*9+categoryMatch*4+detailMatch*3}
+    });
+    if(title&&query.normalized.includes(title))score+=18;
+    finderSynonyms.forEach(group=>{const inQuery=group.some(x=>query.normalized.includes(x)),inOffense=group.some(x=>(title+' '+details).includes(x));if(inQuery&&inOffense)score+=10});
+    const coverage=matches/Math.max(1,Math.min(query.terms.length,6));
+    const confidence=Math.min(99,Math.round(25+coverage*45+Math.min(score,30)));
+    return {item,score:score*(.65+.35*coverage),matches,confidence};
+  }).filter(x=>x.matches>0&&x.score>=2.5).sort((a,b)=>b.score-a.score||b.matches-a.matches).slice(0,8);
 }
 function renderTatfinderResults(){
   const box=q('tatfinderResults'),input=q('tatfinderInput');if(!box||!input)return;
@@ -1224,11 +1251,11 @@ function renderTatfinderResults(){
   const results=findMatchingOffenses(description);
   box.innerHTML='';
   if(!results.length){box.innerHTML='<div class="tatfinder-hint">Keine eindeutige Übereinstimmung gefunden. Versuche wichtige Begriffe wie Fahrzeug, Flucht, Waffe oder Diebstahl zu ergänzen.</div>';return;}
-  results.forEach(({item})=>{
+  results.forEach(({item,confidence})=>{
     const row=document.createElement('div');row.className='tatfinder-result';
     const info=document.createElement('div'),title=document.createElement('b'),meta=document.createElement('small');
     title.textContent=(item.kategorie?item.kategorie+' · ':'')+(item.straftat||'Straftat');
-    meta.textContent=moneyFmt.format(Number(item.geldstrafe)||0)+' $ · '+(Number(item.hafteinheiten)||0)+' HE'+(item.beschreibung?' · '+item.beschreibung:'');
+    meta.textContent=confidence+' % Treffer · '+moneyFmt.format(Number(item.geldstrafe)||0)+' $ · '+(Number(item.hafteinheiten)||0)+' HE'+(item.beschreibung?' · '+item.beschreibung:'');
     info.append(title,meta);
     const add=document.createElement('button');add.type='button';add.className='tatfinder-add';
     const cb=document.querySelector(`#offenseList input[data-offense-id="${CSS.escape(String(item.id))}"]`);
