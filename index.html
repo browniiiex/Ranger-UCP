@@ -314,6 +314,7 @@ textarea.r-input{resize:vertical;min-height:76px}
 /* Dienstplan */
 .appointment-titlebar{display:flex;align-items:flex-start;justify-content:space-between;gap:18px}.appointment-notice{padding:14px 18px;margin:18px 0;color:#91e3a4}.appointment-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.appointment-card{padding:20px;position:relative}.appointment-card-top{display:flex;justify-content:space-between;gap:15px;align-items:flex-start}.appointment-date{min-width:66px;text-align:center;border:1px solid rgba(239,191,97,.35);border-radius:8px;padding:9px 7px;background:rgba(239,191,97,.07);color:#efbf61;font-weight:900;line-height:1.1}.appointment-date strong{display:block;font-size:25px}.appointment-info{flex:1}.appointment-info h3{font:500 21px Georgia;margin:0 0 7px}.appointment-meta{font-size:11px;color:#d8c9a7;line-height:1.7}.appointment-desc{font-size:12px;color:var(--muted);margin-top:12px;white-space:pre-wrap}.appointment-actions{display:flex;gap:8px;margin-top:16px}.appointment-actions button{border:1px solid rgba(239,191,97,.35);background:rgba(3,8,5,.7);color:#efbf61;border-radius:6px;padding:8px 11px;font-weight:800;cursor:pointer}.appointment-actions .danger{color:#ffaaaa;border-color:rgba(255,120,120,.28)}.appointment-empty{grid-column:1/-1;padding:34px;text-align:center;color:var(--muted)}
 .appointment-modal{position:fixed;inset:0;z-index:100001;display:none;align-items:center;justify-content:center;padding:24px;background:rgba(0,0,0,.72);backdrop-filter:blur(8px)}.appointment-modal.open{display:flex}.appointment-modal-box{width:min(700px,100%);padding:24px;border:1px solid rgba(239,191,97,.42);border-radius:12px;background:rgba(5,10,7,.98);box-shadow:0 30px 90px #000}.appointment-form{display:grid;grid-template-columns:1fr 1fr;gap:12px}.appointment-form label{font-size:10px;letter-spacing:.8px;color:#d8c9a7}.appointment-form .span2{grid-column:1/-1}.appointment-form input,.appointment-form textarea{margin-top:6px}.appointment-save{width:100%;margin-top:16px;height:44px;border:1px solid rgba(239,191,97,.55);border-radius:7px;background:#efbf61;color:#10120f;font-weight:900;cursor:pointer}.appointment-result{min-height:18px;margin-top:9px;font-size:12px}@media(max-width:900px){.appointment-grid,.appointment-form{grid-template-columns:1fr}.appointment-form .span2{grid-column:auto}.appointment-titlebar{flex-direction:column}}
+.appointment-rsvp{display:grid;gap:6px;margin-top:14px;padding-top:12px;border-top:1px solid rgba(239,191,97,.16)}.appointment-rsvp-row{font-size:12px;line-height:1.45;color:rgba(255,255,255,.7)}.appointment-rsvp-row b{color:#efbf61;margin-right:5px}
 
 .family-titlebar{display:flex;justify-content:space-between;gap:18px;align-items:flex-end;margin-bottom:18px}.family-list{display:grid;gap:18px;margin-top:18px}.family-card{padding:22px}.family-head{display:flex;justify-content:space-between;gap:18px;align-items:flex-start}.family-name{font-family:Georgia,serif;font-size:26px;font-weight:700}.family-location{margin-top:6px;color:#d6c28d;font-size:16px}.family-text{margin-top:14px;font-size:17px;line-height:1.55;color:#e7e7e7}.family-actions,.member-actions{display:flex;gap:9px;flex-wrap:wrap}.family-actions button,.member-actions button{border:1px solid rgba(212,177,90,.5);background:rgba(0,0,0,.38);color:#fff;padding:10px 13px;cursor:pointer;font:700 14px 'Barlow Condensed',sans-serif;letter-spacing:.6px}.family-actions .danger,.member-actions .danger{border-color:rgba(220,90,90,.55)}.members-box{margin-top:18px;border-top:1px solid rgba(212,177,90,.28);padding-top:16px}.members-title{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:11px;font-weight:700;font-size:18px}.member-row{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:12px 0;border-top:1px solid rgba(255,255,255,.08)}.member-row:first-of-type{border-top:0}.member-name{font-size:17px;font-weight:700}.member-position{font-size:15px;color:#bdbdbd;margin-top:2px}.family-empty{padding:24px;font-size:17px}@media(max-width:700px){.family-titlebar,.family-head,.member-row{align-items:stretch;flex-direction:column}.family-actions,.member-actions{width:100%}}
 
@@ -1774,16 +1775,23 @@ button.danger,.danger-btn,.btn-danger,[data-action="delete-vote"],button[onclick
     if(permissionRefreshBusy||!client||!currentUser)return;
     permissionRefreshBusy=true;
     try{
-      const [{data:userRow,error:userErr},{data:perms,error:permErr}]=await Promise.all([
+      const [{data:userRow,error:userErr},{data:perms,error:permErr},{data:identity}]=await Promise.all([
         client.from('ucp_users').select('*').eq('id',currentUser.id).maybeSingle(),
-        client.from('ucp_permissions').select('*').eq('user_id',currentUser.id).maybeSingle()
+        client.from('ucp_permissions').select('*').eq('user_id',currentUser.id).maybeSingle(),
+        client.rpc('ucp_get_my_ranger_identity')
       ]);
       if(userErr||permErr)return;
       if(!userRow?.enabled){
         await client.auth.signOut(); currentAccess=null; currentPermissions=null; currentUser=null;
         showGate('Dein Zugriff wurde deaktiviert.',true); return;
       }
-      currentAccess=userRow; currentPermissions=perms||{}; applyPermissions();
+      currentAccess=userRow; currentPermissions=perms||{};
+      const ownIdentity=Array.isArray(identity)?identity[0]:identity;
+      if(ownIdentity?.discord_id)currentAccess={...currentAccess,discord_id:ownIdentity.discord_id};
+      currentRangerRank=ownIdentity?.ranger_rang||currentRangerRank||'Ranger auf Probe';
+      document.querySelectorAll('.account-rank').forEach(x=>x.textContent=currentRangerRank.toUpperCase());
+      const profileIdentity=document.getElementById('profileIdentity');if(profileIdentity)profileIdentity.textContent=(ownIdentity?.display_name||currentAccess.display_name||currentAccess.discord_name||'Ranger')+' · '+currentRangerRank;
+      applyPermissions();
     }finally{ permissionRefreshBusy=false; }
   }
   window.addEventListener('focus',refreshCurrentAccess);
@@ -1803,13 +1811,12 @@ button.danger,.danger-btn,.btn-danger,[data-action="delete-vote"],button[onclick
     if(permErr || !perms){ showGate('Deine UCP-Rechte konnten nicht geladen werden.',false); return false; }
     currentAccess=userRow; currentPermissions=perms;
     const meta=session.user.user_metadata||{};
-    const identityData=(session.user.identities||[]).flatMap(x=>[x?.id,x?.identity_data?.provider_id,x?.identity_data?.sub,x?.identity_data?.id]);
-    const discordIds=[userRow.discord_id,meta.provider_id,meta.discord_id,meta.sub,...identityData]
-      .map(x=>String(x||'').trim()).filter((x,i,a)=>/^\d{15,22}$/.test(x)&&a.indexOf(x)===i);
-    let allowSelf=null;
-    if(discordIds.length){
-      const {data:matches}=await client.from('ucp_allowlist').select('discord_id,display_name,ranger_rang').in('discord_id',discordIds).eq('enabled',true).limit(1);
-      allowSelf=matches?.[0]||null;
+    const {data:ownIdentity,error:identityError}=await client.rpc('ucp_get_my_ranger_identity');
+    let allowSelf=!identityError?(Array.isArray(ownIdentity)?ownIdentity[0]:ownIdentity):null;
+    if(!allowSelf){
+      const identityData=(session.user.identities||[]).flatMap(x=>[x?.id,x?.identity_data?.provider_id,x?.identity_data?.sub,x?.identity_data?.id]);
+      const discordIds=[userRow.discord_id,meta.provider_id,meta.discord_id,meta.sub,...identityData].map(x=>String(x||'').trim()).filter((x,i,a)=>/^\d{15,22}$/.test(x)&&a.indexOf(x)===i);
+      if(discordIds.length){const {data:matches}=await client.from('ucp_allowlist').select('discord_id,display_name,ranger_rang').in('discord_id',discordIds).eq('enabled',true).limit(1);allowSelf=matches?.[0]||null;}
     }
     if(!allowSelf){
       const loginName=userRow.display_name||userRow.discord_name||meta.full_name||meta.name||meta.user_name||'';
@@ -2029,7 +2036,7 @@ button.danger,.danger-btn,.btn-danger,[data-action="delete-vote"],button[onclick
     const cutoff=new Date(Date.now()-2*60*1000).toISOString();
     const [{data:pres},{data:people},{data:profiles}]=await Promise.all([
       client.from('ucp_presence').select('user_id,discord_id,last_seen').gte('last_seen',cutoff).order('last_seen',{ascending:false}),
-      client.from('ucp_allowlist').select('discord_id,display_name,ranger_rang').eq('enabled',true),
+      client.rpc('ucp_get_ranger_directory'),
       client.from('ucp_profiles').select('user_id,discord_id,avatar_url')
     ]);
     const pm=Object.fromEntries((people||[]).map(x=>[x.discord_id,x])), am=Object.fromEntries((profiles||[]).map(x=>[x.user_id,x.avatar_url]));
@@ -2414,12 +2421,13 @@ button.danger,.danger-btn,.btn-danger,[data-action="delete-vote"],button[onclick
   async function loadAppointments(){
     if(!client||!currentPermissions?.dienstplan)return;
     const wrap=document.getElementById('appointmentList'),notice=document.getElementById('appointmentNotice'); if(!wrap)return;
+    const isAdmin=currentAccess?.rolle==='administration';
     notice.textContent='Termine werden geladen…';
-    const {data,error}=await client.from('ucp_termine').select('*').order('datum',{ascending:true}).order('uhrzeit',{ascending:true});
-    if(error){notice.textContent='Termine konnten nicht geladen werden: '+error.message;return;}
+    const [{data,error},{data:answers,error:answerError}]=await Promise.all([client.from('ucp_termine').select('*').order('datum',{ascending:true}).order('uhrzeit',{ascending:true}),client.from('ucp_termin_antworten').select('*')]);
+    if(error||answerError){notice.textContent='Termine konnten nicht geladen werden: '+(error?.message||answerError?.message);return;}
     notice.textContent=(data?.length||0)+' Termin'+((data?.length||0)===1?'':'e')+' eingetragen.';
     if(!data?.length){wrap.innerHTML='<div class="glass appointment-empty">Noch keine Termine eingetragen.</div>';return;}
-    wrap.innerHTML=data.map(a=>{const d=fmtAppointmentDate(a.datum);return `<div class="glass appointment-card" data-id="${a.id}"><div class="appointment-card-top"><div class="appointment-date"><strong>${d.day}</strong>${d.mon}</div><div class="appointment-info"><h3>${escapeHtml(a.titel)}</h3><div class="appointment-meta">◷ ${escapeHtml((a.uhrzeit||'').slice(0,5))} Uhr${a.ort?'　◇ '+escapeHtml(a.ort):''}</div>${a.beschreibung?`<div class="appointment-desc">${escapeHtml(a.beschreibung)}</div>`:''}</div></div><div class="appointment-actions"><button class="ap-edit" type="button">BEARBEITEN</button><button class="ap-delete danger" type="button">LÖSCHEN</button></div></div>`}).join('');
+    wrap.innerHTML=data.map(a=>{const d=fmtAppointmentDate(a.datum),rows=(answers||[]).filter(x=>String(x.termin_id)===String(a.id)),names=s=>rows.filter(x=>x.status===s).map(x=>escapeHtml(x.display_name||'Ranger')).join(', ')||'–';return `<div class="glass appointment-card" data-id="${a.id}"><div class="appointment-card-top"><div class="appointment-date"><strong>${d.day}</strong>${d.mon}</div><div class="appointment-info"><h3>${escapeHtml(a.titel)}</h3><div class="appointment-meta">◷ ${escapeHtml((a.uhrzeit||'').slice(0,5))} Uhr${a.ort?'　◇ '+escapeHtml(a.ort):''}</div>${a.beschreibung?`<div class="appointment-desc">${escapeHtml(a.beschreibung)}</div>`:''}</div></div><div class="appointment-rsvp"><div class="appointment-rsvp-row"><b>✅ Zusage (${rows.filter(x=>x.status==='zusage').length})</b>${names('zusage')}</div><div class="appointment-rsvp-row"><b>❌ Absage (${rows.filter(x=>x.status==='absage').length})</b>${names('absage')}</div><div class="appointment-rsvp-row"><b>❔ Vielleicht (${rows.filter(x=>x.status==='vielleicht').length})</b>${names('vielleicht')}</div></div><div class="appointment-actions"><button class="ap-edit" type="button">BEARBEITEN</button>${isAdmin?'<button class="ap-delete danger" type="button">LÖSCHEN</button>':''}</div></div>`}).join('');
     wrap.querySelectorAll('.ap-edit').forEach((b,i)=>b.addEventListener('click',()=>openAppointmentModal(data[i])));
     wrap.querySelectorAll('.ap-delete').forEach((b,i)=>b.addEventListener('click',()=>deleteAppointment(data[i])));
   }
@@ -2433,6 +2441,10 @@ button.danger,.danger-btn,.btn-danger,[data-action="delete-vote"],button[onclick
     appointmentModal.classList.remove('open');await loadAppointments();await loadNotifications();
   });
   async function deleteAppointment(item){
+    if(currentAccess?.rolle!=='administration'){
+      document.getElementById('appointmentNotice').textContent='Nur die Administration darf Termine löschen.';
+      return;
+    }
     if(!confirm('Termin „'+item.titel+'“ wirklich löschen?'))return;
     const {error}=await client.from('ucp_termine').delete().eq('id',item.id);
     if(error){document.getElementById('appointmentNotice').textContent='Löschen fehlgeschlagen: '+error.message;return;} await loadAppointments();
