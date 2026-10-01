@@ -304,11 +304,13 @@ body::before{
 .form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px 16px}
 .form-grid label{display:flex;flex-direction:column;gap:7px;color:#e8d9b7;font-size:12px;font-weight:700;letter-spacing:.04em}
 .form-grid .span2{grid-column:1/-1}
+.form-grid .signature-field{grid-column:2}
+.signature-field input{font-family:"Segoe Script","Brush Script MT",cursive;font-size:20px;font-style:italic}
 textarea.r-input{resize:vertical;min-height:76px}
 .record-preview{white-space:pre-wrap;overflow-wrap:anywhere;margin:0;background:rgba(1,5,3,.72);border:1px solid rgba(239,191,97,.18);border-radius:8px;padding:20px;color:#f7f5ef;line-height:1.55;font-family:"Segoe UI",Arial,sans-serif;font-size:14px;max-height:520px;overflow:auto}
 .copy-btn{min-width:170px}
 .copy-status{min-height:20px;margin-top:10px;color:#6ee58f;font-size:12px}
-@media(max-width:1000px){.calc-layout,.form-grid{grid-template-columns:1fr}.form-grid .span2{grid-column:auto}.offense-list{grid-template-columns:1fr}.calc-head{align-items:flex-start;flex-direction:column}.search{max-width:none}.tatfinder-input-row{grid-template-columns:1fr}.tatfinder-find{min-height:44px}}
+@media(max-width:1000px){.calc-layout,.form-grid{grid-template-columns:1fr}.form-grid .span2,.form-grid .signature-field{grid-column:auto}.offense-list{grid-template-columns:1fr}.calc-head{align-items:flex-start;flex-direction:column}.search{max-width:none}.tatfinder-input-row{grid-template-columns:1fr}.tatfinder-find{min-height:44px}}
 
 
 /* Dienstplan */
@@ -762,6 +764,7 @@ input::placeholder, textarea::placeholder { font-size: 16px !important; opacity:
       <label class="span2">Bemerkungen<textarea class="r-input" id="notes" rows="3" placeholder="Keine / Bemerkungen"></textarea></label>
       <label>Bearbeiter<input class="r-input" id="editorName" value="Brownie"></label>
       <label>Abschlussdatum<input class="r-input" id="closingDate"></label>
+      <label class="signature-field">Unterschrift<input class="r-input" id="signature" placeholder="Name für die Unterschrift"></label>
     </div>
   </div>
 
@@ -1042,6 +1045,11 @@ updateRightsReading();
 const moneyFmt = new Intl.NumberFormat('de-DE');
 const q = id => document.getElementById(id);
 function field(id, fallback='xxxx'){ const el=q(id); const v=el ? el.value.trim() : ''; return v || fallback; }
+function signatureStyle(value){
+  const normal='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+  const script=Array.from('𝒜ℬ𝒞𝒟ℰℱ𝒢ℋℐ𝒥𝒦ℒℳ𝒩𝒪𝒫𝒬ℛ𝒮𝒯𝒰𝒱𝒲𝒳𝒴𝒵𝒶𝒷𝒸𝒹ℯ𝒻ℊ𝒽𝒾𝒿𝓀𝓁𝓂𝓃ℴ𝓅𝓆𝓇𝓈𝓉𝓊𝓋𝓌𝓍𝓎𝓏');
+  return Array.from(String(value||'')).map(char=>{const index=normal.indexOf(char);return index>=0?script[index]:char}).join('');
+}
 function selectedOffenses(){
   return [...document.querySelectorAll('#offenseList input[type="checkbox"]:checked')].map(x=>({
     category:x.dataset.category||'', name:x.dataset.name||'Straftat', money:Number(x.dataset.money)||0, he:Number(x.dataset.he)||0, checkbox:x
@@ -1136,7 +1144,8 @@ ${field('notes')}
 
 𝗔𝗯𝘀𝗰𝗵𝗹𝘂𝘀𝘀
 𝗕𝗲𝗮𝗿𝗯𝗲𝗶𝘁𝗲𝗿: ${field('editorName','Brownie')}
-𝗗𝗮𝘁𝘂𝗺: ${field('closingDate','')}`;
+𝗗𝗮𝘁𝘂𝗺: ${field('closingDate','')}
+𝗨𝗻𝘁𝗲𝗿𝘀𝗰𝗵𝗿𝗶𝗳𝘁: ${signatureStyle(field('signature',field('editorName','Brownie')))}`;
   if(q('recordPreview')) q('recordPreview').textContent=text;
 }
 function setCurrentCaseTime(){
