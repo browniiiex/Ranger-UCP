@@ -310,6 +310,7 @@ textarea.r-input{resize:vertical;min-height:76px}
 .record-preview{white-space:pre-wrap;overflow-wrap:anywhere;margin:0;background:rgba(1,5,3,.72);border:1px solid rgba(239,191,97,.18);border-radius:8px;padding:20px;color:#f7f5ef;line-height:1.55;font-family:"Segoe UI",Arial,sans-serif;font-size:14px;max-height:520px;overflow:auto}
 .copy-btn{min-width:170px}
 .copy-status{min-height:20px;margin-top:10px;color:#6ee58f;font-size:12px}
+.collective-type{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.collective-type button{border:1px solid rgba(239,191,97,.35);border-radius:8px;background:rgba(3,8,5,.72);color:#e8d9b7;padding:13px;font-weight:900;cursor:pointer}.collective-type button.active{background:#efbf61;color:#111;border-color:#efbf61}.collective-group{display:none}.collective-group.active{display:grid}.collective-preview-signature{font-family:"Segoe Script","Brush Script MT",cursive;font-style:italic}
 @media(max-width:1000px){.calc-layout,.form-grid{grid-template-columns:1fr}.form-grid .span2,.form-grid .signature-field{grid-column:auto}.offense-list{grid-template-columns:1fr}.calc-head{align-items:flex-start;flex-direction:column}.search{max-width:none}.tatfinder-input-row{grid-template-columns:1fr}.tatfinder-find{min-height:44px}}
 
 
@@ -601,6 +602,7 @@ input::placeholder, textarea::placeholder { font-size: 16px !important; opacity:
   <button data-page="aktivitaet">▰　STREAM-AKTIVITÄT</button>
   <button data-page="termine">◷　DIENSTPLAN</button>
   <button data-page="strafrechner">§　STRAFRECHNER</button>
+  <button data-page="kollektivakte">▤　KOLLEKTIVAKTE</button>
   <button data-page="rechteverlesung">⚖　RECHTEVERLESUNG</button>
   <button data-page="familien">◇　FAMILIEN</button>
   <button data-page="abstimmungen">●　RANGER-RAT</button>
@@ -775,6 +777,61 @@ input::placeholder, textarea::placeholder { font-size: 16px !important; opacity:
     </div>
     <pre id="recordPreview" class="record-preview"></pre>
     <div id="copyStatus" class="copy-status" aria-live="polite"></div>
+  </div>
+</section>
+
+<section class="page inner" id="kollektivakte">
+  <h1>Kollektivakte</h1>
+  <div class="sub">Eine Akte für Organisationen, Familien und Gangs oder für gemeinsame Fälle mit mehreren Tatverdächtigen erstellen.</div>
+
+  <div class="glass ranger-card record-form">
+    <div class="calc-head"><div><div class="label">KOLLEKTIVAKTE / PROTOKOLL</div><h2>Angaben für die Vorlage</h2></div><div class="auto-badge">NICHT IM UCP GESPEICHERT</div></div>
+    <div class="collective-type">
+      <button type="button" class="active" data-collective-type="organisation">ORGANISATION / FAMILIE / GANG</button>
+      <button type="button" data-collective-type="mehrere">MEHRERE TATVERDÄCHTIGE</button>
+    </div>
+
+    <div class="form-grid collective-group active" data-collective-group="organisation">
+      <label>Aktenzeichen<input class="r-input collective-input" id="collectiveOrgNumber" placeholder="z. B. KA-001"></label>
+      <label>Datum / Zeit<input class="r-input collective-input" id="collectiveOrgDate"></label>
+      <label>Name des Kollektivs<input class="r-input collective-input" id="collectiveOrgName" placeholder="Organisation / Familie / Gang"></label>
+      <label>Art<input class="r-input collective-input" id="collectiveOrgType" placeholder="z. B. Familie, Gang, Gruppierung"></label>
+      <label>Standort / Gebiet<input class="r-input collective-input" id="collectiveOrgLocation" placeholder="Bekannter Standort"></label>
+      <label>Status<select class="r-input collective-input" id="collectiveOrgStatus"><option>Aktiv</option><option>Unter Beobachtung</option><option>Inaktiv</option><option>Aufgelöst</option></select></label>
+      <label class="span2">Führung / Ansprechpartner<textarea class="r-input collective-input" id="collectiveOrgLeaders" placeholder="Namen und Positionen"></textarea></label>
+      <label class="span2">Bekannte Mitglieder<textarea class="r-input collective-input" id="collectiveOrgMembers" placeholder="Ein Mitglied pro Zeile"></textarea></label>
+      <label class="span2">Bekannte Fahrzeuge / Kennzeichen<textarea class="r-input collective-input" id="collectiveOrgVehicles" placeholder="Fahrzeug und Kennzeichen"></textarea></label>
+      <label class="span2">Sachverhalt / Erkenntnisse<textarea class="r-input collective-input" id="collectiveOrgFacts" placeholder="Beobachtungen, Vorfälle und Erkenntnisse"></textarea></label>
+      <label class="span2">Bekannte Straftaten / Vorwürfe<textarea class="r-input collective-input" id="collectiveOrgOffenses" placeholder="Straftaten oder Verdachtsmomente"></textarea></label>
+      <label class="span2">Beweismittel<textarea class="r-input collective-input" id="collectiveOrgEvidence" placeholder="Fotos, Aussagen, Akten oder sonstige Beweise"></textarea></label>
+      <label class="span2">Maßnahmen / Anmerkungen<textarea class="r-input collective-input" id="collectiveOrgMeasures" placeholder="Getroffene oder empfohlene Maßnahmen"></textarea></label>
+    </div>
+
+    <div class="form-grid collective-group" data-collective-group="mehrere">
+      <label>Aktenzeichen<input class="r-input collective-input" id="collectiveCaseNumber" placeholder="z. B. KA-001"></label>
+      <label>Datum / Zeit<input class="r-input collective-input" id="collectiveCaseDate"></label>
+      <label>Fall / Einsatz<input class="r-input collective-input" id="collectiveCaseTitle" placeholder="Bezeichnung des Falls"></label>
+      <label>Ort<input class="r-input collective-input" id="collectiveCasePlace" placeholder="Tatort / Einsatzort"></label>
+      <label class="span2">Tatverdächtige<textarea class="r-input collective-input" id="collectiveSuspects" placeholder="Name, Geburtsdatum und mögliche Rolle – eine Person pro Zeile"></textarea></label>
+      <label class="span2">Zeugen / weitere Beteiligte<textarea class="r-input collective-input" id="collectiveWitnesses" placeholder="Name und Funktion – eine Person pro Zeile"></textarea></label>
+      <label class="span2">Gemeinsamer Sachverhalt<textarea class="r-input collective-input" id="collectiveCaseFacts" placeholder="Vollständiger gemeinsamer Sachverhalt"></textarea></label>
+      <label class="span2">Straftaten / Zuordnung<textarea class="r-input collective-input" id="collectiveCaseOffenses" placeholder="Welche Straftat wird welcher Person vorgeworfen?"></textarea></label>
+      <label class="span2">Beweismittel<textarea class="r-input collective-input" id="collectiveCaseEvidence" placeholder="Fotos, Aussagen, Gegenstände oder weitere Beweise"></textarea></label>
+      <label class="span2">Beschlagnahmt / Rückgabe<textarea class="r-input collective-input" id="collectiveCaseItems" placeholder="Gegenstände und Zuordnung zur Person"></textarea></label>
+      <label class="span2">Maßnahmen / Ergebnis<textarea class="r-input collective-input" id="collectiveCaseMeasures" placeholder="Festnahmen, Strafen, Freilassungen oder weitere Maßnahmen"></textarea></label>
+    </div>
+
+    <div class="form-grid" style="margin-top:16px">
+      <label>Bearbeiter<input class="r-input collective-input" id="collectiveEditor" value="Brownie"></label>
+      <label>Abschlussdatum<input class="r-input collective-input" id="collectiveClosingDate"></label>
+      <label class="signature-field">Unterschrift<input class="r-input collective-input" id="collectiveSignature" placeholder="Name für die Unterschrift"></label>
+    </div>
+  </div>
+
+  <div class="glass ranger-card preview-card">
+    <div class="calc-head"><div><div class="label">VORSCHAU</div><h2>Fertige Kollektivakte</h2></div><button type="button" class="btn copy-btn" id="copyCollectiveRecord">▣ AKTE KOPIEREN</button></div>
+    <pre id="collectiveRecordPreview" class="record-preview"></pre>
+    <div id="collectiveCopyStatus" class="copy-status" aria-live="polite"></div>
   </div>
 </section>
 
@@ -1044,6 +1101,7 @@ updateRightsReading();
 
 const moneyFmt = new Intl.NumberFormat('de-DE');
 const q = id => document.getElementById(id);
+const selectedOffenseIds=new Set();
 function field(id, fallback='xxxx'){ const el=q(id); const v=el ? el.value.trim() : ''; return v || fallback; }
 function signatureStyle(value){
   const normal='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
@@ -1052,7 +1110,7 @@ function signatureStyle(value){
 }
 function selectedOffenses(){
   return [...document.querySelectorAll('#offenseList input[type="checkbox"]:checked')].map(x=>({
-    category:x.dataset.category||'', name:x.dataset.name||'Straftat', money:Number(x.dataset.money)||0, he:Number(x.dataset.he)||0, checkbox:x
+    id:x.dataset.offenseId||'', category:x.dataset.category||'', name:x.dataset.name||'Straftat', money:Number(x.dataset.money)||0, he:Number(x.dataset.he)||0, checkbox:x
   }));
 }
 function renderSelectedOverview(items){
@@ -1084,6 +1142,7 @@ function renderSelectedOverview(items){
     remove.title='Auswahl entfernen';
     remove.setAttribute('aria-label',item.name+' entfernen');
     remove.addEventListener('click',()=>{
+      selectedOffenseIds.delete(String(item.id));
       item.checkbox.checked=false;
       updateRecord();
     });
@@ -1164,6 +1223,7 @@ if(q('offenseSearch')) q('offenseSearch').addEventListener('input',e=>{
   document.querySelectorAll('#offenseList .offense').forEach(row=>row.style.display=row.textContent.toLowerCase().includes(needle)?'':'none');
 });
 if(q('clearOffenses')) q('clearOffenses').addEventListener('click',()=>{
+  selectedOffenseIds.clear();
   document.querySelectorAll('#offenseList input[type="checkbox"]').forEach(x=>x.checked=false);
   updateRecord();
 });
@@ -1179,6 +1239,103 @@ if(q('copyRecord')) q('copyRecord').addEventListener('click',async()=>{
   setTimeout(()=>{ if(q('copyStatus')) q('copyStatus').textContent=''; },3000);
 });
 updateRecord();
+
+let collectiveType='organisation';
+function collectiveValue(id,fallback='–'){const el=q(id),value=el?.value?.trim();return value||fallback}
+function updateCollectiveRecord(){
+  const editor=collectiveValue('collectiveEditor','Brownie');
+  const signature=signatureStyle(collectiveValue('collectiveSignature',editor));
+  let text='';
+  if(collectiveType==='organisation'){
+    text=`★ ═══════════════════════════════════════ ★
+RANGER DIVISION
+— KOLLEKTIVAKTE / ORGANISATION —
+★ ═══════════════════════════════════════ ★
+
+𝗔𝗸𝘁𝗲𝗻𝘇𝗲𝗶𝗰𝗵𝗲𝗻: ${collectiveValue('collectiveOrgNumber')}
+𝗗𝗮𝘁𝘂𝗺/𝗭𝗲𝗶𝘁: ${collectiveValue('collectiveOrgDate')}
+
+𝗞𝗼𝗹𝗹𝗲𝗸𝘁𝗶𝘃
+𝗡𝗮𝗺𝗲: ${collectiveValue('collectiveOrgName')}
+𝗔𝗿𝘁: ${collectiveValue('collectiveOrgType')}
+𝗦𝘁𝗮𝗻𝗱𝗼𝗿𝘁/𝗚𝗲𝗯𝗶𝗲𝘁: ${collectiveValue('collectiveOrgLocation')}
+𝗦𝘁𝗮𝘁𝘂𝘀: ${collectiveValue('collectiveOrgStatus','Aktiv')}
+
+𝗙𝘂̈𝗵𝗿𝘂𝗻𝗴 / 𝗔𝗻𝘀𝗽𝗿𝗲𝗰𝗵𝗽𝗮𝗿𝘁𝗻𝗲𝗿
+${collectiveValue('collectiveOrgLeaders')}
+
+𝗕𝗲𝗸𝗮𝗻𝗻𝘁𝗲 𝗠𝗶𝘁𝗴𝗹𝗶𝗲𝗱𝗲𝗿
+${collectiveValue('collectiveOrgMembers')}
+
+𝗙𝗮𝗵𝗿𝘇𝗲𝘂𝗴𝗲 / 𝗞𝗲𝗻𝗻𝘇𝗲𝗶𝗰𝗵𝗲𝗻
+${collectiveValue('collectiveOrgVehicles')}
+
+𝗦𝗮𝗰𝗵𝘃𝗲𝗿𝗵𝗮𝗹𝘁 / 𝗘𝗿𝗸𝗲𝗻𝗻𝘁𝗻𝗶𝘀𝘀𝗲
+${collectiveValue('collectiveOrgFacts')}
+
+𝗦𝘁𝗿𝗮𝗳𝘁𝗮𝘁𝗲𝗻 / 𝗩𝗼𝗿𝘄𝘂̈𝗿𝗳𝗲
+${collectiveValue('collectiveOrgOffenses')}
+
+𝗕𝗲𝘄𝗲𝗶𝘀𝗺𝗶𝘁𝘁𝗲𝗹
+${collectiveValue('collectiveOrgEvidence')}
+
+𝗠𝗮ß𝗻𝗮𝗵𝗺𝗲𝗻 / 𝗔𝗻𝗺𝗲𝗿𝗸𝘂𝗻𝗴𝗲𝗻
+${collectiveValue('collectiveOrgMeasures')}`;
+  }else{
+    text=`★ ═══════════════════════════════════════ ★
+RANGER DIVISION
+— KOLLEKTIVAKTE / GEMEINSAMER FALL —
+★ ═══════════════════════════════════════ ★
+
+𝗔𝗸𝘁𝗲𝗻𝘇𝗲𝗶𝗰𝗵𝗲𝗻: ${collectiveValue('collectiveCaseNumber')}
+𝗗𝗮𝘁𝘂𝗺/𝗭𝗲𝗶𝘁: ${collectiveValue('collectiveCaseDate')}
+𝗙𝗮𝗹𝗹/𝗘𝗶𝗻𝘀𝗮𝘁𝘇: ${collectiveValue('collectiveCaseTitle')}
+𝗢𝗿𝘁: ${collectiveValue('collectiveCasePlace')}
+
+𝗧𝗮𝘁𝘃𝗲𝗿𝗱𝗮̈𝗰𝗵𝘁𝗶𝗴𝗲
+${collectiveValue('collectiveSuspects')}
+
+𝗭𝗲𝘂𝗴𝗲𝗻 / 𝘄𝗲𝗶𝘁𝗲𝗿𝗲 𝗕𝗲𝘁𝗲𝗶𝗹𝗶𝗴𝘁𝗲
+${collectiveValue('collectiveWitnesses')}
+
+𝗚𝗲𝗺𝗲𝗶𝗻𝘀𝗮𝗺𝗲𝗿 𝗦𝗮𝗰𝗵𝘃𝗲𝗿𝗵𝗮𝗹𝘁
+${collectiveValue('collectiveCaseFacts')}
+
+𝗦𝘁𝗿𝗮𝗳𝘁𝗮𝘁𝗲𝗻 / 𝗭𝘂𝗼𝗿𝗱𝗻𝘂𝗻𝗴
+${collectiveValue('collectiveCaseOffenses')}
+
+𝗕𝗲𝘄𝗲𝗶𝘀𝗺𝗶𝘁𝘁𝗲𝗹
+${collectiveValue('collectiveCaseEvidence')}
+
+𝗕𝗲𝘀𝗰𝗵𝗹𝗮𝗴𝗻𝗮𝗵𝗺𝘁 / 𝗥𝘂̈𝗰𝗸𝗴𝗮𝗯𝗲
+${collectiveValue('collectiveCaseItems')}
+
+𝗠𝗮ß𝗻𝗮𝗵𝗺𝗲𝗻 / 𝗘𝗿𝗴𝗲𝗯𝗻𝗶𝘀
+${collectiveValue('collectiveCaseMeasures')}`;
+  }
+  text+=`
+
+𝗔𝗯𝘀𝗰𝗵𝗹𝘂𝘀𝘀
+𝗕𝗲𝗮𝗿𝗯𝗲𝗶𝘁𝗲𝗿: ${editor}
+𝗗𝗮𝘁𝘂𝗺: ${collectiveValue('collectiveClosingDate')}
+𝗨𝗻𝘁𝗲𝗿𝘀𝗰𝗵𝗿𝗶𝗳𝘁: ${signature}`;
+  if(q('collectiveRecordPreview'))q('collectiveRecordPreview').textContent=text;
+}
+document.querySelectorAll('[data-collective-type]').forEach(button=>button.addEventListener('click',()=>{
+  collectiveType=button.dataset.collectiveType;
+  document.querySelectorAll('[data-collective-type]').forEach(x=>x.classList.toggle('active',x===button));
+  document.querySelectorAll('[data-collective-group]').forEach(x=>x.classList.toggle('active',x.dataset.collectiveGroup===collectiveType));
+  updateCollectiveRecord();
+}));
+document.querySelectorAll('#kollektivakte input,#kollektivakte textarea,#kollektivakte select').forEach(el=>el.addEventListener('input',updateCollectiveRecord));
+if(q('copyCollectiveRecord'))q('copyCollectiveRecord').addEventListener('click',async()=>{
+  const text=q('collectiveRecordPreview')?.textContent||'';let ok=false;
+  try{await navigator.clipboard.writeText(text);ok=true}catch(e){const ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();try{ok=document.execCommand('copy')}catch(_){}ta.remove()}
+  q('collectiveCopyStatus').textContent=ok?'✓ Kollektivakte wurde kopiert.':'Kopieren nicht möglich – markiere den Text in der Vorschau.';
+  setTimeout(()=>{if(q('collectiveCopyStatus'))q('collectiveCopyStatus').textContent=''},3000);
+});
+(()=>{const d=new Date(),pad=n=>String(n).padStart(2,'0'),date=pad(d.getDate())+'.'+pad(d.getMonth()+1)+'.'+d.getFullYear(),dateTime=date+' '+pad(d.getHours())+':'+pad(d.getMinutes());if(q('collectiveOrgDate'))q('collectiveOrgDate').value=dateTime;if(q('collectiveCaseDate'))q('collectiveCaseDate').value=dateTime;if(q('collectiveClosingDate'))q('collectiveClosingDate').value=date})();
+updateCollectiveRecord();
 
 
 const SUPABASE_URL = 'https://tgfngbayiauxlylckfue.supabase.co';
@@ -1270,7 +1427,7 @@ function renderTatfinderResults(){
     const add=document.createElement('button');add.type='button';add.className='tatfinder-add';
     const cb=document.querySelector(`#offenseList input[data-offense-id="${CSS.escape(String(item.id))}"]`);
     add.textContent=cb?.checked?'✓ AUSGEWÄHLT':'+ HINZUFÜGEN';if(cb?.checked)add.classList.add('added');
-    add.addEventListener('click',()=>{if(cb){cb.checked=true;updateRecord();add.textContent='✓ AUSGEWÄHLT';add.classList.add('added');}});
+    add.addEventListener('click',()=>{if(cb){cb.checked=true;selectedOffenseIds.add(String(item.id));updateRecord();add.textContent='✓ AUSGEWÄHLT';add.classList.add('added');}});
     row.append(info,add);box.appendChild(row);
   });
 }
@@ -1288,7 +1445,8 @@ function offenseRow(item){
   cb.dataset.name=item.straftat || 'Straftat';
   cb.dataset.money=String(Number(item.geldstrafe)||0);
   cb.dataset.he=String(Number(item.hafteinheiten)||0);
-  cb.addEventListener('change',updateRecord);
+  cb.checked=selectedOffenseIds.has(String(item.id));
+  cb.addEventListener('change',()=>{if(cb.checked)selectedOffenseIds.add(String(item.id));else selectedOffenseIds.delete(String(item.id));updateRecord()});
 
   const span=document.createElement('span');
   const b=document.createElement('b');
@@ -1492,7 +1650,7 @@ button.danger,.danger-btn,.btn-danger,[data-action="delete-vote"],button[onclick
   const msg=document.getElementById('authMsg');
   const login=document.getElementById('discordLogin');
   const permissionKeys=['dashboard','profil','stream_aktivitaet','dienstplan','strafrechner','familien','ranger_rat','ranger_eid','verwaltung','rechte_rollen','einstellungen'];
-  const pagePermission={dashboard:'dashboard',profil:'profil',aktivitaet:'stream_aktivitaet',termine:'dienstplan',strafrechner:'strafrechner',rechteverlesung:'strafrechner',familien:'familien',abstimmungen:'ranger_rat',eid:'ranger_eid',verwaltung:'verwaltung',rechte:'rechte_rollen',einstellungen:'einstellungen'};
+  const pagePermission={dashboard:'dashboard',profil:'profil',aktivitaet:'stream_aktivitaet',termine:'dienstplan',strafrechner:'strafrechner',kollektivakte:'strafrechner',rechteverlesung:'strafrechner',familien:'familien',abstimmungen:'ranger_rat',eid:'ranger_eid',verwaltung:'verwaltung',rechte:'rechte_rollen',einstellungen:'einstellungen'};
   const labels={dashboard:'Command Center',profil:'Mein Profil',stream_aktivitaet:'Stream-Aktivität',dienstplan:'Dienstplan',strafrechner:'Strafrechner',familien:'Familien',ranger_rat:'Ranger-Rat',ranger_eid:'Ranger-Eid',verwaltung:'Verwaltung',rechte_rollen:'Rechte & Rollen',einstellungen:'Einstellungen'};
   let client=null,currentUser=null,currentAccess=null,currentPermissions=null,currentRangerRank='';
   let presenceTimer=null,currentAvatarUrl='';
@@ -1650,8 +1808,8 @@ button.danger,.danger-btn,.btn-danger,[data-action="delete-vote"],button[onclick
   });
 
 
-  const defaultNavOrder=['dashboard','profil','aktivitaet','termine','strafrechner','rechteverlesung','familien','abstimmungen','eid','verwaltung','rechte','einstellungen'];
-  const navNames={dashboard:'Command Center',profil:'Mein Profil',aktivitaet:'Stream-Aktivität',termine:'Dienstplan',strafrechner:'Strafrechner',rechteverlesung:'Rechteverlesung',familien:'Familien',abstimmungen:'Ranger-Rat',eid:'Ranger-Eid',verwaltung:'Verwaltung',rechte:'Rechte & Rollen',einstellungen:'Einstellungen'};
+  const defaultNavOrder=['dashboard','profil','aktivitaet','termine','strafrechner','kollektivakte','rechteverlesung','familien','abstimmungen','eid','verwaltung','rechte','einstellungen'];
+  const navNames={dashboard:'Command Center',profil:'Mein Profil',aktivitaet:'Stream-Aktivität',termine:'Dienstplan',strafrechner:'Strafrechner',kollektivakte:'Kollektivakte',rechteverlesung:'Rechteverlesung',familien:'Familien',abstimmungen:'Ranger-Rat',eid:'Ranger-Eid',verwaltung:'Verwaltung',rechte:'Rechte & Rollen',einstellungen:'Einstellungen'};
   let personalNavOrder=[...defaultNavOrder];
 
   const defaultDesignPrefs={accent_color:'#e5ad55',background_darkness:42,animations_enabled:true,glass_enabled:true,background_url:''};
@@ -1776,7 +1934,7 @@ button.danger,.danger-btn,.btn-danger,[data-action="delete-vote"],button[onclick
     return !!(key && currentPermissions && currentPermissions[key]);
   };
   window.__ucpFirstAllowedPage=()=>{
-    const preferred=['dashboard','profil','aktivitaet','termine','strafrechner','rechteverlesung','familien','abstimmungen','eid','verwaltung','rechte','einstellungen'];
+    const preferred=['dashboard','profil','aktivitaet','termine','strafrechner','kollektivakte','rechteverlesung','familien','abstimmungen','eid','verwaltung','rechte','einstellungen'];
     return preferred.find(id=>window.__ucpCanOpenPage(id))||'dashboard';
   };
   let permissionRefreshBusy=false;
