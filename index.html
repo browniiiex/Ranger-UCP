@@ -1172,9 +1172,64 @@ let factsVariant=0;
 function cleanFactPart(value){
   return String(value||'').trim().replace(/\s+/g,' ').replace(/[.!?]+$/,'');
 }
-function sentence(value){
-  const v=cleanFactPart(value); if(!v) return '';
-  return v.charAt(0).toUpperCase()+v.slice(1)+'.';
+function cap(v){ v=cleanFactPart(v); return v ? v.charAt(0).toUpperCase()+v.slice(1) : ''; }
+function lowerFirst(v){ v=cleanFactPart(v); return v ? v.charAt(0).toLowerCase()+v.slice(1) : ''; }
+function splitNotes(v){
+  return cleanFactPart(v).split(/[,;\n]+/).map(x=>x.trim()).filter(Boolean);
+}
+function normalizeWords(v){
+  return cleanFactPart(v)
+    .replace(/\bTV'?s\b/gi,'Tatverdächtigen')
+    .replace(/\bTV\b/gi,'Tatverdächtigen')
+    .replace(/\bMD\b/g,'medizinischen Dienst')
+    .replace(/\bSG\b/g,'Staatsgefängnis');
+}
+function incidentSentence(what,where,collective,variant){
+  const w=cleanFactPart(what), wl=w.toLowerCase();
+  const loc=where ? ` im Bereich ${where}` : '';
+  if(/schieß|schiess|beschuss/.test(wl)){
+    return variant===1 ? `Die Ranger wurden${loc} auf eine laufende Schießerei aufmerksam.` : `Im Bereich ${where||'des Einsatzortes'} wurden die Ranger auf eine laufende Schießerei aufmerksam.`;
+  }
+  if(/kontroll/.test(wl)) return `Die Ranger führten${loc} eine Kontrolle durch.`;
+  if(/fahnd/.test(wl)) return `Die Ranger wurden${loc} im Rahmen einer Fahndung tätig.`;
+  if(/unfall/.test(wl)) return `Die Ranger wurden${loc} zu einem Verkehrsunfall hinzugezogen.`;
+  if(w && where) return variant===1 ? `Die Ranger wurden${loc} aufgrund von ${lowerFirst(w)} tätig.` : `Im Bereich ${where} wurden die Ranger aufgrund von ${lowerFirst(w)} tätig.`;
+  if(w) return `Die Ranger wurden aufgrund von ${lowerFirst(w)} tätig.`;
+  return where ? `Der Einsatz ereignete sich im Bereich ${where}.` : '';
+}
+function suspectSentence(value,collective){
+  const v=cleanFactPart(value), l=v.toLowerCase(); if(!v) return '';
+  const subject=collective?'die Tatverdächtigen':'der Tatverdächtige';
+  const Subject=collective?'Die Tatverdächtigen':'Der Tatverdächtige';
+  if(/(aktiver? )?beschuss.*beamte.*langwaff/.test(l) || /langwaff.*beschuss/.test(l)) return `Vor Ort ${collective?'eröffneten die Tatverdächtigen':'eröffnete der Tatverdächtige'} mit Langwaffen das Feuer auf die eingesetzten Beamten.`;
+  if(/beschuss.*beamte/.test(l)) return `Vor Ort ${collective?'eröffneten die Tatverdächtigen':'eröffnete der Tatverdächtige'} das Feuer auf die eingesetzten Beamten.`;
+  if(/anhaltezeichen.*ignor/.test(l) && /fl(ü|ue)cht/.test(l)) return `${Subject} ignorierte${collective?'n':''} die Anhaltezeichen und ${collective?'flüchteten':'flüchtete'} anschließend.`;
+  if(/widerstand/.test(l)) return `${Subject} leistete${collective?'n':''} während der Maßnahme Widerstand.`;
+  if(/fl(ü|ue)cht/.test(l)) return `${Subject} versuchte${collective?'n':''}, sich der Maßnahme durch Flucht zu entziehen.`;
+  let n=normalizeWords(v);
+  if(new RegExp(`^${collective?'die tatverdächtigen':'der tatverdächtige'}`,'i').test(n)) return cap(n)+'.';
+  return `${Subject} ${lowerFirst(n)}.`;
+}
+function rangerSentences(value,collective){
+  const chunks=splitNotes(value), out=[];
+  for(const raw of chunks){
+    const v=normalizeWords(raw), l=v.toLowerCase();
+    if(/sicherung.*gegend|gegend.*sicher/.test(l)){ out.push('Die Ranger sicherten daraufhin den Bereich.'); continue; }
+    if(/schießerei.*gegen.*tatverdächt|feuer.*erwid|beschuss.*erwid/.test(l)){ out.push('Auf den Beschuss wurde entsprechend reagiert und das Feuer erwidert.'); continue; }
+    if(/medizinischen dienst.*(gerufen|alarm|hinzu)|\bmd\b/.test(raw.toLowerCase())){ out.push('Nach Beendigung der Gefahrenlage wurde der medizinische Dienst hinzugezogen.'); continue; }
+    if(/festnahme.*behandlung|nach.*behandlung.*fest/.test(l)){ out.push(`Nach der medizinischen Behandlung ${collective?'wurden die Tatverdächtigen':'wurde der Tatverdächtige'} festgenommen.`); continue; }
+    if(/festnahme|festgenommen/.test(l)){ out.push(`${collective?'Die Tatverdächtigen wurden':'Der Tatverdächtige wurde'} anschließend festgenommen.`); continue; }
+    if(/staatsgefängnis.*gebracht|ins staatsgefängnis|zum staatsgefängnis/.test(l)){ out.push(`${collective?'Die Tatverdächtigen wurden':'Der Tatverdächtige wurde'} anschließend zur weiteren Bearbeitung ins Staatsgefängnis verbracht.`); continue; }
+    if(/verfolgung.*aufgenommen/.test(l)){ out.push('Die Ranger nahmen daraufhin die Verfolgung auf.'); continue; }
+    if(/fahrzeug.*gestoppt/.test(l)){ out.push('Das Fahrzeug konnte im weiteren Verlauf gestoppt werden.'); continue; }
+    out.push(`Seitens der Ranger wurde anschließend ${lowerFirst(v)}.`);
+  }
+  return out;
+}
+function specialSentence(value){
+  const v=normalizeWords(value), l=v.toLowerCase(); if(!v) return '';
+  if(/widerstand.*festnahme/.test(l)) return 'Bei der anschließenden Festnahme wurde Widerstand geleistet.';
+  return `Zusätzlich ist festzuhalten, dass ${lowerFirst(v)}.`;
 }
 function generateFactsText(rewrite=false){
   const what=cleanFactPart(q('factsWhat')?.value);
@@ -1183,30 +1238,22 @@ function generateFactsText(rewrite=false){
   const ranger=cleanFactPart(q('factsRangerAction')?.value);
   const special=cleanFactPart(q('factsSpecial')?.value);
   if(![what,where,suspect,ranger,special].some(Boolean)) return '';
-  if(rewrite) factsVariant=(factsVariant+1)%3;
+  if(rewrite) factsVariant=(factsVariant+1)%2;
   const collective=caseType==='collective';
-  const tv=collective?'die Tatverdächtigen':'der Tatverdächtige';
-  const parts=[];
-  if(factsVariant===0){
-    if(what&&where) parts.push(`Im Bereich ${where} kam es zu folgendem Sachverhalt: ${what}.`);
-    else if(what) parts.push(sentence(what));
-    else if(where) parts.push(`Der Vorfall ereignete sich im Bereich ${where}.`);
-    if(suspect) parts.push(`${collective?'Die Tatverdächtigen':'Der Tatverdächtige'} ${suspect.charAt(0).toLowerCase()+suspect.slice(1)}.`);
-    if(ranger) parts.push(`Daraufhin ${ranger.charAt(0).toLowerCase()+ranger.slice(1)}.`);
-    if(special) parts.push(`Als Besonderheit ist festzuhalten: ${special}.`);
-  }else if(factsVariant===1){
-    if(where&&what) parts.push(`Am Einsatzort ${where} wurden die Ranger aufgrund folgenden Umstands tätig: ${what}.`);
-    else if(what) parts.push(`Die Ranger wurden aufgrund folgenden Umstands tätig: ${what}.`);
-    else if(where) parts.push(`Die Maßnahme fand im Bereich ${where} statt.`);
-    if(suspect) parts.push(`Im weiteren Verlauf ${suspect.charAt(0).toLowerCase()+suspect.slice(1)}.`);
-    if(ranger) parts.push(`Seitens der Ranger wurde anschließend folgende Maßnahme durchgeführt: ${ranger}.`);
-    if(special) parts.push(`Zusätzlich wurde festgestellt: ${special}.`);
-  }else{
-    if(what) parts.push(`${sentence(what)}`);
-    if(where) parts.push(`Der Sachverhalt ereignete sich im Bereich ${where}.`);
-    if(suspect) parts.push(`Während der Maßnahme ${tv} ${suspect.charAt(0).toLowerCase()+suspect.slice(1)}.`);
-    if(ranger) parts.push(`Die Ranger reagierten darauf wie folgt: ${ranger}.`);
-    if(special) parts.push(`Weiterhin ist zu vermerken: ${special}.`);
+  let parts=[];
+  const intro=incidentSentence(what,where,collective,factsVariant); if(intro) parts.push(intro);
+  const suspectText=suspectSentence(suspect,collective); if(suspectText) parts.push(suspectText);
+  parts.push(...rangerSentences(ranger,collective));
+  const specialText=specialSentence(special); if(specialText) parts.push(specialText);
+  // Maximal fünf kurze, chronologische Sätze. Bei vielen Maßnahmen werden die letzten Schritte sinnvoll verbunden.
+  if(parts.length>5){
+    const first=parts.slice(0,4);
+    const rest=parts.slice(4).map(x=>x.replace(/\.$/,'')).join(' Anschließend ');
+    parts=[...first,rest+'.'];
+  }
+  if(factsVariant===1 && parts.length>=3){
+    // Alternative Formulierung, ohne neue Fakten hinzuzufügen.
+    parts[0]=parts[0].replace(/^Im Bereich ([^,]+) wurden die Ranger auf eine laufende Schießerei aufmerksam\.$/,'Die Ranger wurden im Bereich $1 auf eine laufende Schießerei aufmerksam.');
   }
   return parts.filter(Boolean).slice(0,5).join(' ');
 }
