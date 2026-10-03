@@ -555,6 +555,15 @@ body.no-ucp-glass .glass,body.no-ucp-glass .card,body.no-ucp-glass .panel{backdr
 @media(max-width:900px){.ranger-stats-summary{grid-template-columns:repeat(2,1fr)}.ranger-stats-grid{grid-template-columns:1fr}}
 @media(max-width:520px){.ranger-stats-summary{grid-template-columns:1fr}}
 
+
+.facts-assistant{padding:0!important;overflow:hidden}
+.facts-toggle{width:100%;display:flex!important;align-items:center;justify-content:space-between;gap:18px;padding:15px 16px!important;border:0!important;background:linear-gradient(90deg,rgba(7,12,10,.96),rgba(38,27,14,.78))!important;color:inherit;text-align:left;cursor:pointer}
+.facts-toggle:hover{background:linear-gradient(90deg,rgba(12,18,14,.98),rgba(52,36,17,.86))!important}
+.facts-toggle-arrow{color:#efc15c;font-size:24px;line-height:1;transition:transform .2s ease}
+.facts-toggle[aria-expanded="true"] .facts-toggle-arrow{transform:rotate(180deg)}
+.facts-collapsible{padding:14px 14px 12px;border-top:1px solid rgba(214,168,67,.22)}
+.facts-collapsible[hidden]{display:none!important}
+
 </style>
 
 <style id="global-readability-upgrade">
@@ -760,7 +769,11 @@ input::placeholder, textarea::placeholder { font-size: 16px !important; opacity:
       <label>Aufnehmende Person<input class="r-input" id="officerName" value="Brownie"></label>
       <label>Zeugen<input class="r-input" id="witnesses" placeholder="Keine / Namen"></label>
       <div class="facts-assistant" id="factsAssistant">
-        <div class="facts-assistant-head"><div><b>SACHVERHALT-ASSISTENT</b><div class="facts-helper">Schilder die Situation kurz aus deiner Sicht. TV = eine Person, TVs = mehrere. Maßnahmen werden soweit möglich automatisch erkannt; es werden keine Ereignisse erfunden.</div></div></div>
+        <button type="button" class="facts-assistant-head facts-toggle" id="factsCollapseToggle" aria-expanded="false">
+<div><b>✦ SACHVERHALT-ASSISTENT</b><div class="facts-helper">Optional: Aus kurzen Stichpunkten wird ein sachlicher, chronologischer Sachverhalt für die Akte erstellt. TV = eine Person, TVs = mehrere. Der fertige Text bleibt bearbeitbar.</div></div>
+<span class="facts-toggle-arrow" aria-hidden="true">⌄</span>
+</button>
+<div class="facts-collapsible" id="factsCollapseBody" hidden>
         <div class="facts-assistant-grid">
           <label>Was ist passiert?<input class="r-input" id="factsWhat" placeholder="z. B. Fahrzeugkontrolle aufgrund unsicherer Fahrweise"></label>
           <label>Wo ist es passiert?<input class="r-input" id="factsWhere" placeholder="z. B. East Highway"></label>
@@ -768,7 +781,7 @@ input::placeholder, textarea::placeholder { font-size: 16px !important; opacity:
           <label class="wide">Zusätzliche Maßnahmen (optional)<textarea class="r-input" id="factsRangerAction" rows="2" placeholder="Nur ausfüllen, wenn eine besondere Maßnahme ergänzt werden soll"></textarea></label>
           <label class="wide">Besonderheiten (optional)<input class="r-input" id="factsSpecial" placeholder="z. B. Widerstand bei der Festnahme"></label>
         </div>
-        <div class="facts-actions"><button type="button" class="facts-generate" id="generateFacts">✦ SACHVERHALT ERSTELLEN</button><button type="button" class="facts-rewrite" id="rewriteFacts">↻ NEU FORMULIEREN</button></div>
+        <div class="facts-actions"><button type="button" class="facts-generate" id="generateFacts">✦ SACHVERHALT ERSTELLEN</button><button type="button" class="facts-rewrite" id="rewriteFacts">↻ NEU FORMULIEREN</button></div></div>
       </div>
       <label class="span2">Sachverhalt (kurz)<textarea class="r-input" id="facts" rows="4" placeholder="Hier erscheint der erstellte Sachverhalt. Er kann danach frei bearbeitet werden."></textarea></label>
       <label>Rechte verlesen<select class="r-input" id="rightsRead"><option>Ja</option><option>Nein</option></select></label>
@@ -2604,6 +2617,19 @@ button.danger,.danger-btn,.btn-danger,[data-action="delete-vote"],button[onclick
   await checkAccess(session);
   client.auth.onAuthStateChange((event,session)=>{ if(event==='SIGNED_IN') setTimeout(()=>checkAccess(session),0); if(event==='SIGNED_OUT') showGate('',true); });
 })();
+
+document.addEventListener('DOMContentLoaded',()=>{
+ const toggle=document.getElementById('factsCollapseToggle');
+ const body=document.getElementById('factsCollapseBody');
+ if(toggle&&body){
+   toggle.addEventListener('click',()=>{
+     const open=toggle.getAttribute('aria-expanded')==='true';
+     toggle.setAttribute('aria-expanded',String(!open));
+     body.hidden=open;
+   });
+ }
+});
+
 </script>
 
 </body></html>
