@@ -1249,7 +1249,7 @@ function generateFactsText(rewrite=false){
     else addUnique(out,`Daraufhin wurden Verhandlungen mit ${obj} aufgenommen.`,'negotiation');
   }
   if(/schieß|schiess|feuergefecht|beschuss/.test(al))
-    addUnique(out,'Im weiteren Verlauf eskalierte die Situation und es kam zu einer Schießerei.','shooting');
+    addUnique(out,'Nachdem die Verhandlungen ohne Ergebnis geblieben waren, eskalierte die Situation im weiteren Verlauf und es kam zu einer Schießerei.','shooting');
   if(/beamte/.test(al)&&/langwaff|beschuss|beschossen|feuer/.test(al))
     addUnique(out,`${subj} ${tvVerb('eröffnete','eröffneten')} dabei das Feuer auf die eingesetzten Beamten.`,'officerfire');
   if(/flücht|fluecht|flucht/.test(al))
@@ -1259,9 +1259,9 @@ function generateFactsText(rewrite=false){
 
   // 4. Automatisch erkannte Ranger-Maßnahmen
   if(/geisel|schieß|schiess|beschuss|waffe/.test(l))
-    addUnique(out,'Die Ranger sicherten den Einsatzbereich und trafen Maßnahmen zum Schutz der anwesenden Personen.','secure');
+    addUnique(out,'Die Ranger sicherten daraufhin den Einsatzbereich und trafen die erforderlichen Maßnahmen zum Schutz der anwesenden Personen.','secure');
   if(/flücht|fluecht|flucht/.test(l))
-    addUnique(out,plural?'Daraufhin nahmen die Ranger die Verfolgung der flüchtenden Tatverdächtigen auf.':'Daraufhin nahmen die Ranger die Verfolgung des flüchtenden Tatverdächtigen auf.','pursuit');
+    addUnique(out,plural?'Aufgrund der Flucht nahmen die Ranger die Verfolgung der betreffenden Tatverdächtigen auf.':'Aufgrund der Flucht nahmen die Ranger die Verfolgung des Tatverdächtigen auf.','pursuit');
 
   // 5. Verletzte / medizinische Versorgung
   if(/verletz|behandelt|mediziner|medizin|\bmd\b/.test(l)){
@@ -1272,13 +1272,13 @@ function generateFactsText(rewrite=false){
       if(/\btvs\b|\btv['’]s\b|tatverd/i.test(al))groups.push('Tatverdächtige');
       if(groups.length)addUnique(out,`Im Zuge des Einsatzes wurden ${groups.join(', ').replace(/, ([^,]*)$/,' und $1')} verletzt.`,'injured');
     }
-    addUnique(out,'Nachdem die Gefahrenlage unter Kontrolle gebracht und der Einsatzbereich gesichert worden war, wurde die medizinische Versorgung der verletzten Personen veranlasst.','medical');
+    addUnique(out,'Nachdem die unmittelbare Gefahrenlage unter Kontrolle gebracht und der Einsatzbereich abgesichert worden war, wurde die medizinische Versorgung der verletzten Personen veranlasst.','medical');
   }
 
   // 6. Stellen/Festnahme – Ergebnis darf nie wegen Satzlimit verschwinden
   const hasCaught=/gestellt/.test(l), hasArrest=/festgenomm|festnahme/.test(l);
   if(hasCaught&&hasArrest){
-    addUnique(out,plural?'Die geflüchteten Tatverdächtigen konnten im weiteren Verlauf gestellt und festgenommen werden.':`${subj} konnte im weiteren Verlauf gestellt und anschließend festgenommen werden.`,'arrest');
+    addUnique(out,plural?'Die geflüchteten Tatverdächtigen konnten im weiteren Verlauf durch die Ranger gestellt und festgenommen werden.':`${subj} konnte im weiteren Verlauf durch die Ranger gestellt und anschließend festgenommen werden.`,'arrest');
   }else if(hasCaught){
     addUnique(out,`${subj} ${tvVerb('konnte','konnten')} im weiteren Verlauf gestellt werden.`,'arrest');
   }else if(hasArrest){
@@ -1290,6 +1290,9 @@ function generateFactsText(rewrite=false){
     if(/eingeknast|inhaft/.test(l))
       addUnique(out,`${subj} ${tvVerb('wurde','wurden')} im Anschluss inhaftiert.`,'jail');
     else addUnique(out,`${subj} ${tvVerb('wurde','wurden')} anschließend zur weiteren Bearbeitung ins Staatsgefängnis verbracht.`,'jail');
+  }
+  else if(hasArrest){
+    addUnique(out,plural?'Anschließend wurden die festgenommenen Tatverdächtigen der weiteren Bearbeitung zugeführt.':'Anschließend wurde der festgenommene Tatverdächtige der weiteren Bearbeitung zugeführt.','closing');
   }
 
   // 8. Manuelle Maßnahmen nur ergänzen, wenn sie nicht bereits automatisch abgedeckt sind.
