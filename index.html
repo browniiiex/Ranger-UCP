@@ -765,7 +765,7 @@ input::placeholder, textarea::placeholder { font-size: 16px !important; opacity:
           <label>Was ist passiert?<input class="r-input" id="factsWhat" placeholder="z. B. Fahrzeugkontrolle aufgrund unsicherer Fahrweise"></label>
           <label>Wo ist es passiert?<input class="r-input" id="factsWhere" placeholder="z. B. East Highway"></label>
           <label class="wide">Handlung des/der Tatverdächtigen<textarea class="r-input" id="factsSuspectAction" rows="2" placeholder="z. B. Anhaltezeichen ignoriert und anschließend geflüchtet"></textarea></label>
-          <label class="wide">Maßnahmen der Ranger<textarea class="r-input" id="factsRangerAction" rows="2" placeholder="z. B. Verfolgung aufgenommen, Fahrzeug gestoppt und TV festgenommen"></textarea></label>
+          <label class="wide">Zusätzliche Maßnahmen (optional)<textarea class="r-input" id="factsRangerAction" rows="2" placeholder="Nur ausfüllen, wenn eine besondere Maßnahme ergänzt werden soll"></textarea></label>
           <label class="wide">Besonderheiten (optional)<input class="r-input" id="factsSpecial" placeholder="z. B. Widerstand bei der Festnahme"></label>
         </div>
         <div class="facts-actions"><button type="button" class="facts-generate" id="generateFacts">✦ SACHVERHALT ERSTELLEN</button><button type="button" class="facts-rewrite" id="rewriteFacts">↻ NEU FORMULIEREN</button></div>
@@ -1197,7 +1197,10 @@ function tvWord(cap=true){
 function tvVerb(one,many){return detectSuspectCount()==='plural'?many:one}
 function hasAny(t,a){t=String(t||'').toLowerCase();return a.some(x=>t.includes(x))}
 function countFor(raw,patterns){
-  for(const p of patterns){const m=String(raw||'').match(new RegExp('(\\d+)\\s*'+p,'i'));if(m)return m[1]}
+  for(const p of patterns){
+    const m=String(raw||'').match(new RegExp('(?:^|[;,\\s])(\\d+)\\s*'+p+'(?=$|[;,\\s])','i'));
+    if(m)return m[1];
+  }
   return '';
 }
 function addUnique(arr,s,key=''){
@@ -1231,10 +1234,10 @@ function generateFactsText(rewrite=false){
     addUnique(out,`Die Ranger wurden aufgrund von ${lowerFirst(what||'eines gemeldeten Sachverhalts')} an der Örtlichkeit ${place} tätig.`,'intro');
 
   // 2. Lage vor Ort – Zahlen immer passend zum Begriff zuordnen.
-  const geiselnehmer=countFor(action,['Geiselnehmer(?:n)?']);
-  const geiseln=countFor(action,['Geiseln?']);
+  const geiselnehmer=countFor(action,['Geiselnehmer']);
+  const geiseln=countFor(action,['Geiseln']);
   if(/geisel/i.test(al)){
-    if(geiselnehmer&&geiseln) addUnique(out,`Vor Ort stellte sich heraus, dass insgesamt ${geiselnehmer} Geiselnehmer ${geiseln} Personen als Geiseln genommen hatten.`,'hostages');
+    if(geiselnehmer&&geiseln) addUnique(out,`Vor Ort stellte sich heraus, dass ${geiselnehmer} Geiselnehmer insgesamt ${geiseln} Personen als Geiseln genommen hatten.`,'hostages');
     else if(geiseln) addUnique(out,`Vor Ort stellte sich heraus, dass ${subj} insgesamt ${geiseln} Personen als Geiseln ${plural?'genommen hatten':'genommen hatte'}.`,'hostages');
     else addUnique(out,'Vor Ort bestätigte sich die gemeldete Geiselnahme.','hostages');
   }
@@ -1242,7 +1245,7 @@ function generateFactsText(rewrite=false){
   // 3. Chronologischer Tatablauf
   if(/verhandlung/.test(al)){
     if(/scheiter|ohne erfolg|ergebnislos/.test(al))
-      addUnique(out,`Daraufhin wurden Verhandlungen mit ${obj} aufgenommen, welche jedoch ohne Erfolg blieben.`,'negotiation');
+      addUnique(out,`Zur möglichst friedlichen Beendigung der Situation wurden zunächst Verhandlungen mit ${obj} aufgenommen, welche jedoch ohne Erfolg blieben.`,'negotiation');
     else addUnique(out,`Daraufhin wurden Verhandlungen mit ${obj} aufgenommen.`,'negotiation');
   }
   if(/schieß|schiess|feuergefecht|beschuss/.test(al))
@@ -1250,7 +1253,7 @@ function generateFactsText(rewrite=false){
   if(/beamte/.test(al)&&/langwaff|beschuss|beschossen|feuer/.test(al))
     addUnique(out,`${subj} ${tvVerb('eröffnete','eröffneten')} dabei das Feuer auf die eingesetzten Beamten.`,'officerfire');
   if(/flücht|fluecht|flucht/.test(al))
-    addUnique(out,plural?'Einige der Tatverdächtigen versuchten daraufhin, vom Einsatzort zu flüchten.':`${subj} versuchte daraufhin, vom Einsatzort zu flüchten.`,'flight');
+    addUnique(out,plural?'Einige der Tatverdächtigen nutzten die Situation zur Flucht.':`${subj} versuchte, sich der Maßnahme durch Flucht zu entziehen.`,'flight');
   if(/widerstand/.test(al))
     addUnique(out,`${subj} ${tvVerb('leistete','leisteten')} im weiteren Verlauf Widerstand gegen die Maßnahmen der Ranger.`,'resistance');
 
@@ -1258,7 +1261,7 @@ function generateFactsText(rewrite=false){
   if(/geisel|schieß|schiess|beschuss|waffe/.test(l))
     addUnique(out,'Die Ranger sicherten den Einsatzbereich und trafen Maßnahmen zum Schutz der anwesenden Personen.','secure');
   if(/flücht|fluecht|flucht/.test(l))
-    addUnique(out,plural?'Die Ranger nahmen die Verfolgung der flüchtenden Tatverdächtigen auf.':'Die Ranger nahmen daraufhin die Verfolgung des flüchtenden Tatverdächtigen auf.','pursuit');
+    addUnique(out,plural?'Daraufhin nahmen die Ranger die Verfolgung der flüchtenden Tatverdächtigen auf.':'Daraufhin nahmen die Ranger die Verfolgung des flüchtenden Tatverdächtigen auf.','pursuit');
 
   // 5. Verletzte / medizinische Versorgung
   if(/verletz|behandelt|mediziner|medizin|\bmd\b/.test(l)){
@@ -1269,13 +1272,13 @@ function generateFactsText(rewrite=false){
       if(/\btvs\b|\btv['’]s\b|tatverd/i.test(al))groups.push('Tatverdächtige');
       if(groups.length)addUnique(out,`Im Zuge des Einsatzes wurden ${groups.join(', ').replace(/, ([^,]*)$/,' und $1')} verletzt.`,'injured');
     }
-    addUnique(out,'Nachdem die Lage ausreichend gesichert worden war, wurde die medizinische Versorgung der verletzten Personen veranlasst.','medical');
+    addUnique(out,'Nachdem die Gefahrenlage unter Kontrolle gebracht und der Einsatzbereich gesichert worden war, wurde die medizinische Versorgung der verletzten Personen veranlasst.','medical');
   }
 
   // 6. Stellen/Festnahme – Ergebnis darf nie wegen Satzlimit verschwinden
   const hasCaught=/gestellt/.test(l), hasArrest=/festgenomm|festnahme/.test(l);
   if(hasCaught&&hasArrest){
-    addUnique(out,plural?'Die flüchtigen Tatverdächtigen konnten im weiteren Verlauf gestellt und gemeinsam mit den übrigen Tatverdächtigen festgenommen werden.':`${subj} konnte im weiteren Verlauf gestellt und anschließend festgenommen werden.`,'arrest');
+    addUnique(out,plural?'Die geflüchteten Tatverdächtigen konnten im weiteren Verlauf gestellt und festgenommen werden.':`${subj} konnte im weiteren Verlauf gestellt und anschließend festgenommen werden.`,'arrest');
   }else if(hasCaught){
     addUnique(out,`${subj} ${tvVerb('konnte','konnten')} im weiteren Verlauf gestellt werden.`,'arrest');
   }else if(hasArrest){
