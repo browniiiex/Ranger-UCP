@@ -760,7 +760,7 @@ input::placeholder, textarea::placeholder { font-size: 16px !important; opacity:
       <label>Aufnehmende Person<input class="r-input" id="officerName" value="Brownie"></label>
       <label>Zeugen<input class="r-input" id="witnesses" placeholder="Keine / Namen"></label>
       <div class="facts-assistant" id="factsAssistant">
-        <div class="facts-assistant-head"><div><b>SACHVERHALT-ASSISTENT</b><div class="facts-helper">Nur Stichpunkte eintragen. Es werden keine zusätzlichen Informationen erfunden.</div></div></div>
+        <div class="facts-assistant-head"><div><b>SACHVERHALT-ASSISTENT</b><div class="facts-helper">Schilder die Situation kurz aus deiner Sicht. TV = eine Person, TVs = mehrere. Maßnahmen werden soweit möglich automatisch erkannt; es werden keine Ereignisse erfunden.</div></div></div>
         <div class="facts-assistant-grid">
           <label>Was ist passiert?<input class="r-input" id="factsWhat" placeholder="z. B. Fahrzeugkontrolle aufgrund unsicherer Fahrweise"></label>
           <label>Wo ist es passiert?<input class="r-input" id="factsWhere" placeholder="z. B. East Highway"></label>
@@ -1184,86 +1184,126 @@ function normalizeWords(v){
     .replace(/\bMD\b/g,'medizinischen Dienst')
     .replace(/\bSG\b/g,'Staatsgefängnis');
 }
-function niceSubject(collective,capIt=true){
-  const s=collective?'die Tatverdächtigen':'der Tatverdächtige';
-  return capIt?s.charAt(0).toUpperCase()+s.slice(1):s;
+function detectSuspectCount(){
+  const raw=[
+    q('factsWhat')?.value||'', q('factsSuspectAction')?.value||'',
+    q('factsRangerAction')?.value||'', q('factsSpecial')?.value||''
+  ].join(' ');
+  // "TVs", "TV's" oder ausdrücklich mehrere/plurale Angaben haben Vorrang.
+  if(/\bTVs\b|\bTV['’]s\b|\bTatverdächtige\b|\bmehrere\s+TV/i.test(raw)) return 'plural';
+  if(/\bTV\b|\bTatverdächtiger\b/i.test(raw)) return 'singular';
+  return caseType==='collective' ? 'plural' : 'singular';
 }
-function inferFacts(raw,collective){
-  const v=cleanFactPart(raw),l=v.toLowerCase(),facts=[],push=x=>{if(x&&!facts.includes(x))facts.push(x)};
-  if(!v)return facts;
-  if(/geisel/.test(l)){
-    const geiseln=(v.match(/(\d+)\s*Geiseln?/i)||[])[1];
-    const fam=(v.match(/familie\s*["„]?([^",;]+)["“]?/i)||[])[1]?.trim();
-    push(fam?`Die Familie „${fam}“ hielt${geiseln?' '+geiseln:''} Personen als Geiseln fest.`:`${niceSubject(collective)} hielt${geiseln?' '+geiseln:''} Personen als Geiseln fest.`);
-  }
-  if(/verhandlung/.test(l)&&/(scheiter|ergebnislos|ohne erfolg)/.test(l))push('Die geführten Verhandlungen blieben ohne Erfolg.');
-  if(/schieß|schiess|beschuss|feuergefecht/.test(l)){
-    if(/beamte/.test(l)&&/langwaff/.test(l))push(`${niceSubject(collective)} eröffnete${collective?'n':''} mit Langwaffen das Feuer auf die eingesetzten Beamten.`);
-    else if(/beamte/.test(l))push(`${niceSubject(collective)} eröffnete${collective?'n':''} das Feuer auf die eingesetzten Beamten.`);
-    else push('Im weiteren Verlauf kam es zu einer Schießerei.');
-  }
-  if(/verletz/.test(l)){
-    const g=[]; if(/beamte/.test(l))g.push('Beamte'); if(/geisel/.test(l))g.push('Geiseln'); if(/tatverd|tv'?s/.test(l))g.push('Tatverdächtige');
-    push(g.length?`Dabei wurden ${g.join(', ').replace(/, ([^,]*)$/,' und $1')} verletzt.`:'Dabei wurden mehrere Personen verletzt.');
-  }
-  if(/fl(ü|ue)cht/.test(l))push(`${niceSubject(collective)} versuchte${collective?'n':''}, sich der Maßnahme durch Flucht zu entziehen.`);
-  if(/widerstand/.test(l))push(`${niceSubject(collective)} leistete${collective?'n':''} Widerstand gegen die polizeilichen Maßnahmen.`);
-  return facts;
+function tvWord(cap=true){
+  const plural=detectSuspectCount()==='plural';
+  const s=plural?'die Tatverdächtigen':'der Tatverdächtige';
+  return cap?s.charAt(0).toUpperCase()+s.slice(1):s;
 }
-function incidentSentence(what,where,collective,variant){
-  const w=cleanFactPart(what),wl=w.toLowerCase(),place=where||'dem Einsatzort';
-  if(/geisel/.test(wl))return variant?`Die Ranger wurden wegen einer gemeldeten Geiselnahme zur Örtlichkeit ${place} entsandt.`:`Die Ranger wurden aufgrund einer Geiselnahme am Einsatzort ${place} tätig.`;
-  if(/schieß|schiess|beschuss/.test(wl))return variant?`Die Ranger wurden wegen einer gemeldeten Schießerei zum Bereich ${place} entsandt.`:`Im Bereich ${place} wurden die Ranger auf eine laufende Schießerei aufmerksam.`;
-  if(/kontroll/.test(wl))return `Im Bereich ${place} führten die Ranger eine Kontrolle durch.`;
-  if(/fahnd/.test(wl))return `Im Bereich ${place} wurden die Ranger im Rahmen einer Fahndung tätig.`;
-  if(/unfall/.test(wl))return `Die Ranger wurden zu einem Verkehrsunfall im Bereich ${place} hinzugezogen.`;
-  return w?`Am Einsatzort ${place} wurden die Ranger aufgrund von ${lowerFirst(w)} tätig.`:(where?`Der Einsatz ereignete sich im Bereich ${where}.`:'');
+function tvVerb(singular,plural){ return detectSuspectCount()==='plural'?plural:singular; }
+function splitEvents(raw){
+  return String(raw||'').split(/[;\n]+|(?<=[.!?])\s+/).map(x=>x.trim()).filter(Boolean);
 }
-function inferRangerMeasures(allText,collective){
-  const l=allText.toLowerCase(),out=[],push=x=>{if(x&&!out.includes(x))out.push(x)},subj=niceSubject(collective);
-  if(/geisel|schieß|schiess|beschuss|waffe/.test(l))push('Die Ranger sicherten zunächst den Einsatzbereich und brachten die Lage unter Kontrolle.');
-  if(/verletz|medizin|arzt|\bmd\b|behandlung/.test(l))push('Aufgrund der Verletzten wurde der medizinische Dienst hinzugezogen und die medizinische Versorgung veranlasst.');
-  if(/fl(ü|ue)cht|verfolg/.test(l))push('Im weiteren Verlauf nahmen die Ranger die Verfolgung auf.');
-  if(/festgenomm|festnahme|gestellt|inhaft/.test(l))push(`${subj} wurde${collective?'n':''} anschließend festgenommen.`);
-  if(/\bsg\b|staatsgefängnis|gefängnis/.test(l))push(`${subj} wurde${collective?'n':''} anschließend zur weiteren Bearbeitung ins Staatsgefängnis verbracht.`);
+function hasAny(t,arr){ t=t.toLowerCase(); return arr.some(x=>t.includes(x)); }
+function getNumberBefore(text,word){
+  const m=String(text).match(new RegExp('(\\d+)\\s*'+word,'i')); return m?m[1]:'';
+}
+function buildSituationFacts(raw){
+  const l=String(raw||'').toLowerCase(), out=[], push=x=>{if(x&&!out.includes(x))out.push(x)};
+  const plural=detectSuspectCount()==='plural', subj=tvWord(true);
+  const geiseln=getNumberBefore(raw,'Geiseln?');
+  const geiselnehmer=getNumberBefore(raw,'Geiselnehmer');
+  if(hasAny(l,['geiselnahme','geiselnehmer','geiseln'])){
+    if(geiselnehmer && geiseln) push(`Vor Ort stellte sich heraus, dass ${geiselnehmer} Tatverdächtige insgesamt ${geiseln} Personen als Geiseln genommen hatten.`);
+    else if(geiseln) push(`Vor Ort stellte sich heraus, dass ${subj} insgesamt ${geiseln} Personen als Geiseln ${plural?'genommen hatten':'genommen hatte'}.`);
+    else push(`Vor Ort bestätigte sich die gemeldete Geiselnahme.`);
+  }
+  if(hasAny(l,['verhandlung']) && hasAny(l,['scheiter','ohne erfolg','ergebnislos']))
+    push(`Mit ${plural?'den Tatverdächtigen':'dem Tatverdächtigen'} wurden zunächst Verhandlungen geführt, die jedoch ohne Erfolg blieben.`);
+  if(hasAny(l,['schießerei','schiesserei','feuergefecht','beschuss']))
+    push(`Im weiteren Verlauf eskalierte die Situation und es kam zu einer Schießerei.`);
+  if(hasAny(l,['beamte']) && hasAny(l,['beschuss','beschossen','feuer eröffnet','langwaffe','langwaffen']))
+    push(`${subj} ${tvVerb('eröffnete','eröffneten')} dabei das Feuer auf die eingesetzten Beamten.`);
+  if(hasAny(l,['flücht','fluecht','flucht']))
+    push(`${subj} ${tvVerb('versuchte','versuchten')}, sich der Maßnahme durch Flucht zu entziehen.`);
+  if(hasAny(l,['widerstand']))
+    push(`${subj} ${tvVerb('leistete','leisteten')} im weiteren Verlauf Widerstand gegen die Maßnahmen der Ranger.`);
+  if(hasAny(l,['verletz'])){
+    const groups=[];
+    if(hasAny(l,['beamte'])) groups.push('Beamte');
+    if(hasAny(l,['geisel'])) groups.push('Geiseln');
+    if(/\btvs\b|\btv['’]s\b|tatverd/i.test(l)) groups.push('Tatverdächtige');
+    push(groups.length?`Im Zuge des Einsatzes wurden ${groups.join(', ').replace(/, ([^,]*)$/, ' und $1')} verletzt.`:`Im Zuge des Einsatzes wurden mehrere Personen verletzt.`);
+  }
   return out;
 }
-function rangerSentences(value,collective){
-  const v=cleanFactPart(value);if(!v)return[];
-  const l=v.toLowerCase(),out=[],push=x=>{if(x&&!out.includes(x))out.push(x)};
-  if(/sicher/.test(l))push('Die Ranger sicherten den Einsatzbereich und die anwesenden Personen.');
-  if(/medizin|\bmd\b|arzt|behandlung/.test(l))push('Der medizinische Dienst wurde hinzugezogen und die Versorgung der Verletzten veranlasst.');
-  if(/verfolg/.test(l))push('Die Ranger nahmen die Verfolgung auf.');
-  if(/festgenomm|festnahme|gestellt/.test(l))push(`${niceSubject(collective)} wurde${collective?'n':''} anschließend festgenommen.`);
-  if(/\bsg\b|staatsgefängnis|gefängnis/.test(l))push(`${niceSubject(collective)} wurde${collective?'n':''} zur weiteren Bearbeitung ins Staatsgefängnis verbracht.`);
-  return out.length?out:[`Seitens der Ranger wurden ergänzend folgende Maßnahmen durchgeführt: ${normalizeWords(v)}.`];
+function inferMeasures(raw){
+  const l=String(raw||'').toLowerCase(), out=[], push=x=>{if(x&&!out.includes(x))out.push(x)};
+  const plural=detectSuspectCount()==='plural', subj=tvWord(true);
+  if(hasAny(l,['geiselnahme','geisel','schießerei','schiesserei','beschuss','waffe']))
+    push(`Die Ranger sicherten den Einsatzbereich und trafen Maßnahmen zum Schutz der anwesenden Personen.`);
+  if(hasAny(l,['verhandlung']))
+    push(`Zur möglichst gewaltfreien Beendigung der Lage wurden zunächst Verhandlungen aufgenommen.`);
+  if(hasAny(l,['flücht','fluecht','flucht']))
+    push(`Flüchtende Tatverdächtige wurden verfolgt und im weiteren Verlauf gestellt.`);
+  if(hasAny(l,['verletz','behandelt','mediziner','medizin',' md ','\bmd\b']))
+    push(`Nach Stabilisierung der Lage wurde die medizinische Versorgung der verletzten Personen veranlasst.`);
+  if(hasAny(l,['gestellt','festgenommen','festnahme']))
+    push(`${subj} ${tvVerb('wurde','wurden')} anschließend festgenommen.`);
+  if(hasAny(l,[' ins sg','staatsgefängnis','staatsgefaengnis','gefängnis','gefaengnis']))
+    push(`${subj} ${tvVerb('wurde','wurden')} anschließend zur weiteren Bearbeitung ins Staatsgefängnis verbracht.`);
+  return out;
 }
-function specialSentence(value){
-  const v=normalizeWords(value),l=v.toLowerCase();if(!v)return'';
-  if(/widerstand.*festnahme/.test(l))return'Bei der anschließenden Festnahme wurde Widerstand geleistet.';
-  return `Als Besonderheit wurde festgehalten, dass ${lowerFirst(v)}.`;
+function manualMeasureFacts(raw){
+  const l=String(raw||'').toLowerCase(), out=[], push=x=>{if(x&&!out.includes(x))out.push(x)};
+  const subj=tvWord(true);
+  if(hasAny(l,['sicher'])) push(`Die Ranger sicherten zusätzlich den betroffenen Bereich sowie die anwesenden Personen.`);
+  if(hasAny(l,['verfolg'])) push(`Die Ranger nahmen die Verfolgung der flüchtenden Tatverdächtigen auf.`);
+  if(hasAny(l,['md','medizin','arzt','behandlung'])) push(`Der medizinische Dienst wurde hinzugezogen und die Versorgung der Verletzten veranlasst.`);
+  if(hasAny(l,['festgenommen','festnahme','gestellt'])) push(`${subj} ${tvVerb('wurde','wurden')} festgenommen.`);
+  if(hasAny(l,['sg','staatsgefängnis','staatsgefaengnis'])) push(`${subj} ${tvVerb('wurde','wurden')} zur weiteren Bearbeitung ins Staatsgefängnis verbracht.`);
+  if(!out.length && raw.trim()) push(`Ergänzend führten die Ranger folgende Maßnahme durch: ${normalizeWords(raw)}.`);
+  return out;
 }
 function generateFactsText(rewrite=false){
-  const what=cleanFactPart(q('factsWhat')?.value),where=cleanFactPart(q('factsWhere')?.value),suspect=cleanFactPart(q('factsSuspectAction')?.value),ranger=cleanFactPart(q('factsRangerAction')?.value),special=cleanFactPart(q('factsSpecial')?.value);
-  if(![what,where,suspect,ranger,special].some(Boolean))return'';
-  if(rewrite)factsVariant=(factsVariant+1)%2;
-  const collective=caseType==='collective',all=[what,suspect,ranger,special].join(' '),parts=[];
-  const intro=incidentSentence(what,where,collective,factsVariant);if(intro)parts.push(intro);
-  parts.push(...inferFacts(suspect,collective));
-  for(const s of [...inferRangerMeasures(all,collective),...rangerSentences(ranger,collective)])if(!parts.includes(s))parts.push(s);
-  const sp=specialSentence(special);if(sp)parts.push(sp);
-  const seen=new Set(),unique=parts.filter(s=>{const k=s.toLowerCase().replace(/\W/g,'');if(seen.has(k))return false;seen.add(k);return true});
-  let result=unique;
-  if(result.length>5){
-    const end=result.filter(s=>/medizin|festgenommen|staatsgefängnis|versorgung/.test(s.toLowerCase())).slice(-2);
-    result=[...result.slice(0,3),...end];
+  const what=cleanFactPart(q('factsWhat')?.value), where=cleanFactPart(q('factsWhere')?.value);
+  const action=cleanFactPart(q('factsSuspectAction')?.value), manual=cleanFactPart(q('factsRangerAction')?.value);
+  const special=cleanFactPart(q('factsSpecial')?.value);
+  if(![what,where,action,manual,special].some(Boolean)) return '';
+  if(rewrite) factsVariant=(factsVariant+1)%2;
+  const place=where||'dem Einsatzort', all=[what,action,manual,special].join(' ');
+  let sentences=[];
+  if(/geisel/i.test(what))
+    sentences.push(factsVariant?`Wegen einer gemeldeten Geiselnahme wurden die Ranger zur Örtlichkeit ${place} entsandt.`:`Die Ranger wurden aufgrund einer gemeldeten Geiselnahme am Einsatzort ${place} tätig.`);
+  else if(/schieß|schiess|beschuss/i.test(what))
+    sentences.push(factsVariant?`Aufgrund einer gemeldeten Schießerei wurden die Ranger in den Bereich ${place} entsandt.`:`Im Bereich ${place} wurden die Ranger auf eine laufende Schießerei aufmerksam.`);
+  else
+    sentences.push(`Die Ranger wurden aufgrund von ${lowerFirst(what||'eines gemeldeten Sachverhalts')} am Einsatzort ${place} tätig.`);
+
+  sentences.push(...buildSituationFacts(action));
+  sentences.push(...inferMeasures(all));
+  sentences.push(...manualMeasureFacts(manual));
+
+  if(special){
+    if(/widerstand/i.test(special)) sentences.push(`Bei der anschließenden Festnahme wurde durch ${tvWord(false)} Widerstand geleistet.`);
+    else sentences.push(`Im weiteren Einsatzverlauf wurde zudem festgestellt, dass ${lowerFirst(normalizeWords(special))}.`);
   }
-  return result.slice(0,5).join(' ');
+
+  // Doppelte/inhaltlich sehr ähnliche Sätze entfernen.
+  const seen=new Set();
+  sentences=sentences.filter(s=>{
+    let k=s.toLowerCase()
+      .replace(/anschließend|im weiteren verlauf|zunächst|zusätzlich|daraufhin|die ranger/g,'')
+      .replace(/\W/g,'');
+    if(seen.has(k)) return false; seen.add(k); return true;
+  });
+
+  // Chronologisch, aber nicht unnötig lang: bis zu 8 Sätze.
+  return sentences.slice(0,8).join(' ');
 }
 function applyGeneratedFacts(rewrite=false){
-  const text=generateFactsText(rewrite);
-  if(!text){alert('Bitte zuerst mindestens eine Angabe im Sachverhalt-Assistenten ausfüllen.');return;}
-  if(q('facts'))q('facts').value=text;
+  const result=generateFactsText(rewrite);
+  if(!result){alert('Bitte zuerst mindestens eine Angabe im Sachverhalt-Assistenten ausfüllen.');return;}
+  if(q('facts')) q('facts').value=result;
   updateRecord();
 }
 q('generateFacts')?.addEventListener('click',()=>{factsVariant=0;applyGeneratedFacts(false)});
