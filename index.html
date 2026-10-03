@@ -598,6 +598,13 @@ body.no-ucp-glass .glass,body.no-ucp-glass .card,body.no-ucp-glass .panel{backdr
   border-radius:4px!important;
 }
 
+
+.signature-section{margin-top:4px;padding-top:14px;border-top:1px solid rgba(214,168,67,.25)}
+.signature-heading{margin-bottom:10px;color:#d9aa46;font-size:10px;font-weight:900;letter-spacing:1.3px}
+.signature-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.signature-grid label{font-size:10px;font-weight:800}
+@media(max-width:760px){.signature-grid{grid-template-columns:1fr}}
+
 </style>
 
 <style id="global-readability-upgrade">
@@ -835,6 +842,17 @@ input::placeholder, textarea::placeholder { font-size: 16px !important; opacity:
       <label class="span2">Bemerkungen<textarea class="r-input" id="notes" rows="3" placeholder="Keine / Bemerkungen"></textarea></label>
       <label>Bearbeiter<input class="r-input" id="editorName" value="Brownie"></label>
       <label>Abschlussdatum<input class="r-input" id="closingDate"></label>
+      <div class="signature-section span2">
+        <div class="signature-heading">UNTERSCHRIFTEN</div>
+        <div class="signature-grid">
+          <label>Unterschrift Bearbeiter / Ranger
+            <input class="r-input" id="editorSignature" placeholder="z. B. R. Brownie">
+          </label>
+          <label>Unterschrift Tatverdächtige*r / Vertretung
+            <input class="r-input" id="suspectSignature" placeholder="Name / Unterschrift">
+          </label>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -1212,9 +1230,9 @@ function updateRecord(){
     const suspects=collectiveSuspectData();
     const suspectBlock=suspects.map(s=>`𝗧𝗮𝘁𝘃𝗲𝗿𝗱𝗮̈𝗰𝗵𝘁𝗶𝗴𝗲*𝗿 ${s.number}\n𝗡𝗮𝗺𝗲: ${s.name}\n𝗚𝗲𝗯.-𝗗𝗮𝘁𝘂𝗺: ${s.dob}`).join('\n\n');
     const itemBlock=suspects.map(s=>`𝗧𝗩${s.number}:\n𝗚𝗲𝗴𝗲𝗻𝘀𝘁𝗮̈𝗻𝗱𝗲\n𝗥𝘂̈𝗰𝗸𝗴𝗮𝗯𝗲: ${s.returned}\n𝗕𝗲𝘀𝗰𝗵𝗹𝗮𝗴𝗻𝗮𝗵𝗺𝘁: ${s.seized}`).join('\n\n');
-    text=`★ ═══════════════════════════════════════ ★\nRANGER DIVISION\n— KOLLEKTIVAKTE · OFFIZIELLES STRAFAKTENPROTOKOLL —\n★ ═══════════════════════════════════════ ★\n\n𝗗𝗮𝘁𝘂𝗺/𝗭𝗲𝗶𝘁: ${field('caseDateTime','')}\n𝗢𝗿𝘁: ${field('casePlace')}\n\n${suspectBlock}\n\n𝗕𝗲𝘁𝗲𝗶𝗹𝗶𝗴𝘁𝗲\n𝗔𝘂𝗳𝗻𝗲𝗵𝗺𝗲𝗻𝗱𝗲 𝗣𝗲𝗿𝘀𝗼𝗻: ${field('officerName','Brownie')}\n𝗭𝗲𝘂𝗴𝗲𝗻: ${field('witnesses')}\n\n𝗦𝘁𝗿𝗮𝗳𝘁𝗮𝘁𝗲𝗻\n${crimes}\n\n𝗦𝘁𝗿𝗮𝗳𝗲\n${penalty}\n\n𝗦𝗮𝗰𝗵𝘃𝗲𝗿𝗵𝗮𝗹𝘁 (𝗸𝘂𝗿𝘇)\n${field('facts')}\n\n𝗥𝗲𝗰𝗵𝘁𝗲𝘃𝗲𝗿𝗹𝗲𝘀𝘂𝗻𝗴\n𝗩𝗲𝗿𝗹𝗲𝘀𝗲𝗻: ${field('rightsRead','Ja')} | 𝗩𝗲𝗿𝘀𝘁𝗮𝗻𝗱𝗲𝗻: ${field('rightsUnderstood','Ja')}\n𝗗𝘂𝗿𝗰𝗵: ${field('rightsBy')}\n𝗭𝗲𝘂𝗴𝗲𝗻: ${field('rightsWitness')}\n\n${itemBlock}\n\n𝗕𝗲𝗺𝗲𝗿𝗸𝘂𝗻𝗴𝗲𝗻\n${field('notes')}\n\n𝗔𝗯𝘀𝗰𝗵𝗹𝘂𝘀𝘀\n𝗕𝗲𝗮𝗿𝗯𝗲𝗶𝘁𝗲𝗿: ${field('editorName','Brownie')}\n𝗗𝗮𝘁𝘂𝗺: ${field('closingDate','')}`;
+    text=`★ ═══════════════════════════════════════ ★\nRANGER DIVISION\n— KOLLEKTIVAKTE · OFFIZIELLES STRAFAKTENPROTOKOLL —\n★ ═══════════════════════════════════════ ★\n\n𝗗𝗮𝘁𝘂𝗺/𝗭𝗲𝗶𝘁: ${field('caseDateTime','')}\n𝗢𝗿𝘁: ${field('casePlace')}\n\n${suspectBlock}\n\n𝗕𝗲𝘁𝗲𝗶𝗹𝗶𝗴𝘁𝗲\n𝗔𝘂𝗳𝗻𝗲𝗵𝗺𝗲𝗻𝗱𝗲 𝗣𝗲𝗿𝘀𝗼𝗻: ${field('officerName','Brownie')}\n𝗭𝗲𝘂𝗴𝗲𝗻: ${field('witnesses')}\n\n𝗦𝘁𝗿𝗮𝗳𝘁𝗮𝘁𝗲𝗻\n${crimes}\n\n𝗦𝘁𝗿𝗮𝗳𝗲\n${penalty}\n\n𝗦𝗮𝗰𝗵𝘃𝗲𝗿𝗵𝗮𝗹𝘁 (𝗸𝘂𝗿𝘇)\n${field('facts')}\n\n𝗥𝗲𝗰𝗵𝘁𝗲𝘃𝗲𝗿𝗹𝗲𝘀𝘂𝗻𝗴\n𝗩𝗲𝗿𝗹𝗲𝘀𝗲𝗻: ${field('rightsRead','Ja')} | 𝗩𝗲𝗿𝘀𝘁𝗮𝗻𝗱𝗲𝗻: ${field('rightsUnderstood','Ja')}\n𝗗𝘂𝗿𝗰𝗵: ${field('rightsBy')}\n𝗭𝗲𝘂𝗴𝗲𝗻: ${field('rightsWitness')}\n\n${itemBlock}\n\n𝗕𝗲𝗺𝗲𝗿𝗸𝘂𝗻𝗴𝗲𝗻\n${field('notes')}\n\n𝗔𝗯𝘀𝗰𝗵𝗹𝘂𝘀𝘀\n𝗕𝗲𝗮𝗿𝗯𝗲𝗶𝘁𝗲𝗿: ${field('editorName','Brownie')}\n𝗗𝗮𝘁𝘂𝗺: ${field('closingDate','')}\n\n𝗨𝗻𝘁𝗲𝗿𝘀𝗰𝗵𝗿𝗶𝗳𝘁𝗲𝗻\n𝗕𝗲𝗮𝗿𝗯𝗲𝗶𝘁𝗲𝗿 / 𝗥𝗮𝗻𝗴𝗲𝗿: ${field('editorSignature')}\n𝗧𝗮𝘁𝘃𝗲𝗿𝗱𝗮̈𝗰𝗵𝘁𝗶𝗴𝗲*𝗿 / 𝗩𝗲𝗿𝘁𝗿𝗲𝘁𝘂𝗻𝗴: ${field('suspectSignature')}`;
   }else{
-    text=`★ ═══════════════════════════════════════ ★\nRANGER DIVISION\n— OFFIZIELLE STRAFAKTE / PROTOKOLL —\n★ ═══════════════════════════════════════ ★\n\n𝗗𝗮𝘁𝘂𝗺/𝗭𝗲𝗶𝘁: ${field('caseDateTime','')}\n𝗢𝗿𝘁: ${field('casePlace')}\n\n𝗧𝗮𝘁𝘃𝗲𝗿𝗱𝗮̈𝗰𝗵𝘁𝗶𝗴𝗲*𝗿\n𝗡𝗮𝗺𝗲: ${field('suspectName')}\n𝗚𝗲𝗯.-𝗗𝗮𝘁𝘂𝗺: ${field('suspectDob')}\n\n𝗕𝗲𝘁𝗲𝗶𝗹𝗶𝗴𝘁𝗲\n𝗔𝘂𝗳𝗻𝗲𝗵𝗺𝗲𝗻𝗱𝗲 𝗣𝗲𝗿𝘀𝗼𝗻: ${field('officerName','Brownie')}\n𝗭𝗲𝘂𝗴𝗲𝗻: ${field('witnesses')}\n\n𝗦𝘁𝗿𝗮𝗳𝘁𝗮𝘁𝗲𝗻\n${crimes}\n\n𝗦𝘁𝗿𝗮𝗳𝗲\n${penalty}\n\n𝗦𝗮𝗰𝗵𝘃𝗲𝗿𝗵𝗮𝗹𝘁 (𝗸𝘂𝗿𝘇)\n${field('facts')}\n\n𝗥𝗲𝗰𝗵𝘁𝗲𝘃𝗲𝗿𝗹𝗲𝘀𝘂𝗻𝗴\n𝗩𝗲𝗿𝗹𝗲𝘀𝗲𝗻: ${field('rightsRead','Ja')} | 𝗩𝗲𝗿𝘀𝘁𝗮𝗻𝗱𝗲𝗻: ${field('rightsUnderstood','Ja')}\n𝗗𝘂𝗿𝗰𝗵: ${field('rightsBy')}\n𝗭𝗲𝘂𝗴𝗲𝗻: ${field('rightsWitness')}\n\n𝗚𝗲𝗴𝗲𝗻𝘀𝘁𝗮̈𝗻𝗱𝗲\n𝗥𝘂̈𝗰𝗸𝗴𝗮𝗯𝗲: ${field('returnedItems')}\n𝗕𝗲𝘀𝗰𝗵𝗹𝗮𝗴𝗻𝗮𝗵𝗺𝘁: ${field('seizedItems')}\n\n𝗕𝗲𝗺𝗲𝗿𝗸𝘂𝗻𝗴𝗲𝗻\n${field('notes')}\n\n𝗔𝗯𝘀𝗰𝗵𝗹𝘂𝘀𝘀\n𝗕𝗲𝗮𝗿𝗯𝗲𝗶𝘁𝗲𝗿: ${field('editorName','Brownie')}\n𝗗𝗮𝘁𝘂𝗺: ${field('closingDate','')}`;
+    text=`★ ═══════════════════════════════════════ ★\nRANGER DIVISION\n— OFFIZIELLE STRAFAKTE / PROTOKOLL —\n★ ═══════════════════════════════════════ ★\n\n𝗗𝗮𝘁𝘂𝗺/𝗭𝗲𝗶𝘁: ${field('caseDateTime','')}\n𝗢𝗿𝘁: ${field('casePlace')}\n\n𝗧𝗮𝘁𝘃𝗲𝗿𝗱𝗮̈𝗰𝗵𝘁𝗶𝗴𝗲*𝗿\n𝗡𝗮𝗺𝗲: ${field('suspectName')}\n𝗚𝗲𝗯.-𝗗𝗮𝘁𝘂𝗺: ${field('suspectDob')}\n\n𝗕𝗲𝘁𝗲𝗶𝗹𝗶𝗴𝘁𝗲\n𝗔𝘂𝗳𝗻𝗲𝗵𝗺𝗲𝗻𝗱𝗲 𝗣𝗲𝗿𝘀𝗼𝗻: ${field('officerName','Brownie')}\n𝗭𝗲𝘂𝗴𝗲𝗻: ${field('witnesses')}\n\n𝗦𝘁𝗿𝗮𝗳𝘁𝗮𝘁𝗲𝗻\n${crimes}\n\n𝗦𝘁𝗿𝗮𝗳𝗲\n${penalty}\n\n𝗦𝗮𝗰𝗵𝘃𝗲𝗿𝗵𝗮𝗹𝘁 (𝗸𝘂𝗿𝘇)\n${field('facts')}\n\n𝗥𝗲𝗰𝗵𝘁𝗲𝘃𝗲𝗿𝗹𝗲𝘀𝘂𝗻𝗴\n𝗩𝗲𝗿𝗹𝗲𝘀𝗲𝗻: ${field('rightsRead','Ja')} | 𝗩𝗲𝗿𝘀𝘁𝗮𝗻𝗱𝗲𝗻: ${field('rightsUnderstood','Ja')}\n𝗗𝘂𝗿𝗰𝗵: ${field('rightsBy')}\n𝗭𝗲𝘂𝗴𝗲𝗻: ${field('rightsWitness')}\n\n𝗚𝗲𝗴𝗲𝗻𝘀𝘁𝗮̈𝗻𝗱𝗲\n𝗥𝘂̈𝗰𝗸𝗴𝗮𝗯𝗲: ${field('returnedItems')}\n𝗕𝗲𝘀𝗰𝗵𝗹𝗮𝗴𝗻𝗮𝗵𝗺𝘁: ${field('seizedItems')}\n\n𝗕𝗲𝗺𝗲𝗿𝗸𝘂𝗻𝗴𝗲𝗻\n${field('notes')}\n\n𝗔𝗯𝘀𝗰𝗵𝗹𝘂𝘀𝘀\n𝗕𝗲𝗮𝗿𝗯𝗲𝗶𝘁𝗲𝗿: ${field('editorName','Brownie')}\n𝗗𝗮𝘁𝘂𝗺: ${field('closingDate','')}\n\n𝗨𝗻𝘁𝗲𝗿𝘀𝗰𝗵𝗿𝗶𝗳𝘁𝗲𝗻\n𝗕𝗲𝗮𝗿𝗯𝗲𝗶𝘁𝗲𝗿 / 𝗥𝗮𝗻𝗴𝗲𝗿: ${field('editorSignature')}\n𝗧𝗮𝘁𝘃𝗲𝗿𝗱𝗮̈𝗰𝗵𝘁𝗶𝗴𝗲*𝗿 / 𝗩𝗲𝗿𝘁𝗿𝗲𝘁𝘂𝗻𝗴: ${field('suspectSignature')}`;
   }
   if(q('recordPreview')) q('recordPreview').textContent=text;
 }
