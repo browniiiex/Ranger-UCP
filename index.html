@@ -312,7 +312,7 @@ textarea.r-input{resize:vertical;min-height:76px}
 
 
 
-.case-type-switch{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 18px}.case-type-btn{border:1px solid rgba(239,191,97,.3);background:rgba(2,7,5,.72);color:#d8c9a7;border-radius:8px;padding:11px 16px;font-weight:900;cursor:pointer}.case-type-btn.active{background:#efbf61;color:#10120f;border-color:#efbf61}.collective-box{display:none;grid-column:1/-1}.collective-box.active{display:block}.collective-suspects{display:grid;gap:12px}.collective-suspect{padding:16px;border:1px solid rgba(239,191,97,.22);border-radius:9px;background:rgba(2,7,5,.48)}.collective-suspect-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px}.collective-suspect-head b{color:#efbf61;font-size:14px}.collective-remove{border:1px solid rgba(255,120,120,.32);background:rgba(120,20,20,.14);color:#ffaaaa;border-radius:6px;padding:7px 10px;cursor:pointer;font-weight:800}.collective-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px 14px}.collective-fields label{display:flex;flex-direction:column;gap:7px}.collective-add{margin-top:12px;border:1px solid rgba(239,191,97,.5);background:rgba(239,191,97,.1);color:#efbf61;border-radius:7px;padding:11px 14px;font-weight:900;cursor:pointer}.normal-only.hidden{display:none!important}@media(max-width:700px){.collective-fields{grid-template-columns:1fr}}
+.case-type-switch{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 18px}.case-type-btn{border:1px solid rgba(239,191,97,.3);background:rgba(2,7,5,.72);color:#d8c9a7;border-radius:8px;padding:11px 16px;font-weight:900;cursor:pointer}.case-type-btn.active{background:#efbf61;color:#10120f;border-color:#efbf61}.collective-box{display:none;grid-column:1/-1}.collective-box.active{display:block}.collective-suspects{display:grid;gap:12px}.collective-suspect{padding:16px;border:1px solid rgba(239,191,97,.22);border-radius:9px;background:rgba(2,7,5,.48)}.collective-suspect-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px}.collective-suspect-head b{color:#efbf61;font-size:14px}.collective-remove{border:1px solid rgba(255,120,120,.32);background:rgba(120,20,20,.14);color:#ffaaaa;border-radius:6px;padding:7px 10px;cursor:pointer;font-weight:800}.collective-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px 14px}.collective-fields label{display:flex;flex-direction:column;gap:7px}.collective-add{margin-top:12px;border:1px solid rgba(239,191,97,.5);background:rgba(239,191,97,.1);color:#efbf61;border-radius:7px;padding:11px 14px;font-weight:900;cursor:pointer}.normal-only.hidden{display:none!important}.facts-assistant{grid-column:1/-1;padding:16px;border:1px solid rgba(239,191,97,.22);border-radius:9px;background:rgba(2,7,5,.48)}.facts-assistant-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:12px}.facts-assistant-head b{color:#efbf61}.facts-helper{font-size:12px;color:#a99f88;margin-top:4px}.facts-assistant-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px 14px}.facts-assistant-grid label{display:flex;flex-direction:column;gap:7px}.facts-assistant-grid .wide{grid-column:1/-1}.facts-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}.facts-generate,.facts-rewrite{border:1px solid rgba(239,191,97,.5);background:rgba(239,191,97,.1);color:#efbf61;border-radius:7px;padding:10px 14px;font-weight:900;cursor:pointer}.facts-generate:hover,.facts-rewrite:hover{background:rgba(239,191,97,.18)}@media(max-width:700px){.collective-fields,.facts-assistant-grid{grid-template-columns:1fr}.facts-assistant-grid .wide{grid-column:auto}}
 
 /* Dienstplan */
 .appointment-titlebar{display:flex;align-items:flex-start;justify-content:space-between;gap:18px}.appointment-notice{padding:14px 18px;margin:18px 0;color:#91e3a4}.appointment-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.appointment-card{padding:20px;position:relative}.appointment-card-top{display:flex;justify-content:space-between;gap:15px;align-items:flex-start}.appointment-date{min-width:66px;text-align:center;border:1px solid rgba(239,191,97,.35);border-radius:8px;padding:9px 7px;background:rgba(239,191,97,.07);color:#efbf61;font-weight:900;line-height:1.1}.appointment-date strong{display:block;font-size:25px}.appointment-info{flex:1}.appointment-info h3{font:500 21px Georgia;margin:0 0 7px}.appointment-meta{font-size:11px;color:#d8c9a7;line-height:1.7}.appointment-desc{font-size:12px;color:var(--muted);margin-top:12px;white-space:pre-wrap}.appointment-actions{display:flex;gap:8px;margin-top:16px}.appointment-actions button{border:1px solid rgba(239,191,97,.35);background:rgba(3,8,5,.7);color:#efbf61;border-radius:6px;padding:8px 11px;font-weight:800;cursor:pointer}.appointment-actions .danger{color:#ffaaaa;border-color:rgba(255,120,120,.28)}.appointment-empty{grid-column:1/-1;padding:34px;text-align:center;color:var(--muted)}
@@ -759,7 +759,18 @@ input::placeholder, textarea::placeholder { font-size: 16px !important; opacity:
       <label class="normal-only">Geb.-Datum<input class="r-input" id="suspectDob" placeholder="Geburtsdatum"></label>
       <label>Aufnehmende Person<input class="r-input" id="officerName" value="Brownie"></label>
       <label>Zeugen<input class="r-input" id="witnesses" placeholder="Keine / Namen"></label>
-      <label class="span2">Sachverhalt (kurz)<textarea class="r-input" id="facts" rows="3" placeholder="Kurzer Sachverhalt"></textarea></label>
+      <div class="facts-assistant" id="factsAssistant">
+        <div class="facts-assistant-head"><div><b>SACHVERHALT-ASSISTENT</b><div class="facts-helper">Nur Stichpunkte eintragen. Es werden keine zusätzlichen Informationen erfunden.</div></div></div>
+        <div class="facts-assistant-grid">
+          <label>Was ist passiert?<input class="r-input" id="factsWhat" placeholder="z. B. Fahrzeugkontrolle aufgrund unsicherer Fahrweise"></label>
+          <label>Wo ist es passiert?<input class="r-input" id="factsWhere" placeholder="z. B. East Highway"></label>
+          <label class="wide">Handlung des/der Tatverdächtigen<textarea class="r-input" id="factsSuspectAction" rows="2" placeholder="z. B. Anhaltezeichen ignoriert und anschließend geflüchtet"></textarea></label>
+          <label class="wide">Maßnahmen der Ranger<textarea class="r-input" id="factsRangerAction" rows="2" placeholder="z. B. Verfolgung aufgenommen, Fahrzeug gestoppt und TV festgenommen"></textarea></label>
+          <label class="wide">Besonderheiten (optional)<input class="r-input" id="factsSpecial" placeholder="z. B. Widerstand bei der Festnahme"></label>
+        </div>
+        <div class="facts-actions"><button type="button" class="facts-generate" id="generateFacts">✦ SACHVERHALT ERSTELLEN</button><button type="button" class="facts-rewrite" id="rewriteFacts">↻ NEU FORMULIEREN</button></div>
+      </div>
+      <label class="span2">Sachverhalt (kurz)<textarea class="r-input" id="facts" rows="4" placeholder="Hier erscheint der erstellte Sachverhalt. Er kann danach frei bearbeitet werden."></textarea></label>
       <label>Rechte verlesen<select class="r-input" id="rightsRead"><option>Ja</option><option>Nein</option></select></label>
       <label>Rechte verstanden<select class="r-input" id="rightsUnderstood"><option>Ja</option><option>Nein</option></select></label>
       <label>Rechteverlesung durch<input class="r-input" id="rightsBy" placeholder="Name"></label>
@@ -1157,6 +1168,57 @@ function updateRecord(){
   }
   if(q('recordPreview')) q('recordPreview').textContent=text;
 }
+let factsVariant=0;
+function cleanFactPart(value){
+  return String(value||'').trim().replace(/\s+/g,' ').replace(/[.!?]+$/,'');
+}
+function sentence(value){
+  const v=cleanFactPart(value); if(!v) return '';
+  return v.charAt(0).toUpperCase()+v.slice(1)+'.';
+}
+function generateFactsText(rewrite=false){
+  const what=cleanFactPart(q('factsWhat')?.value);
+  const where=cleanFactPart(q('factsWhere')?.value);
+  const suspect=cleanFactPart(q('factsSuspectAction')?.value);
+  const ranger=cleanFactPart(q('factsRangerAction')?.value);
+  const special=cleanFactPart(q('factsSpecial')?.value);
+  if(![what,where,suspect,ranger,special].some(Boolean)) return '';
+  if(rewrite) factsVariant=(factsVariant+1)%3;
+  const collective=caseType==='collective';
+  const tv=collective?'die Tatverdächtigen':'der Tatverdächtige';
+  const parts=[];
+  if(factsVariant===0){
+    if(what&&where) parts.push(`Im Bereich ${where} kam es zu folgendem Sachverhalt: ${what}.`);
+    else if(what) parts.push(sentence(what));
+    else if(where) parts.push(`Der Vorfall ereignete sich im Bereich ${where}.`);
+    if(suspect) parts.push(`${collective?'Die Tatverdächtigen':'Der Tatverdächtige'} ${suspect.charAt(0).toLowerCase()+suspect.slice(1)}.`);
+    if(ranger) parts.push(`Daraufhin ${ranger.charAt(0).toLowerCase()+ranger.slice(1)}.`);
+    if(special) parts.push(`Als Besonderheit ist festzuhalten: ${special}.`);
+  }else if(factsVariant===1){
+    if(where&&what) parts.push(`Am Einsatzort ${where} wurden die Ranger aufgrund folgenden Umstands tätig: ${what}.`);
+    else if(what) parts.push(`Die Ranger wurden aufgrund folgenden Umstands tätig: ${what}.`);
+    else if(where) parts.push(`Die Maßnahme fand im Bereich ${where} statt.`);
+    if(suspect) parts.push(`Im weiteren Verlauf ${suspect.charAt(0).toLowerCase()+suspect.slice(1)}.`);
+    if(ranger) parts.push(`Seitens der Ranger wurde anschließend folgende Maßnahme durchgeführt: ${ranger}.`);
+    if(special) parts.push(`Zusätzlich wurde festgestellt: ${special}.`);
+  }else{
+    if(what) parts.push(`${sentence(what)}`);
+    if(where) parts.push(`Der Sachverhalt ereignete sich im Bereich ${where}.`);
+    if(suspect) parts.push(`Während der Maßnahme ${tv} ${suspect.charAt(0).toLowerCase()+suspect.slice(1)}.`);
+    if(ranger) parts.push(`Die Ranger reagierten darauf wie folgt: ${ranger}.`);
+    if(special) parts.push(`Weiterhin ist zu vermerken: ${special}.`);
+  }
+  return parts.filter(Boolean).slice(0,5).join(' ');
+}
+function applyGeneratedFacts(rewrite=false){
+  const text=generateFactsText(rewrite);
+  if(!text){ alert('Bitte zuerst mindestens eine Angabe im Sachverhalt-Assistenten ausfüllen.'); return; }
+  if(q('facts')) q('facts').value=text;
+  updateRecord();
+}
+q('generateFacts')?.addEventListener('click',()=>{factsVariant=0;applyGeneratedFacts(false)});
+q('rewriteFacts')?.addEventListener('click',()=>applyGeneratedFacts(true));
+
 function setCurrentCaseTime(){
   const d=new Date();
   const pad=n=>String(n).padStart(2,'0');
