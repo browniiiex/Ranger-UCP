@@ -745,13 +745,7 @@ input::placeholder, textarea::placeholder { font-size: 16px !important; opacity:
   <div id="appointmentList" class="appointment-grid"></div>
 </section>
   
-<section class="page inner" id="strafrechner"><details class="glass panel" id="caseInbox" style="margin:16px 0"><summary style="cursor:pointer;font-weight:900">📥 AKTENEINGANG <span id="inboxCount"></span></summary>
-<p>/tv-Aufnahmen aus Discord übernehmen. Einträge verschwinden zwölf Stunden nach der Aufnahme; die Discord-Nachrichten bleiben erhalten.</p>
-<input class="r-input" id="inboxSearch" placeholder="TV-Name oder aufnehmenden Ranger suchen" aria-label="Akteneingang durchsuchen">
-<button type="button" class="case-type-btn" id="inboxRefresh">Aktualisieren</button>
-<p id="inboxNotice" role="status"></p><div id="inboxList"></div>
-<div style="margin-top:12px"><button type="button" class="case-type-btn" id="inboxNormal">Als normale Akte übernehmen</button> <button type="button" class="case-type-btn" id="inboxCollective">Als Kollektivakte übernehmen</button> <button type="button" class="case-type-btn" id="inboxAppend">Zur Kollektivakte hinzufügen</button></div>
-<p>Eine Aufnahme für eine normale Akte auswählen, mehrere für eine Kollektivakte. Weitere Personen lassen sich anschließend wie bisher ergänzen. Die Übernahme ersetzt nur die Personenangaben und den aufnehmenden Ranger.</p></details>
+<section class="page inner" id="strafrechner">
   <h1>Strafrechner</h1>
   <div class="sub">Straftaten auswählen, Strafe automatisch berechnen und eine kopierfertige Strafakte erstellen.</div>
 
@@ -2161,47 +2155,6 @@ button.danger,.danger-btn,.btn-danger,[data-action="delete-vote"],button[onclick
     return true;
   }
   function escapeHtml(v){return String(v??'').replace(/[&<>'\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','\"':'&quot;'}[c]));}
-
-  let inboxRows=[],inboxBusy=false;
-  const inboxSelected=new Set();
-  function renderInbox(){
-    const list=document.getElementById('inboxList');if(!list)return;
-    inboxRows=inboxRows.filter(r=>Date.parse(r.expires_at)>Date.now());
-    const term=document.getElementById('inboxSearch').value.trim().toLocaleLowerCase('de');
-    document.getElementById('inboxCount').textContent='('+inboxRows.length+')';list.replaceChildren();
-    for(const row of inboxRows.filter(r=>(r.tv_name+' '+r.officer_name).toLocaleLowerCase('de').includes(term))){
-      const label=document.createElement('label');label.style.cssText='display:flex;gap:12px;padding:12px;margin:8px 0;border:1px solid #685b3a;border-radius:8px;align-items:center';
-      const box=document.createElement('input');box.type='checkbox';box.checked=inboxSelected.has(row.id);box.addEventListener('change',()=>{box.checked?inboxSelected.add(row.id):inboxSelected.delete(row.id)});
-      const text=document.createElement('span');const remaining=Math.max(0,Math.ceil((Date.parse(row.expires_at)-Date.now())/60000));
-      text.textContent=row.tv_name+' · Aufgenommen von '+row.officer_name+' · '+new Date(row.created_at).toLocaleString('de-DE')+' · noch '+Math.floor(remaining/60)+' h '+remaining%60+' min';label.append(box,text);list.append(label);
-    }
-    if(!list.children.length)list.textContent='Keine passenden Aufnahmen vorhanden.';
-  }
-  async function loadInbox(){
-    if(inboxBusy||!client||!currentUser||!currentPermissions?.strafrechner)return;
-    inboxBusy=true;const notice=document.getElementById('inboxNotice');
-    try{const {data,error}=await client.from('ucp_akteneingang').select('*').gt('expires_at',new Date().toISOString()).order('created_at',{ascending:false});if(error)throw error;inboxRows=data||[];renderInbox();notice.textContent='';}
-    catch(e){notice.textContent='Akteneingang konnte nicht geladen werden. Bitte Datenbankeinrichtung und Verbindung prüfen.';}finally{inboxBusy=false;}
-  }
-  async function takeInbox(mode){
-    if(!currentPermissions?.strafrechner)return;
-    await loadInbox();const rows=inboxRows.filter(r=>inboxSelected.has(r.id)&&Date.parse(r.expires_at)>Date.now());
-    const notice=document.getElementById('inboxNotice');if(!rows.length){notice.textContent='Bitte mindestens eine gültige Aufnahme auswählen.';return;}
-    if(mode==='normal'&&rows.length!==1){notice.textContent='Für eine normale Akte bitte genau eine Aufnahme auswählen.';return;}
-    const data=r=>({name:r.tv_name,dob:r.payload.dob||'',returned:r.payload.returned||'Keine',seized:r.payload.seized||'Keine'});
-    if(mode==='append'&&caseType!=='collective'){notice.textContent='Bitte zuerst eine Kollektivakte öffnen.';return;}
-    if(mode!=='append'&&(q('suspectName').value||[...document.querySelectorAll('[data-cfield="name"]')].some(x=>x.value))&&!confirm('Vorhandene Personenangaben durch die ausgewählten Aufnahmen ersetzen?'))return;
-    if(mode==='normal'){setCaseType('normal');const d=data(rows[0]);for(const [id,key] of [['suspectName','name'],['suspectDob','dob'],['returnedItems','returned'],['seizedItems','seized']])q(id).value=d[key];}
-    else{if(mode!=='append'){q('collectiveSuspects').replaceChildren();setCaseType('collective');q('collectiveSuspects').replaceChildren();}rows.forEach(r=>addCollectiveSuspect(data(r)));}
-    if(mode!=='append'){q('officerName').value=[...new Set(rows.map(r=>r.officer_name))].join(', ');q('caseDateTime').value=new Date(rows[0].created_at).toLocaleString('de-DE');}
-    updateRecord();inboxSelected.clear();renderInbox();notice.textContent=rows.length+' Aufnahme(n) übernommen. Straftaten und Sachverhalt können jetzt ergänzt werden.';
-  }
-  document.getElementById('inboxSearch').addEventListener('input',renderInbox);
-  document.getElementById('inboxRefresh').addEventListener('click',loadInbox);
-  document.getElementById('caseInbox').addEventListener('toggle',()=>{if(document.getElementById('caseInbox').open)loadInbox()});
-  for(const [id,mode] of [['inboxNormal','normal'],['inboxCollective','collective'],['inboxAppend','append']])document.getElementById(id).addEventListener('click',()=>takeInbox(mode));
-  setInterval(()=>{if(!currentUser||!currentPermissions?.strafrechner){inboxRows=[];inboxSelected.clear();renderInbox();return;}renderInbox();if(document.getElementById('caseInbox').open)loadInbox();},30000);
-
   async function loadRightsUsers(){
     const wrap=document.getElementById('rightsUsers'), notice=document.getElementById('rightsNotice'); if(!wrap||!notice)return;
     if(currentAccess?.rolle!=='administration'||!currentPermissions?.rechte_rollen){ notice.innerHTML='<span class="access-denied">Keine Berechtigung für Rechte & Rollen.</span>'; wrap.innerHTML=''; if(addBtn)addBtn.classList.add('permission-hidden'); return; }
