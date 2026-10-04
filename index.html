@@ -1210,6 +1210,18 @@ function renderSelectedOverview(items){
     list.appendChild(row);
   });
 }
+function ucpCaseConfirm(message,{title='Bitte bestätigen',accept='Bestätigen',cancel='Abbrechen'}={}){
+  return new Promise(resolve=>{
+    const previous=document.activeElement;
+    const dialog=document.createElement('dialog');dialog.className='ucp-case-dialog';dialog.setAttribute('aria-labelledby','ucpCaseDialogTitle');
+    dialog.innerHTML='<h2 id="ucpCaseDialogTitle"></h2><p></p><div class="ucp-case-dialog-actions"><button type="button" data-answer="cancel"></button><button type="button" data-answer="accept"></button></div>';
+    dialog.querySelector('h2').textContent=title;dialog.querySelector('p').textContent=message;
+    const no=dialog.querySelector('[data-answer="cancel"]'),yes=dialog.querySelector('[data-answer="accept"]');no.textContent=cancel;yes.textContent=accept;
+    let settled=false;const finish=value=>{if(settled)return;settled=true;dialog.close();dialog.remove();previous?.focus();resolve(value);};
+    no.addEventListener('click',()=>finish(false));yes.addEventListener('click',()=>finish(true));dialog.addEventListener('cancel',e=>{e.preventDefault();finish(false);});
+    document.body.append(dialog);dialog.showModal();no.focus();
+  });
+}
 let caseType='normal';
 let caseBaseline='';
 function caseSnapshot(){return JSON.stringify({type:caseType,fields:[...document.querySelectorAll('.calc-head')].flatMap(h=>[...h.parentElement.querySelectorAll('input,textarea,select')].filter(el=>!el.closest('#caseInbox')).map(el=>[el.id||el.dataset.cfield,el.type==='checkbox'?el.checked:el.value])),offenses:selectedOffenses().map(x=>x.id||x.name)});}
@@ -1464,8 +1476,8 @@ if(q('clearOffenses')) q('clearOffenses').addEventListener('click',()=>{
   document.querySelectorAll('#offenseList input[type="checkbox"]').forEach(x=>x.checked=false);
   updateRecord();
 });
-q('newCase')?.addEventListener('click',()=>{
-  if(!confirm('Neue Akte starten? Die aktuellen Personen, Straftaten und Einsatzangaben werden geleert.'))return;
+q('newCase')?.addEventListener('click',async()=>{
+  if(!await ucpCaseConfirm('Die aktuellen Personen, Straftaten und Einsatzangaben werden gelöscht.',{title:'Neue Akte starten?',accept:'Neue Akte starten',cancel:'Weiter bearbeiten'}))return;
   const keep=new Set(['officerName','editorName','editorSignature']);
   document.querySelectorAll('.calc-head').forEach(head=>{
     head.parentElement.querySelectorAll('input,textarea,select').forEach(el=>{
@@ -1485,7 +1497,7 @@ if(q('copyRecord')) q('copyRecord').addEventListener('click',async()=>{
   else document.querySelectorAll('.collective-suspect').forEach((card,i)=>{if(!card.querySelector('[data-cfield="name"]').value.trim())missing.push('Name von TV '+(i+1));});
   if(!q('facts').value.trim())missing.push('Sachverhalt');
   if(!q('editorSignature').value.trim())missing.push('Ranger-Unterschrift');
-  if(missing.length&&!confirm('Folgende Angaben fehlen:\n• '+missing.join('\n• ')+'\n\nTrotzdem kopieren?')){q('copyStatus').textContent='Bitte die fehlenden Angaben ergänzen.';return;}
+  if(missing.length&&!await ucpCaseConfirm('Folgende Angaben fehlen:\n• '+missing.join('\n• '),{title:'Akte noch unvollständig',accept:'Trotzdem kopieren',cancel:'Angaben ergänzen'})){q('copyStatus').textContent='Bitte die fehlenden Angaben ergänzen.';return;}
   updateRecord();const text=q('recordPreview').textContent;
   let ok=false;
   try{ await navigator.clipboard.writeText(text); ok=true; }catch(e){
@@ -2269,7 +2281,7 @@ button.danger,.danger-btn,.btn-danger,[data-action="delete-vote"],button[onclick
     const skipped=[];
     if(mode!=='normal')rows=rows.filter(r=>{const d=data(r),key=normalize(d.name)+'|'+normalize(d.dob);if(seenIds.has(r.id)||(d.name&&d.dob&&seenPeople.has(key))){skipped.push(d.name);return false;}seenIds.add(r.id);if(d.name&&d.dob)seenPeople.add(key);return true;});
     if(!rows.length){notice.textContent='Bereits enthalten: '+skipped.join(', ')+'. Es wurde keine doppelte Person hinzugefügt.';return;}
-    if(mode!=='append'&&(q('suspectName').value||[...document.querySelectorAll('[data-cfield="name"]')].some(x=>x.value))&&!confirm('Vorhandene Personenangaben durch die ausgewählten Aufnahmen ersetzen?'))return;
+    if(mode!=='append'&&(q('suspectName').value||[...document.querySelectorAll('[data-cfield="name"]')].some(x=>x.value))&&!await ucpCaseConfirm('Die vorhandenen Personenangaben werden durch die ausgewählten Discord-Aufnahmen ersetzt.',{title:'Personenangaben ersetzen?',accept:'Ersetzen',cancel:'Beibehalten'}))return;
     if(mode==='normal'){setCaseType('normal');const d=data(rows[0]);for(const [id,key] of [['suspectName','name'],['suspectDob','dob'],['returnedItems','returned'],['seizedItems','seized']])q(id).value=d[key];}
     else{if(mode!=='append'){q('collectiveSuspects').replaceChildren();setCaseType('collective');q('collectiveSuspects').replaceChildren();}rows.forEach(r=>addCollectiveSuspect(data(r)));}
     if(mode!=='append'){q('officerName').value=[...new Set(rows.map(r=>r.officer_name))].join(', ');q('caseDateTime').value=new Date(rows[0].created_at).toLocaleString('de-DE');}
@@ -2956,4 +2968,14 @@ p,.facts-helper{line-height:1.6!important}
 <style>#returnedItems,#seizedItems,.collective-fields textarea{resize:vertical;min-height:82px;line-height:1.6!important;white-space:pre-wrap}</style>
 <style>#caseInbox .inbox-imported{font-size:12px!important;color:#a2d7a6;line-height:1.5;margin-top:4px}</style>
 <style>.tv-expand-actions{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}.tv-expand-actions .collective-add{width:auto;padding:7px 11px!important;font-size:12px!important}</style>
+<style>
+.ucp-case-dialog{width:min(460px,calc(100vw - 40px));box-sizing:border-box;background:#111510;color:#ece7dc;border:1px solid #a17d3d;border-radius:14px;padding:26px;box-shadow:0 24px 80px #0009;font-family:"Segoe UI",Arial,sans-serif}
+.ucp-case-dialog::backdrop{background:rgba(0,0,0,.72);backdrop-filter:blur(4px)}
+.ucp-case-dialog h2{font-size:22px!important;color:#efbf61;margin:0 0 12px;line-height:1.3}
+.ucp-case-dialog p{font-size:14px;line-height:1.6;white-space:pre-wrap;margin:0 0 22px;color:#ddd7cb}
+.ucp-case-dialog-actions{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap}
+.ucp-case-dialog button{border:1px solid #8a713e;border-radius:7px;padding:10px 14px;background:transparent;color:#eee;cursor:pointer;font-weight:600}
+.ucp-case-dialog [data-answer="accept"]{background:#efbf61;color:#151711;border-color:#efbf61}
+.ucp-case-dialog button:focus-visible{outline:2px solid #fff;outline-offset:3px}
+</style>
 </body></html>
