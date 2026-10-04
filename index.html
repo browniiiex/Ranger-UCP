@@ -869,8 +869,8 @@ details.collective-suspect{padding:0!important}details.collective-suspect>summar
       <label>Rechte verstanden<select class="r-input" id="rightsUnderstood"><option>Ja</option><option>Nein</option></select></label>
       <label>Rechteverlesung durch<input class="r-input" id="rightsBy" placeholder="Name"></label>
       <label>Zeugen Rechteverlesung<input class="r-input" id="rightsWitness" placeholder="Keine / Namen"></label>
-      <label class="normal-only">Rückgabe<input class="r-input" id="returnedItems" placeholder="Keine / Gegenstände"></label>
-      <label class="normal-only">Beschlagnahmt<input class="r-input" id="seizedItems" placeholder="Keine / Gegenstände"></label>
+      <label class="normal-only">Rückgabe<textarea class="r-input" id="returnedItems" rows="3" placeholder="Keine / ein Gegenstand pro Zeile"></textarea></label>
+      <label class="normal-only">Beschlagnahmt<textarea class="r-input" id="seizedItems" rows="3" placeholder="Keine / ein Gegenstand pro Zeile"></textarea></label>
       <div class="collective-box" id="collectiveBox">
         <div class="label" style="margin-bottom:10px">TATVERDÄCHTIGE DER KOLLEKTIVAKTE</div>
         <div class="collective-suspects" id="collectiveSuspects"></div>
@@ -1233,10 +1233,10 @@ function addCollectiveSuspect(data={}){
   <div class="collective-fields">
     <label>Name<input class="r-input" data-cfield="name" placeholder="Name" value="${String(data.name||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;')}"></label>
     <label>Geb.-Datum<input class="r-input" data-cfield="dob" placeholder="Geburtsdatum" value="${String(data.dob||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;')}"></label>
-    <label>Rückgabe<input class="r-input" data-cfield="returned" placeholder="Keine / Gegenstände" value="${String(data.returned||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;')}"></label>
-    <label>Beschlagnahmt<input class="r-input" data-cfield="seized" placeholder="Keine / Gegenstände" value="${String(data.seized||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;')}"></label>
+    <label>Rückgabe<textarea class="r-input" data-cfield="returned" rows="3" placeholder="Keine / ein Gegenstand pro Zeile">${String(data.returned||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</textarea></label>
+    <label>Beschlagnahmt<textarea class="r-input" data-cfield="seized" rows="3" placeholder="Keine / ein Gegenstand pro Zeile">${String(data.seized||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</textarea></label>
   </div>`;
-  card.querySelectorAll('input').forEach(el=>el.addEventListener('input',()=>{renumberCollectiveSuspects();updateRecord();}));
+  card.querySelectorAll('input,textarea').forEach(el=>el.addEventListener('input',()=>{renumberCollectiveSuspects();updateRecord();}));
   card.querySelector('.collective-remove').addEventListener('click',e=>{e.preventDefault();e.stopPropagation();card.remove();renumberCollectiveSuspects();updateRecord();});
   q('collectiveSuspects')?.appendChild(card); renumberCollectiveSuspects(); updateRecord();
 }
@@ -2929,4 +2929,5 @@ p,.facts-helper{line-height:1.6!important}
 .record-preview{font-family:"Segoe UI",Arial,sans-serif!important;font-size:14px!important;line-height:1.65!important}
 #caseInbox .inbox-meta,#caseInbox .inbox-time,#caseInbox p{font-size:13px!important;line-height:1.5!important}
 </style>
+<style>#returnedItems,#seizedItems,.collective-fields textarea{resize:vertical;min-height:82px;line-height:1.6!important;white-space:pre-wrap}</style>
 </body></html>
