@@ -873,6 +873,7 @@ details.collective-suspect{padding:0!important}details.collective-suspect>summar
       <label class="normal-only">Beschlagnahmt<textarea class="r-input" id="seizedItems" rows="3" placeholder="Keine / ein Gegenstand pro Zeile"></textarea></label>
       <div class="collective-box" id="collectiveBox">
         <div class="label" style="margin-bottom:10px">TATVERDÄCHTIGE DER KOLLEKTIVAKTE</div>
+        <div class="tv-expand-actions"><button type="button" class="collective-add" id="expandAllTVs">Alle aufklappen</button><button type="button" class="collective-add" id="collapseAllTVs">Alle zuklappen</button></div>
         <div class="collective-suspects" id="collectiveSuspects"></div>
         <button type="button" class="collective-add" id="addCollectiveSuspect">+ TATVERDÄCHTIGEN HINZUFÜGEN</button>
       </div>
@@ -1210,6 +1211,9 @@ function renderSelectedOverview(items){
   });
 }
 let caseType='normal';
+let caseBaseline='';
+function caseSnapshot(){return JSON.stringify({type:caseType,fields:[...document.querySelectorAll('.calc-head')].flatMap(h=>[...h.parentElement.querySelectorAll('input,textarea,select')].filter(el=>!el.closest('#caseInbox')).map(el=>[el.id||el.dataset.cfield,el.type==='checkbox'?el.checked:el.value])),offenses:selectedOffenses().map(x=>x.id||x.name)});}
+window.addEventListener('beforeunload',event=>{if(caseBaseline&&caseSnapshot()!==caseBaseline){event.preventDefault();event.returnValue='';}});
 let collectiveCounter=0;
 function collectiveSuspectData(){
   return [...document.querySelectorAll('.collective-suspect')].map((card,i)=>({
@@ -1448,6 +1452,8 @@ setCurrentCaseTime();
 document.querySelectorAll('#strafrechner input,#strafrechner textarea,#strafrechner select').forEach(el=>el.addEventListener('input',updateRecord));
 document.querySelectorAll('#caseTypeSwitch [data-case-type]').forEach(btn=>btn.addEventListener('click',()=>setCaseType(btn.dataset.caseType)));
 q('addCollectiveSuspect')?.addEventListener('click',()=>addCollectiveSuspect());
+q('expandAllTVs')?.addEventListener('click',()=>document.querySelectorAll('details.collective-suspect').forEach(card=>card.open=true));
+q('collapseAllTVs')?.addEventListener('click',()=>document.querySelectorAll('details.collective-suspect').forEach(card=>card.open=false));
 setCaseType('normal');
 
 if(q('offenseSearch')) q('offenseSearch').addEventListener('input',e=>{
@@ -1470,7 +1476,7 @@ q('newCase')?.addEventListener('click',()=>{
   document.querySelectorAll('#offenseList input[type="checkbox"]').forEach(el=>el.checked=false);
   q('collectiveSuspects').replaceChildren();setCaseType('normal');setCurrentCaseTime();
   q('factsCollapseBody').hidden=true;q('factsCollapseToggle').setAttribute('aria-expanded','false');
-  q('caseInbox').open=false;q('copyStatus').textContent='Neue Akte gestartet.';updateRecord();
+  q('caseInbox').open=false;q('copyStatus').textContent='Neue Akte gestartet.';updateRecord();caseBaseline=caseSnapshot();
 });
 
 if(q('copyRecord')) q('copyRecord').addEventListener('click',async()=>{
@@ -1487,10 +1493,11 @@ if(q('copyRecord')) q('copyRecord').addEventListener('click',async()=>{
     try{ok=document.execCommand('copy')}catch(_){}
     ta.remove();
   }
+  if(ok)caseBaseline=caseSnapshot();
   q('copyStatus').textContent=ok?'✓ Akte wurde kopiert.':'Kopieren nicht möglich – markiere den Text in der Vorschau.';
   setTimeout(()=>{ if(q('copyStatus')) q('copyStatus').textContent=''; },3000);
 });
-updateRecord();
+updateRecord();caseBaseline=caseSnapshot();
 
 
 const SUPABASE_URL = 'https://tgfngbayiauxlylckfue.supabase.co';
@@ -2932,4 +2939,5 @@ p,.facts-helper{line-height:1.6!important}
 </style>
 <style>#returnedItems,#seizedItems,.collective-fields textarea{resize:vertical;min-height:82px;line-height:1.6!important;white-space:pre-wrap}</style>
 <style>#caseInbox .inbox-imported{font-size:12px!important;color:#a2d7a6;line-height:1.5;margin-top:4px}</style>
+<style>.tv-expand-actions{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}.tv-expand-actions .collective-add{width:auto;padding:7px 11px!important;font-size:12px!important}</style>
 </body></html>
