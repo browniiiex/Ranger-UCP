@@ -893,6 +893,7 @@ details.collective-suspect{padding:0!important}details.collective-suspect>summar
   <div class="glass ranger-card preview-card">
     <div class="calc-head">
       <div><div class="label">VORSCHAU</div><h2>Fertige Akte</h2></div>
+      <button type="button" class="btn" id="newCase">↻ NEUE AKTE STARTEN</button>
       <button type="button" class="btn copy-btn" id="copyRecord">▣ AKTE KOPIEREN</button>
     </div>
     <pre id="recordPreview" class="record-preview"></pre>
@@ -1457,8 +1458,29 @@ if(q('clearOffenses')) q('clearOffenses').addEventListener('click',()=>{
   document.querySelectorAll('#offenseList input[type="checkbox"]').forEach(x=>x.checked=false);
   updateRecord();
 });
+q('newCase')?.addEventListener('click',()=>{
+  if(!confirm('Neue Akte starten? Die aktuellen Personen, Straftaten und Einsatzangaben werden geleert.'))return;
+  const keep=new Set(['officerName','editorName','editorSignature']);
+  document.querySelectorAll('.calc-head').forEach(head=>{
+    head.parentElement.querySelectorAll('input,textarea,select').forEach(el=>{
+      if(keep.has(el.id)||el.closest('#caseInbox'))return;
+      if(el.tagName==='SELECT')el.selectedIndex=0;else if(el.type==='checkbox')el.checked=false;else el.value='';
+    });
+  });
+  document.querySelectorAll('#offenseList input[type="checkbox"]').forEach(el=>el.checked=false);
+  q('collectiveSuspects').replaceChildren();setCaseType('normal');setCurrentCaseTime();
+  q('factsCollapseBody').hidden=true;q('factsCollapseToggle').setAttribute('aria-expanded','false');
+  q('caseInbox').open=false;q('copyStatus').textContent='Neue Akte gestartet.';updateRecord();
+});
+
 if(q('copyRecord')) q('copyRecord').addEventListener('click',async()=>{
-  const text=q('recordPreview').textContent;
+  const missing=[];
+  if(caseType==='normal'){if(!q('suspectName').value.trim())missing.push('Name des Tatverdächtigen');}
+  else document.querySelectorAll('.collective-suspect').forEach((card,i)=>{if(!card.querySelector('[data-cfield="name"]').value.trim())missing.push('Name von TV '+(i+1));});
+  if(!q('facts').value.trim())missing.push('Sachverhalt');
+  if(!q('editorSignature').value.trim())missing.push('Ranger-Unterschrift');
+  if(missing.length&&!confirm('Folgende Angaben fehlen:\n• '+missing.join('\n• ')+'\n\nTrotzdem kopieren?')){q('copyStatus').textContent='Bitte die fehlenden Angaben ergänzen.';return;}
+  updateRecord();const text=q('recordPreview').textContent;
   let ok=false;
   try{ await navigator.clipboard.writeText(text); ok=true; }catch(e){
     const ta=document.createElement('textarea'); ta.value=text; document.body.appendChild(ta); ta.select();
