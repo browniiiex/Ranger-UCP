@@ -867,7 +867,7 @@ details.collective-suspect{padding:0!important}details.collective-suspect>summar
       <label class="span2">Sachverhalt (kurz)<textarea class="r-input" id="facts" rows="4" placeholder="Hier erscheint der erstellte Sachverhalt. Er kann danach frei bearbeitet werden."></textarea></label>
       <label>Rechte verlesen<select class="r-input" id="rightsRead"><option>Ja</option><option>Nein</option></select></label>
       <label>Rechte verstanden<select class="r-input" id="rightsUnderstood"><option>Ja</option><option>Nein</option></select></label>
-      <label>Rechteverlesung durch<input class="r-input" id="rightsBy" placeholder="Name"></label>
+      <label>Rechteverlesung durch <span style="font-size:12px;color:#aaa">(bei Kollektivakte für alle TVs)</span><input class="r-input" id="rightsBy" placeholder="Name"></label>
       <label>Zeugen Rechteverlesung<input class="r-input" id="rightsWitness" placeholder="Keine / Namen"></label>
       <label class="normal-only">Rückgabe<textarea class="r-input" id="returnedItems" rows="3" placeholder="Keine / ein Gegenstand pro Zeile"></textarea></label>
       <label class="normal-only">Beschlagnahmt<textarea class="r-input" id="seizedItems" rows="3" placeholder="Keine / ein Gegenstand pro Zeile"></textarea></label>
@@ -2250,7 +2250,7 @@ button.danger,.danger-btn,.btn-danger,[data-action="delete-vote"],button[onclick
   }
   function parseInboxRights(raw){
     const value=String(raw||'').trim();if(!value)return {by:'',witness:'',raw:''};
-    const by=value.match(/(?:rechte\s+)?(?:verlesen\s+von|verleser|durch)\s*:\s*([^;\n]+?)(?=\s*(?:;|\n|zeuge\s*:)|$)/i);
+    const by=value.match(/(?:(?:rechte(?:verlesung)?\s+)?verlesen(?:\s+(?:von|durch))?|rechteverlesung(?:\s+(?:von|durch))?|verleser|durch)\s*:\s*([^;\n]+?)(?=\s*(?:;|\n|zeuge\s*:)|$)/i);
     const witness=value.match(/zeuge\s*:\s*([^;\n]+)/i);
     if(by&&witness)return {by:by[1].trim(),witness:witness[1].trim(),raw:''};
     const parts=value.split(/\s*\/\s*/);if(parts.length===2&&parts.every(x=>x.trim()))return {by:parts[0].trim(),witness:parts[1].trim(),raw:''};
@@ -2274,10 +2274,14 @@ button.danger,.danger-btn,.btn-danger,[data-action="delete-vote"],button[onclick
     else{if(mode!=='append'){q('collectiveSuspects').replaceChildren();setCaseType('collective');q('collectiveSuspects').replaceChildren();}rows.forEach(r=>addCollectiveSuspect(data(r)));}
     if(mode!=='append'){q('officerName').value=[...new Set(rows.map(r=>r.officer_name))].join(', ');q('caseDateTime').value=new Date(rows[0].created_at).toLocaleString('de-DE');}
     const rights=rows.map(r=>({name:r.tv_name,...parseInboxRights(r.payload.rights)}));
-    const merge=(id,values)=>{const existing=mode==='append'?q(id).value.split(/,\s*/).filter(Boolean):[];q(id).value=[...new Set([...existing,...values.filter(Boolean)])].join(', ');};
-    merge('rightsBy',rights.map(r=>r.by));merge('rightsWitness',rights.map(r=>r.witness));
-    const unclear=rights.filter(r=>r.raw);if(unclear.length){const hint='Rechteverlesung aus Discord (Zuordnung prüfen):\n'+unclear.map(r=>r.name+': '+r.raw).join('\n');q('notes').value=[q('notes').value,hint].filter(Boolean).join('\n\n');}
-    updateRecord();inboxSelected.clear();renderInbox();document.getElementById('caseInbox').open=skipped.length>0;notice.textContent=rows.length+' Aufnahme(n) übernommen.'+(skipped.length?' Bereits enthalten und übersprungen: '+skipped.join(', '):'');
+    const commonRights=rights.find(r=>r.by&&r.witness);
+    if(commonRights){
+      if(mode!=='append'||(!q('rightsBy').value.trim()&&!q('rightsWitness').value.trim())){
+        q('rightsBy').value=commonRights.by;q('rightsWitness').value=commonRights.witness;
+      }
+    }
+    const unclear=commonRights?[]:rights.filter(r=>r.raw);if(unclear.length){const hint='Rechteverlesung aus Discord (Zuordnung prüfen):\n'+unclear.map(r=>r.name+': '+r.raw).join('\n');q('notes').value=[q('notes').value,hint].filter(Boolean).join('\n\n');}
+    updateRecord();inboxSelected.clear();renderInbox();document.getElementById('caseInbox').open=skipped.length>0;notice.textContent=rows.length+' Aufnahme(n) übernommen.'+(skipped.length?' Bereits enthalten und übersprungen: '+skipped.join(', '):'');if(mode==='collective'&&commonRights&&rights.some(r=>r.by&&r.witness&&(r.by!==commonRights.by||r.witness!==commonRights.witness))){document.getElementById('caseInbox').open=true;notice.textContent+=' Unterschiedliche Rechteverlesungen: Die Angaben der ersten passenden Aufnahme wurden für alle TVs übernommen. Bitte die gemeinsamen Felder prüfen.';}
     try{const {error}=await client.rpc('mark_inbox_imported',{entry_ids:rows.map(r=>r.id)});if(error)throw error;await loadInbox();}catch(e){document.getElementById('caseInbox').open=true;notice.textContent+=' Die Daten wurden ins Formular übernommen, aber die gemeinsame Übernommen-Anzeige konnte nicht gespeichert werden. Bitte die neue SQL-Datei ausführen bzw. die Verbindung prüfen.';}
   }
   document.getElementById('inboxSearch').addEventListener('input',renderInbox);
