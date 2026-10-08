@@ -1443,9 +1443,41 @@ function generateFactsText(rewrite=false){
   }
   return result.join(' ');
 }
+function rewriteExistingFactsText(text){
+  let s=String(text||'').trim();
+  if(!s)return '';
+  const variants=[
+    [
+      [/Die Ranger wurden aufgrund von/,'Aufgrund von'],
+      [/ zum Einsatz gerufen\./,' wurden die Ranger zum Einsatz gerufen.'],
+      [/Im weiteren Verlauf/g,'Im weiteren Einsatzverlauf'],
+      [/Daraufhin/g,'In der Folge'],
+      [/Anschließend/g,'Im Anschluss']
+    ],
+    [
+      [/Aufgrund einer gemeldeten ([^.]+) wurden die Ranger/,'Nach Eingang der Meldung über $1 wurden die Ranger'],
+      [/Vor Ort stellte sich heraus/g,'An der Einsatzörtlichkeit stellte sich heraus'],
+      [/In der Folge/g,'Daraufhin'],
+      [/Im Anschluss/g,'Abschließend'],
+      [/konnten im weiteren Verlauf/g,'konnten im weiteren Einsatzverlauf']
+    ]
+  ];
+  const set=variants[factsVariant%variants.length];
+  for(const [a,b] of set)s=s.replace(a,b);
+  return s.replace(/\s+/g,' ').trim();
+}
 function applyGeneratedFacts(rewrite=false){
-  const result=generateFactsText(rewrite);
-  if(!result){alert('Bitte zuerst mindestens eine Angabe im Sachverhalt-Assistenten ausfüllen.');return;}
+  let result='';
+  if(rewrite){
+    factsVariant=(factsVariant+1)%2;
+    // "Neu formulieren" nutzt zuerst den aktuell sichtbaren Sachverhalt.
+    // So funktioniert der Button auch nach manuellen Änderungen oder importierten Akten.
+    result=rewriteExistingFactsText(q('facts')?.value);
+    if(!result)result=generateFactsText(true);
+  }else{
+    result=generateFactsText(false);
+  }
+  if(!result){alert('Bitte zuerst Angaben im Sachverhalt-Assistenten ausfüllen oder einen vorhandenen Sachverhalt eintragen.');return;}
   if(q('facts'))q('facts').value=result;
   updateRecord();
 }
