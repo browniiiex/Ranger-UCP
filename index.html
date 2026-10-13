@@ -1225,7 +1225,17 @@ function ucpCaseConfirm(message,{title='Bitte bestätigen',accept='Bestätigen',
 let caseType='normal';
 let caseBaseline='';
 function caseSnapshot(){return JSON.stringify({type:caseType,fields:[...document.querySelectorAll('.calc-head')].flatMap(h=>[...h.parentElement.querySelectorAll('input,textarea,select')].filter(el=>!el.closest('#caseInbox')).map(el=>[el.id||el.dataset.cfield,el.type==='checkbox'?el.checked:el.value])),offenses:selectedOffenses().map(x=>x.id||x.name)});}
-window.addEventListener('beforeunload',event=>{if(caseBaseline&&caseSnapshot()!==caseBaseline){event.preventDefault();event.returnValue='';}});
+// Only warn after an actual user edit, not after background data loading.
+let caseUserEdited=false;
+document.addEventListener('input',event=>{
+  if(event.isTrusted && event.target.closest('.calc-head, #offenseList, .collective-suspect')) caseUserEdited=true;
+},true);
+document.addEventListener('change',event=>{
+  if(event.isTrusted && event.target.closest('.calc-head, #offenseList, .collective-suspect')) caseUserEdited=true;
+},true);
+window.addEventListener('beforeunload',event=>{
+  if(caseUserEdited && caseBaseline && caseSnapshot()!==caseBaseline){event.preventDefault();event.returnValue='';}
+});
 let collectiveCounter=0;
 function collectiveSuspectData(){
   return [...document.querySelectorAll('.collective-suspect')].map((card,i)=>({
@@ -1520,7 +1530,7 @@ q('newCase')?.addEventListener('click',async()=>{
   document.querySelectorAll('#offenseList input[type="checkbox"]').forEach(el=>el.checked=false);
   q('collectiveSuspects').replaceChildren();setCaseType('normal');setCurrentCaseTime();
   q('factsCollapseBody').hidden=true;q('factsCollapseToggle').setAttribute('aria-expanded','false');
-  q('caseInbox').open=false;q('copyStatus').textContent='Neue Akte gestartet.';updateRecord();caseBaseline=caseSnapshot();
+  q('caseInbox').open=false;q('copyStatus').textContent='Neue Akte gestartet.';updateRecord();caseBaseline=caseSnapshot();caseUserEdited=false;
 });
 
 if(q('copyRecord')) q('copyRecord').addEventListener('click',async()=>{
@@ -1537,11 +1547,11 @@ if(q('copyRecord')) q('copyRecord').addEventListener('click',async()=>{
     try{ok=document.execCommand('copy')}catch(_){}
     ta.remove();
   }
-  if(ok)caseBaseline=caseSnapshot();
+  if(ok){caseBaseline=caseSnapshot();caseUserEdited=false;}
   q('copyStatus').textContent=ok?'✓ Akte wurde kopiert.':'Kopieren nicht möglich – markiere den Text in der Vorschau.';
   setTimeout(()=>{ if(q('copyStatus')) q('copyStatus').textContent=''; },3000);
 });
-updateRecord();caseBaseline=caseSnapshot();
+updateRecord();caseBaseline=caseSnapshot();caseUserEdited=false;
 
 
 const SUPABASE_URL = 'https://tgfngbayiauxlylckfue.supabase.co';
