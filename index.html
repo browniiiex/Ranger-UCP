@@ -679,6 +679,7 @@ details.collective-suspect{padding:0!important}details.collective-suspect>summar
   <button class="active" data-page="dashboard">⌂　COMMAND CENTER</button>
   <button data-page="profil">◉　MEIN PROFIL</button>
   <button data-page="aktivitaet">▰　STREAM-AKTIVITÄT</button>
+  <button data-page="beweissicherung">▣　BEWEISSICHERUNG</button>
   <button data-page="termine">◷　DIENSTPLAN</button>
   <button data-page="strafrechner">§　STRAFRECHNER</button>
   <button data-page="rechteverlesung">⚖　RECHTEVERLESUNG</button>
@@ -740,6 +741,31 @@ details.collective-suspect{padding:0!important}details.collective-suspect>summar
     <div class="glass panel"><div class="panel-title"><span>ϟ　SCHNELLZUGRIFF</span></div><div class="quick"><button onclick="openPage('termine')"><span>▣</span>DIENSTPLAN</button><button onclick="openPage('strafrechner')"><span>§</span>STRAFRECHNER</button><button onclick="openPage('abstimmungen')"><span>◎</span>RANGER-RAT</button></div></div>
    </div>
   </section>
+
+<section class="page inner" id="beweissicherung">
+ <h1>Beweissicherung</h1><div class="sub">TV erfassen, Beweisbilder anhängen und die Aufnahme direkt in Discord und den Akteneingang übernehmen.</div>
+ <div class="glass panel" style="padding:24px;max-width:900px">
+  <form id="evidenceUcpForm" style="display:grid;gap:15px">
+   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px">
+    <label>TV-Name *<input name="tvName" required maxlength="120" placeholder="Vorname Nachname"></label>
+    <label>Geburtsdatum<input name="dob" placeholder="TT.MM.JJJJ" maxlength="32"></label>
+    <label>Waffenlizenz<select name="waffenlizenz"><option>Unbekannt</option><option>Ja</option><option>Nein</option></select></label>
+    <label>Waffenstufe<input name="waffenstufe" maxlength="80"></label>
+    <label>Führerschein<select name="fuehrerschein"><option>Unbekannt</option><option>Ja</option><option>Nein</option></select></label>
+    <label>Rechte verlesen durch<input name="rechte" maxlength="150"></label>
+    <label>Zeuge<input name="zeuge" maxlength="150" placeholder="Separates Zeugenfeld"></label>
+   </div>
+   <div><strong>Entnommene Gegenstände</strong><div style="display:flex;gap:8px;margin-top:8px"><input id="evidenceItemInput" placeholder="Gegenstand eintragen" style="flex:1"><button type="button" id="evidenceItemAdd">HINZUFÜGEN</button></div>
+   <div id="evidenceItemList" style="display:grid;gap:8px;margin-top:10px"></div><small>Häkchen setzen, wenn der Gegenstand zurückgegeben wurde. Ohne Häkchen bleibt er beschlagnahmt.</small></div>
+   <label>Personalausweis (Bild)<input type="file" id="evidenceIdImage" accept="image/png,image/jpeg,image/webp"></label>
+   <label>Inventar (Bild)<input type="file" id="evidenceInventoryImage" accept="image/png,image/jpeg,image/webp"></label>
+   <label>Weitere Beweisbilder<input type="file" id="evidenceExtraImages" accept="image/png,image/jpeg,image/webp" multiple></label>
+   <small>Maximal 3 Bilder insgesamt, je höchstens 1 MB. Die automatische KI-Ausweiserkennung wird erst nach sicherer Serveranbindung ergänzt; Angaben bitte vorerst manuell eingeben.</small>
+   <div style="display:flex;gap:10px;flex-wrap:wrap"><button type="button" id="evidenceDraftSave">ENTWURF SPEICHERN</button><button type="submit" id="evidenceSubmit">IM UCP SPEICHERN & AN DISCORD SENDEN</button></div>
+   <div id="evidenceStatus" role="status" aria-live="polite"></div>
+  </form>
+ </div>
+</section>
   <section class="page inner" id="profil">
   <h1>Mein Profil</h1><div class="sub">Deine Ranger-Identität und persönliche Aktivität auf einen Blick.</div>
   <div class="profile-page-grid">
@@ -1929,7 +1955,7 @@ button.danger,.danger-btn,.btn-danger,[data-action="delete-vote"],button[onclick
   const msg=document.getElementById('authMsg');
   const login=document.getElementById('discordLogin');
   const permissionKeys=['dashboard','profil','stream_aktivitaet','dienstplan','strafrechner','familien','ranger_rat','ranger_eid','verwaltung','rechte_rollen','einstellungen'];
-  const pagePermission={dashboard:'dashboard',profil:'profil',aktivitaet:'stream_aktivitaet',termine:'dienstplan',strafrechner:'strafrechner',rechteverlesung:'strafrechner',familien:'familien',abstimmungen:'ranger_rat',eid:'ranger_eid',verwaltung:'verwaltung',rechte:'rechte_rollen',einstellungen:'einstellungen'};
+  const pagePermission={dashboard:'dashboard',profil:'profil',aktivitaet:'stream_aktivitaet',beweissicherung:'dashboard',termine:'dienstplan',strafrechner:'strafrechner',rechteverlesung:'strafrechner',familien:'familien',abstimmungen:'ranger_rat',eid:'ranger_eid',verwaltung:'verwaltung',rechte:'rechte_rollen',einstellungen:'einstellungen'};
   const labels={dashboard:'Command Center',profil:'Mein Profil',stream_aktivitaet:'Stream-Aktivität',dienstplan:'Dienstplan',strafrechner:'Strafrechner',familien:'Familien',ranger_rat:'Ranger-Rat',ranger_eid:'Ranger-Eid',verwaltung:'Verwaltung',rechte_rollen:'Rechte & Rollen',einstellungen:'Einstellungen'};
   let client=null,currentUser=null,currentAccess=null,currentPermissions=null,currentRangerRank='';
   let presenceTimer=null,currentAvatarUrl='';
@@ -3020,4 +3046,27 @@ p,.facts-helper{line-height:1.6!important}
 .ucp-case-dialog [data-answer="accept"]{background:#efbf61;color:#151711;border-color:#efbf61}
 .ucp-case-dialog button:focus-visible{outline:2px solid #fff;outline-offset:3px}
 </style>
+
+<script>
+(()=>{
+const form=document.getElementById('evidenceUcpForm');if(!form)return;
+const status=document.getElementById('evidenceStatus');const list=document.getElementById('evidenceItemList');const items=[];
+const show=t=>{status.textContent=t};
+function render(){list.replaceChildren();items.forEach((entry,idx)=>{const row=document.createElement('div');row.style.cssText='display:flex;align-items:center;gap:10px;flex-wrap:wrap';const name=document.createElement('span');name.textContent=entry.name;name.style.flex='1';const check=document.createElement('input');check.type='checkbox';check.checked=entry.returned;check.addEventListener('change',()=>entry.returned=check.checked);const label=document.createElement('label');label.append(check,' Zurückgegeben');const del=document.createElement('button');del.type='button';del.textContent='ENTFERNEN';del.onclick=()=>{items.splice(idx,1);render()};row.append(name,label,del);list.append(row)})}
+document.getElementById('evidenceItemAdd').onclick=()=>{const inp=document.getElementById('evidenceItemInput');const name=inp.value.trim();if(!name)return;items.push({name,returned:false});inp.value='';render()};
+const fields=()=>Object.fromEntries(new FormData(form).entries());
+const draftKey='ranger-evidence-draft-v1';
+document.getElementById('evidenceDraftSave').onclick=()=>{localStorage.setItem(draftKey,JSON.stringify({fields:fields(),items}));show('Entwurf in diesem Browser gespeichert (ohne Bilder).')};
+try{const draft=JSON.parse(localStorage.getItem(draftKey)||'null');if(draft){for(const [k,v] of Object.entries(draft.fields||{})){const field=form.elements.namedItem(k);if(field&&field.type!=='file')field.value=v}items.push(...(draft.items||[]));render()}}catch{}
+async function fileData(file){if(!file)return null;if(file.size>1024*1024)throw Error('Ein Bild ist größer als 1 MB.');if(!['image/jpeg','image/png','image/webp'].includes(file.type))throw Error('Nur PNG, JPG oder WEBP erlaubt.');return await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve({name:file.name,mime:file.type,data:String(reader.result).split(',')[1]});reader.onerror=reject;reader.readAsDataURL(file)})}
+form.addEventListener('submit',async event=>{event.preventDefault();const btn=document.getElementById('evidenceSubmit');btn.disabled=true;show('Beweissicherung wird übertragen…');try{
+ const sb=window.rangerSupabase;if(!sb)throw Error('UCP-Verbindung fehlt. Bitte erneut anmelden.');const {data:{session}}=await sb.auth.getSession();if(!session?.access_token)throw Error('Bitte erneut mit Discord anmelden.');
+ const files=[document.getElementById('evidenceIdImage').files[0],document.getElementById('evidenceInventoryImage').files[0],...document.getElementById('evidenceExtraImages').files].filter(Boolean);if(files.length>3)throw Error('Bitte maximal 3 Bilder auswählen.');
+ const images=await Promise.all(files.map(fileData));const payload={...fields(),items,images};
+ const response=await fetch('/api/evidence-submit',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+session.access_token},body:JSON.stringify(payload)});const result=await response.json();if(!response.ok)throw Error(result.error||'Speichern fehlgeschlagen');
+ show(result.discordSent?'✓ Im UCP gespeichert und an Discord gesendet.':'✓ Im UCP gespeichert. Discord-Versand fehlgeschlagen: '+(result.discordError||'Unbekannt'));
+ if(result.discordSent){localStorage.removeItem(draftKey);form.reset();items.splice(0);render()}
+ }catch(err){show('Fehler: '+err.message)}finally{btn.disabled=false}});
+})();
+</script>
 </body></html>
