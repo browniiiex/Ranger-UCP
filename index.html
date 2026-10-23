@@ -1966,6 +1966,8 @@ button.danger,.danger-btn,.btn-danger,[data-action="delete-vote"],button[onclick
   const pagePermission={dashboard:'dashboard',profil:'profil',aktivitaet:'stream_aktivitaet',termine:'dienstplan',strafrechner:'strafrechner',beweissicherung:'strafrechner',rechteverlesung:'strafrechner',familien:'familien',abstimmungen:'ranger_rat',eid:'ranger_eid',verwaltung:'verwaltung',rechte:'rechte_rollen',einstellungen:'einstellungen'};
   const labels={dashboard:'Command Center',profil:'Mein Profil',stream_aktivitaet:'Stream-Aktivität',dienstplan:'Dienstplan',strafrechner:'Strafrechner',familien:'Familien',ranger_rat:'Ranger-Rat',ranger_eid:'Ranger-Eid',verwaltung:'Verwaltung',rechte_rollen:'Rechte & Rollen',einstellungen:'Einstellungen'};
   let client=null,currentUser=null,currentAccess=null,currentPermissions=null,currentRangerRank='';
+  // Read-only bridge for the separately scoped evidence form.
+  window.__rangerEvidenceSession=()=>({client,user:currentUser,access:currentAccess,permissions:currentPermissions});
   let presenceTimer=null,currentAvatarUrl='';
   const rangerRanks=['Ranger auf Probe','Ranger 1','Ranger 2','Ass. Chief','Chief'];
 
@@ -3128,7 +3130,9 @@ p,.facts-helper{line-height:1.6!important}
  form.addEventListener('submit',async e=>{
   e.preventDefault();status.textContent='Speichern läuft …';const btn=document.getElementById('evSave');btn.disabled=true;
   try{
-   if(typeof client==='undefined'||!client||typeof currentUser==='undefined'||!currentUser||!currentPermissions?.strafrechner)throw Error('Keine aktive UCP-Anmeldung oder keine Strafrechner-Berechtigung.');
+   const session=window.__rangerEvidenceSession?.();
+   const client=session?.client, currentUser=session?.user, currentAccess=session?.access, currentPermissions=session?.permissions;
+   if(!client||!currentUser||!currentAccess||!currentPermissions?.strafrechner)throw Error('Keine aktive UCP-Anmeldung oder keine Strafrechner-Berechtigung.');
    officer();const f=new FormData(form),tv=String(f.get('tv')||'').trim(),officerName=String(f.get('officer')||'').trim();if(!officerName)throw Error('Ranger-Name konnte nicht ermittelt werden.');
    const {seized,returned}=collectItems();
    const rights='Verlesen von: '+String(f.get('rightsBy')||'').trim()+(String(f.get('witness')||'').trim()?'; Zeuge: '+String(f.get('witness')).trim():'');
