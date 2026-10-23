@@ -805,6 +805,8 @@ details.collective-suspect{padding:0!important}details.collective-suspect>summar
   <p class="ev-hint">Bilder werden beim Speichern geschützt hochgeladen und zusammen mit der Beweissicherung an Discord übertragen (maximal 10 Bilder, jeweils 5 MB).</p>
   <div class="ev-grid"><label>Personalausweis <input id="evIdPhoto" type="file" accept="image/*"></label><label>Inventar (bis zu 3 Bilder) <input id="evInventoryPhoto" type="file" accept="image/*" multiple><span class="ev-hint">Mehrere Bilder gleichzeitig oder nacheinander auswählen.</span><button type="button" id="evAddInventory" class="btn">+ INVENTARBILDER HINZUFÜGEN</button><span id="evInventoryCount" class="ev-hint">0 von 3 Inventarbildern ausgewählt</span></label><label>Weitere Beweise <input id="evMorePhotos" type="file" accept="image/*" multiple aria-describedby="evMoreHint"><span id="evMoreHint" class="ev-hint">Du kannst mehrere Bilder gleichzeitig oder nacheinander auswählen.</span><button type="button" id="evAddMore" class="btn">+ WEITERE BEWEISBILDER HINZUFÜGEN</button><span id="evMoreCount" class="ev-hint">0 weitere Beweisbilder ausgewählt</span></label></div>
   <div id="evPreviews" class="ev-previews"></div>
+  <div class="ev-actions"><button type="button" class="btn" id="evPreviewButton">VORSCHAU ANZEIGEN</button><button type="button" class="btn" id="evClearDraft">ENTWURF LÖSCHEN</button><span id="evDraftStatus" class="ev-hint" aria-live="polite"></span></div>
+  <div id="evPreviewPanel" class="glass" hidden style="margin:16px 0;padding:20px;white-space:pre-wrap"></div>
   <div class="ev-actions"><button class="btn" id="evSave" type="submit">IM AKTENEINGANG SPEICHERN</button><span id="evStatus" role="status"></span></div>
  </form>
 </section>
@@ -3087,6 +3089,36 @@ p,.facts-helper{line-height:1.6!important}
  document.getElementById('evAddReturn').addEventListener('click',()=>{if(!returnSelect.value)return;returnedItems.add(returnSelect.value);updateReturns()});
  function collectItems(){const all=allItems();return{seized:all.filter(x=>!returnedItems.has(x)),returned:all.filter(x=>returnedItems.has(x))}}
  updateReturns();
+ // Entwurf bleibt nur im aktuellen Browser-Tab erhalten; Bilddateien werden nicht zwischengespeichert.
+ const draftKey='ranger-ev-draft-v1';
+ const draftStatus=document.getElementById('evDraftStatus');
+ const previewPanel=document.getElementById('evPreviewPanel');
+ function saveDraft(){
+  try{const values={};for(const field of form.querySelectorAll('[name]'))if(field.name!=='officer'&&field.type!=='file')values[field.name]=field.value;
+   sessionStorage.setItem(draftKey,JSON.stringify({values,returned:[...returnedItems]}));
+   draftStatus.textContent='Entwurf in diesem Tab gespeichert (ohne Bilder).';
+  }catch(_){draftStatus.textContent='Entwurf konnte nicht gespeichert werden.'}
+ }
+ function restoreDraft(){try{const raw=sessionStorage.getItem(draftKey);if(!raw)return;const saved=JSON.parse(raw);
+  for(const field of form.querySelectorAll('[name]'))if(field.name!=='officer'&&field.type!=='file'&&Object.prototype.hasOwnProperty.call(saved.values||{},field.name))field.value=saved.values[field.name];
+  returnedItems.clear();for(const value of saved.returned||[])returnedItems.add(value);updateReturns();
+  draftStatus.textContent='Entwurf wiederhergestellt. Bilder bitte erneut auswählen.';
+ }catch(_){}}
+ restoreDraft();
+ form.addEventListener('input',saveDraft);
+ form.addEventListener('change',saveDraft);
+ document.getElementById('evAddReturn').addEventListener('click',saveDraft);
+ returnList.addEventListener('click',()=>setTimeout(saveDraft,0));
+ document.getElementById('evClearDraft').addEventListener('click',()=>{
+  if(!confirm('Entwurf und aktuelle Eingaben wirklich löschen?'))return;
+  sessionStorage.removeItem(draftKey);form.reset();returnedItems.clear();updateReturns();
+  inventoryPhotos.length=0;morePhotos.length=0;previews();officer();previewPanel.hidden=true;draftStatus.textContent='Entwurf gelöscht.';
+ });
+ function previewText(){const f=new FormData(form),{seized,returned}=collectItems();
+  const photoCount=(document.getElementById('evIdPhoto').files[0]?1:0)+inventoryPhotos.length+morePhotos.length;
+  return 'BEWEISSICHERUNG – VORSCHAU\n\nTV: '+(f.get('tv')||'–')+'\nGeburtsdatum: '+(f.get('dob')||'–')+'\nRanger: '+(f.get('officer')||'–')+'\nRechte verlesen von: '+(f.get('rightsBy')||'–')+'\nZeuge: '+(f.get('witness')||'–')+'\nWaffenlizenz: '+f.get('license')+'\nWaffenstufe: '+f.get('level')+'\nFührerschein: '+f.get('driver')+'\n\nBESCHLAGNAHMT\n'+(seized.join('\n')||'Keine')+'\n\nZURÜCKGEGEBEN\n'+(returned.join('\n')||'Keine')+'\n\nBeweisbilder: '+photoCount+' (davon '+inventoryPhotos.length+' Inventarbilder)';
+ }
+ document.getElementById('evPreviewButton').addEventListener('click',()=>{officer();previewPanel.textContent=previewText();previewPanel.hidden=!previewPanel.hidden;if(!previewPanel.hidden)previewPanel.scrollIntoView({behavior:'smooth',block:'nearest'});});
  const idInput=document.getElementById('evIdPhoto'),inventoryInput=document.getElementById('evInventoryPhoto'),moreInput=document.getElementById('evMorePhotos');
  const morePhotos=[];
  const inventoryPhotos=[];
@@ -3128,7 +3160,7 @@ p,.facts-helper{line-height:1.6!important}
  function officer(){const name=document.getElementById('dashName')?.textContent?.trim();const el=document.getElementById('evOfficer');if(name&&name!=='Ranger')el.value=name;}
  document.querySelector('.nav button[data-page="beweissicherung"]')?.addEventListener('click',officer);setInterval(()=>{if(document.getElementById('beweissicherung')?.classList.contains('active'))officer()},4000);
  form.addEventListener('submit',async e=>{
-  e.preventDefault();status.textContent='Speichern läuft …';const btn=document.getElementById('evSave');btn.disabled=true;
+  e.preventDefault();if(!form.reportValidity())return;officer();if(!confirm(previewText()+'\n\nJetzt verbindlich speichern und an Discord übermitteln?'))return;status.textContent='Speichern läuft …';const btn=document.getElementById('evSave');btn.disabled=true;
   try{
    const session=window.__rangerEvidenceSession?.();
    const client=session?.client, currentUser=session?.user, currentAccess=session?.access, currentPermissions=session?.permissions;
@@ -3159,7 +3191,7 @@ p,.facts-helper{line-height:1.6!important}
    if(!row.officer_discord_id)delete row.officer_discord_id;
    const {error}=await client.from('ucp_akteneingang').insert(row);if(error){if(uploaded.length)await client.storage.from('ranger-beweise').remove(uploaded.map(x=>x.path)).catch(()=>{});throw error;}
    status.textContent='✓ Im Akteneingang gespeichert (12 Stunden gültig). '+uploaded.length+' Bild(er) hochgeladen. Discord-Versand wurde über die Datenbank vorgemerkt.';
-   form.reset();morePhotos.length=0;previews();returnedItems.clear();updateReturns();officer();
+   sessionStorage.removeItem(draftKey);draftStatus.textContent='Entwurf nach erfolgreichem Speichern gelöscht.';previewPanel.hidden=true;form.reset();inventoryPhotos.length=0;morePhotos.length=0;previews();returnedItems.clear();updateReturns();officer();
   }catch(err){status.textContent='Speichern fehlgeschlagen: '+(err?.message||String(err))}finally{btn.disabled=false}
  });
 })();
