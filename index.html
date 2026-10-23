@@ -795,11 +795,12 @@ details.collective-suspect{padding:0!important}details.collective-suspect>summar
    <label>Führerschein <select name="driver"><option>Nicht vorhanden</option><option>Vorhanden</option><option>Entzogen</option></select></label>
   </div>
   <div class="panel-title" style="margin-top:24px">ENTNOMMENE GEGENSTÄNDE</div>
-  <p class="ev-hint">Füge jeden entnommenen Gegenstand hinzu und wähle, ob er beschlagnahmt oder zurückgegeben wurde.</p>
-  <div class="ev-item-head"><span>GEGENSTAND</span><span>MENGE</span><span>VERBLEIB</span></div>
-  <div id="evReturns" class="ev-item-list"></div>
-  <button type="button" class="btn" id="evAddItem">+ GEGENSTAND HINZUFÜGEN</button>
-  <textarea name="items" id="evItems" hidden aria-hidden="true"></textarea>
+  <p class="ev-hint">Schreibe alle entnommenen Gegenstände untereinander – einen Gegenstand pro Zeile, z. B. „1x Handy“.</p>
+  <textarea name="items" id="evItems" rows="5" placeholder="1x Handy&#10;2x Tablet&#10;3x Bandage"></textarea>
+  <div class="panel-title" style="margin-top:24px">RÜCKGABE</div>
+  <p class="ev-hint">Wähle aus der Liste die Gegenstände aus, die zurückgegeben wurden. Nicht ausgewählte Gegenstände gelten als beschlagnahmt.</p>
+  <div class="ev-return-picker"><select id="evReturnSelect" aria-label="Gegenstand zur Rückgabe auswählen"><option value="">Gegenstand auswählen …</option></select><button type="button" class="btn" id="evAddReturn">+ ZUR RÜCKGABE HINZUFÜGEN</button></div>
+  <div id="evReturnList" class="ev-return-list" aria-live="polite"><span class="ev-hint">Noch keine Rückgabe ausgewählt.</span></div>
   <div class="panel-title" style="margin-top:24px">BEWEISBILDER</div>
   <p class="ev-hint">Die Bildauswahl ist eine lokale Vorschau. Bilder werden in dieser ersten Version noch nicht hochgeladen oder an Discord übertragen.</p>
   <div class="ev-grid"><label>Personalausweis <input id="evIdPhoto" type="file" accept="image/*"></label><label>Inventar <input id="evInventoryPhoto" type="file" accept="image/*"></label><label>Weitere Beweise <input id="evMorePhotos" type="file" accept="image/*" multiple aria-describedby="evMoreHint"><span id="evMoreHint" class="ev-hint">Du kannst mehrere Bilder gleichzeitig oder nacheinander auswählen.</span><button type="button" id="evAddMore" class="btn">+ WEITERE BEWEISBILDER HINZUFÜGEN</button><span id="evMoreCount" class="ev-hint">0 weitere Beweisbilder ausgewählt</span></label></div>
@@ -3056,13 +3057,12 @@ p,.facts-helper{line-height:1.6!important}
 </style>
 
 <style id="ev-item-layout-fix">
-.ev-item-head,.ev-item-row{display:grid;grid-template-columns:minmax(0,2fr) minmax(78px,.55fr) minmax(150px,1.25fr) 34px;gap:10px;align-items:center}
-.ev-item-head{color:#e5ad55;font-size:11px;font-weight:700;margin:16px 0 7px}.ev-item-list{display:grid;gap:9px;margin:0 0 12px}
-.ev-item-row{padding:11px;border:1px solid rgba(229,173,85,.22);background:rgba(10,14,12,.75);border-radius:8px}
-.ev-item-row input,.ev-item-row select{box-sizing:border-box;min-width:0;width:100%!important;height:42px!important;margin:0!important;padding:9px!important;font-size:13px!important}
-.ev-item-remove{border:1px solid rgba(229,173,85,.35);background:#251d15;color:#efbf61;border-radius:6px;cursor:pointer;font-size:22px;height:40px;width:34px}
-#evAddItem{margin-top:3px}#evItems[hidden]{display:none!important}
-@media(max-width:680px){.ev-item-head{display:none}.ev-item-row{grid-template-columns:minmax(0,1fr) 78px 34px}.ev-item-row select{grid-column:1 / 3;grid-row:2}.ev-item-row .ev-item-remove{grid-column:3;grid-row:1 / 3;height:100%}}
+#evItems{box-sizing:border-box;width:100%;min-height:118px;resize:vertical;display:block;margin-top:12px}
+.ev-return-picker{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:12px 0}
+.ev-return-picker select{flex:1 1 240px;min-width:0;min-height:42px;background:#0e1510;color:#eee;border:1px solid #69512b;border-radius:6px;padding:9px}
+.ev-return-picker button{min-height:42px}.ev-return-list{display:grid;gap:8px}
+.ev-return-entry{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 12px;background:#101612d9;border:1px solid #6b542c;border-radius:7px;color:#f0e9da}
+.ev-return-entry button{border:1px solid #765b30;background:#231c12;color:#efbf61;border-radius:5px;padding:6px 10px;cursor:pointer}
 </style>
 
 <script>
@@ -3070,22 +3070,21 @@ p,.facts-helper{line-height:1.6!important}
 (function(){
  const form=document.getElementById('evForm'),items=document.getElementById('evItems'),returns=document.getElementById('evReturns'),status=document.getElementById('evStatus');
  if(!form)return;
- const itemRows=[];
- function addItem(name='',qty='1',returned=false){
-  const row=document.createElement('div');row.className='ev-item-row';
-  const nameInput=document.createElement('input');nameInput.type='text';nameInput.placeholder='z. B. Handy';nameInput.maxLength=120;nameInput.value=name;nameInput.setAttribute('aria-label','Gegenstand');
-  const qtyInput=document.createElement('input');qtyInput.type='number';qtyInput.min='1';qtyInput.max='999999';qtyInput.step='1';qtyInput.value=qty;qtyInput.setAttribute('aria-label','Menge');
-  const statusSelect=document.createElement('select');statusSelect.setAttribute('aria-label','Verbleib');
-  for(const [value,label] of [['seized','Beschlagnahmt'],['returned','Zurückgegeben']]){const o=document.createElement('option');o.value=value;o.textContent=label;statusSelect.append(o)}
-  statusSelect.value=returned?'returned':'seized';
-  const remove=document.createElement('button');remove.type='button';remove.className='ev-item-remove';remove.textContent='×';remove.title='Gegenstand entfernen';remove.setAttribute('aria-label','Gegenstand entfernen');
-  const entry={row,nameInput,qtyInput,statusSelect};itemRows.push(entry);
-  remove.addEventListener('click',()=>{row.remove();itemRows.splice(itemRows.indexOf(entry),1)});
-  row.append(nameInput,qtyInput,statusSelect,remove);returns.append(row);nameInput.focus();
+ const returnedItems=new Set();
+ const returnSelect=document.getElementById('evReturnSelect'),returnList=document.getElementById('evReturnList');
+ function allItems(){return [...new Set(items.value.split(/\r?\n/).map(x=>x.trim()).filter(Boolean))]}
+ function updateReturns(){
+  const available=allItems();for(const value of [...returnedItems])if(!available.includes(value))returnedItems.delete(value);
+  returnSelect.replaceChildren(new Option('Gegenstand auswählen …',''));
+  for(const value of available.filter(x=>!returnedItems.has(x)))returnSelect.add(new Option(value,value));
+  returnList.replaceChildren();
+  if(!returnedItems.size){const hint=document.createElement('span');hint.className='ev-hint';hint.textContent='Noch keine Rückgabe ausgewählt.';returnList.append(hint)}
+  for(const value of returnedItems){const row=document.createElement('div');row.className='ev-return-entry';const label=document.createElement('span');label.textContent=value;const remove=document.createElement('button');remove.type='button';remove.textContent='Entfernen';remove.addEventListener('click',()=>{returnedItems.delete(value);updateReturns()});row.append(label,remove);returnList.append(row)}
  }
- document.getElementById('evAddItem').addEventListener('click',()=>addItem());
- function collectItems(){const seized=[],returned=[];for(const r of itemRows){const name=r.nameInput.value.trim();if(!name)continue;const qty=Number(r.qtyInput.value);if(!Number.isInteger(qty)||qty<1)throw Error('Bitte bei jedem Gegenstand eine gültige Menge eintragen.');const label=`${qty}x ${name}`;(r.statusSelect.value==='returned'?returned:seized).push(label)}return{seized,returned}}
- addItem();
+ items.addEventListener('input',updateReturns);
+ document.getElementById('evAddReturn').addEventListener('click',()=>{if(!returnSelect.value)return;returnedItems.add(returnSelect.value);updateReturns()});
+ function collectItems(){const all=allItems();return{seized:all.filter(x=>!returnedItems.has(x)),returned:all.filter(x=>returnedItems.has(x))}}
+ updateReturns();
  const idInput=document.getElementById('evIdPhoto'),inventoryInput=document.getElementById('evInventoryPhoto'),moreInput=document.getElementById('evMorePhotos');
  const morePhotos=[];
  const moreCount=document.getElementById('evMoreCount');
@@ -3125,7 +3124,7 @@ p,.facts-helper{line-height:1.6!important}
    if(!row.officer_discord_id)delete row.officer_discord_id;
    const {error}=await client.from('ucp_akteneingang').insert(row);if(error)throw error;
    status.textContent='✓ Im Akteneingang gespeichert (12 Stunden gültig). Bilder wurden nicht hochgeladen; Discord-Versand folgt in Schritt 2.';
-   form.reset();morePhotos.length=0;previews();itemRows.length=0;returns.replaceChildren();addItem();officer();
+   form.reset();morePhotos.length=0;previews();returnedItems.clear();updateReturns();officer();
   }catch(err){status.textContent='Speichern fehlgeschlagen: '+(err?.message||String(err))}finally{btn.disabled=false}
  });
 })();
