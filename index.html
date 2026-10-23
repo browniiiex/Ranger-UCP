@@ -800,7 +800,7 @@ details.collective-suspect{padding:0!important}details.collective-suspect>summar
   <div id="evReturns" class="ev-returns"></div>
   <div class="panel-title" style="margin-top:24px">BEWEISBILDER</div>
   <p class="ev-hint">Die Bildauswahl ist eine lokale Vorschau. Bilder werden in dieser ersten Version noch nicht hochgeladen oder an Discord übertragen.</p>
-  <div class="ev-grid"><label>Personalausweis <input id="evIdPhoto" type="file" accept="image/*"></label><label>Inventar <input id="evInventoryPhoto" type="file" accept="image/*"></label><label>Weitere Beweise <input id="evMorePhotos" type="file" accept="image/*" multiple></label></div>
+  <div class="ev-grid"><label>Personalausweis <input id="evIdPhoto" type="file" accept="image/*"></label><label>Inventar <input id="evInventoryPhoto" type="file" accept="image/*"></label><label>Weitere Beweise <input id="evMorePhotos" type="file" accept="image/*" multiple aria-describedby="evMoreHint"><span id="evMoreHint" class="ev-hint">Du kannst mehrere Bilder gleichzeitig oder nacheinander auswählen.</span><button type="button" id="evAddMore" class="btn">+ WEITERE BEWEISBILDER HINZUFÜGEN</button><span id="evMoreCount" class="ev-hint">0 weitere Beweisbilder ausgewählt</span></label></div>
   <div id="evPreviews" class="ev-previews"></div>
   <div class="ev-actions"><button class="btn" id="evSave" type="submit">IM AKTENEINGANG SPEICHERN</button><span id="evStatus" role="status"></span></div>
  </form>
@@ -3050,6 +3050,7 @@ p,.facts-helper{line-height:1.6!important}
 .ucp-case-dialog button{border:1px solid #8a713e;border-radius:7px;padding:10px 14px;background:transparent;color:#eee;cursor:pointer;font-weight:600}
 .ucp-case-dialog [data-answer="accept"]{background:#efbf61;color:#151711;border-color:#efbf61}
 .ucp-case-dialog button:focus-visible{outline:2px solid #fff;outline-offset:3px}
+.ev-photo-card{display:flex;flex-direction:column;gap:8px;min-width:0;padding:10px;border:1px solid #6d572e;border-radius:9px;background:#0c100fdd;color:#e8d9bb;font-size:12px;overflow-wrap:anywhere}.ev-photo-card img{width:100%;max-height:170px;object-fit:contain;border-radius:5px}.ev-remove-photo{align-self:flex-start;background:transparent;color:#efbf61;border:1px solid #8a713e;border-radius:5px;padding:6px 10px;cursor:pointer}#evAddMore{margin-top:4px;align-self:flex-start;font-size:11px}#evMoreCount{font-weight:400}
 </style>
 
 <script>
@@ -3061,9 +3062,32 @@ p,.facts-helper{line-height:1.6!important}
  let selected=new Set();
  function redraw(){const values=lines();selected=new Set([...selected].filter(x=>values.includes(x)));returns.replaceChildren();if(!values.length){returns.textContent='Noch keine Gegenstände eingetragen.';return;}for(const item of values){const label=document.createElement('label'),cb=document.createElement('input');cb.type='checkbox';cb.checked=selected.has(item);cb.addEventListener('change',()=>cb.checked?selected.add(item):selected.delete(item));label.append(cb,document.createTextNode('Zurückgegeben: '+item));returns.append(label)}}
  items.addEventListener('input',redraw);redraw();
- const fileInputs=['evIdPhoto','evInventoryPhoto','evMorePhotos'].map(id=>document.getElementById(id));
- function previews(){const box=document.getElementById('evPreviews');box.replaceChildren();for(const inp of fileInputs)for(const f of inp.files){const img=document.createElement('img'),url=URL.createObjectURL(f);img.src=url;img.alt=f.name;img.onload=()=>URL.revokeObjectURL(url);box.append(img)}}
- fileInputs.forEach(x=>x.addEventListener('change',previews));
+ const idInput=document.getElementById('evIdPhoto'),inventoryInput=document.getElementById('evInventoryPhoto'),moreInput=document.getElementById('evMorePhotos');
+ const morePhotos=[];
+ const moreCount=document.getElementById('evMoreCount');
+ const addMore=document.getElementById('evAddMore');
+ function previews(){
+  const box=document.getElementById('evPreviews');box.replaceChildren();
+  const display=(file,label,remove)=>{
+   const card=document.createElement('div');card.className='ev-photo-card';
+   const img=document.createElement('img');const url=URL.createObjectURL(file);img.src=url;img.alt=label+': '+file.name;
+   img.addEventListener('load',()=>URL.revokeObjectURL(url),{once:true});img.addEventListener('error',()=>URL.revokeObjectURL(url),{once:true});
+   const name=document.createElement('span');name.textContent=label+': '+file.name;
+   card.append(img,name);
+   if(remove){const del=document.createElement('button');del.type='button';del.className='ev-remove-photo';del.textContent='Entfernen';del.setAttribute('aria-label',file.name+' entfernen');del.addEventListener('click',remove);card.append(del)}
+   box.append(card);
+  };
+  if(idInput.files[0])display(idInput.files[0],'Personalausweis',()=>{idInput.value='';previews()});
+  if(inventoryInput.files[0])display(inventoryInput.files[0],'Inventar',()=>{inventoryInput.value='';previews()});
+  morePhotos.forEach((file,index)=>display(file,'Weiterer Beweis '+(index+1),()=>{morePhotos.splice(index,1);previews()}));
+  moreCount.textContent=morePhotos.length+' weitere Beweisbilder ausgewählt';
+ }
+ idInput.addEventListener('change',previews);inventoryInput.addEventListener('change',previews);
+ moreInput.addEventListener('change',()=>{
+  for(const file of moreInput.files){if(!file.type.startsWith('image/'))continue;morePhotos.push(file)}
+  moreInput.value='';previews();
+ });
+ addMore.addEventListener('click',()=>moreInput.click());
  function officer(){const name=document.getElementById('dashName')?.textContent?.trim();const el=document.getElementById('evOfficer');if(name&&name!=='Ranger')el.value=name;}
  document.querySelector('.nav button[data-page="beweissicherung"]')?.addEventListener('click',officer);setInterval(()=>{if(document.getElementById('beweissicherung')?.classList.contains('active'))officer()},4000);
  form.addEventListener('submit',async e=>{
@@ -3077,7 +3101,7 @@ p,.facts-helper{line-height:1.6!important}
    if(!row.officer_discord_id)delete row.officer_discord_id;
    const {error}=await client.from('ucp_akteneingang').insert(row);if(error)throw error;
    status.textContent='✓ Im Akteneingang gespeichert (12 Stunden gültig). Bilder wurden nicht hochgeladen; Discord-Versand folgt in Schritt 2.';
-   form.reset();selected.clear();redraw();document.getElementById('evPreviews').replaceChildren();officer();
+   form.reset();morePhotos.length=0;previews();selected.clear();redraw();officer();
   }catch(err){status.textContent='Speichern fehlgeschlagen: '+(err?.message||String(err))}finally{btn.disabled=false}
  });
 })();
