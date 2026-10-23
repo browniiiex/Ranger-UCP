@@ -803,7 +803,7 @@ details.collective-suspect{padding:0!important}details.collective-suspect>summar
   <div id="evReturnList" class="ev-return-list" aria-live="polite"><span class="ev-hint">Noch keine Rückgabe ausgewählt.</span></div>
   <div class="panel-title" style="margin-top:24px">BEWEISBILDER</div>
   <p class="ev-hint">Bilder werden beim Speichern geschützt hochgeladen und zusammen mit der Beweissicherung an Discord übertragen (maximal 10 Bilder, jeweils 5 MB).</p>
-  <div class="ev-grid"><label>Personalausweis <input id="evIdPhoto" type="file" accept="image/*"></label><label>Inventar <input id="evInventoryPhoto" type="file" accept="image/*"></label><label>Weitere Beweise <input id="evMorePhotos" type="file" accept="image/*" multiple aria-describedby="evMoreHint"><span id="evMoreHint" class="ev-hint">Du kannst mehrere Bilder gleichzeitig oder nacheinander auswählen.</span><button type="button" id="evAddMore" class="btn">+ WEITERE BEWEISBILDER HINZUFÜGEN</button><span id="evMoreCount" class="ev-hint">0 weitere Beweisbilder ausgewählt</span></label></div>
+  <div class="ev-grid"><label>Personalausweis <input id="evIdPhoto" type="file" accept="image/*"></label><label>Inventar (bis zu 3 Bilder) <input id="evInventoryPhoto" type="file" accept="image/*" multiple><span class="ev-hint">Mehrere Bilder gleichzeitig oder nacheinander auswählen.</span><button type="button" id="evAddInventory" class="btn">+ INVENTARBILDER HINZUFÜGEN</button><span id="evInventoryCount" class="ev-hint">0 von 3 Inventarbildern ausgewählt</span></label><label>Weitere Beweise <input id="evMorePhotos" type="file" accept="image/*" multiple aria-describedby="evMoreHint"><span id="evMoreHint" class="ev-hint">Du kannst mehrere Bilder gleichzeitig oder nacheinander auswählen.</span><button type="button" id="evAddMore" class="btn">+ WEITERE BEWEISBILDER HINZUFÜGEN</button><span id="evMoreCount" class="ev-hint">0 weitere Beweisbilder ausgewählt</span></label></div>
   <div id="evPreviews" class="ev-previews"></div>
   <div class="ev-actions"><button class="btn" id="evSave" type="submit">IM AKTENEINGANG SPEICHERN</button><span id="evStatus" role="status"></span></div>
  </form>
@@ -3087,6 +3087,9 @@ p,.facts-helper{line-height:1.6!important}
  updateReturns();
  const idInput=document.getElementById('evIdPhoto'),inventoryInput=document.getElementById('evInventoryPhoto'),moreInput=document.getElementById('evMorePhotos');
  const morePhotos=[];
+ const inventoryPhotos=[];
+ const inventoryCount=document.getElementById('evInventoryCount');
+ const addInventory=document.getElementById('evAddInventory');
  const moreCount=document.getElementById('evMoreCount');
  const addMore=document.getElementById('evAddMore');
  function previews(){
@@ -3101,11 +3104,20 @@ p,.facts-helper{line-height:1.6!important}
    box.append(card);
   };
   if(idInput.files[0])display(idInput.files[0],'Personalausweis',()=>{idInput.value='';previews()});
-  if(inventoryInput.files[0])display(inventoryInput.files[0],'Inventar',()=>{inventoryInput.value='';previews()});
+  inventoryPhotos.forEach((file,index)=>display(file,'Inventar '+(index+1),()=>{inventoryPhotos.splice(index,1);previews()}));
+  inventoryCount.textContent=inventoryPhotos.length+' von 3 Inventarbildern ausgewählt';
   morePhotos.forEach((file,index)=>display(file,'Weiterer Beweis '+(index+1),()=>{morePhotos.splice(index,1);previews()}));
   moreCount.textContent=morePhotos.length+' weitere Beweisbilder ausgewählt';
  }
- idInput.addEventListener('change',previews);inventoryInput.addEventListener('change',previews);
+ idInput.addEventListener('change',previews);
+ inventoryInput.addEventListener('change',()=>{
+  const chosen=[...inventoryInput.files].filter(file=>file.type.startsWith('image/'));
+  const remaining=3-inventoryPhotos.length;
+  if(chosen.length>remaining)alert('Beim Inventar sind maximal 3 Bilder möglich.');
+  inventoryPhotos.push(...chosen.slice(0,Math.max(0,remaining)));
+  inventoryInput.value='';previews();
+ });
+ addInventory.addEventListener('click',()=>inventoryInput.click());
  moreInput.addEventListener('change',()=>{
   for(const file of moreInput.files){if(!file.type.startsWith('image/'))continue;morePhotos.push(file)}
   moreInput.value='';previews();
@@ -3120,7 +3132,7 @@ p,.facts-helper{line-height:1.6!important}
    officer();const f=new FormData(form),tv=String(f.get('tv')||'').trim(),officerName=String(f.get('officer')||'').trim();if(!officerName)throw Error('Ranger-Name konnte nicht ermittelt werden.');
    const {seized,returned}=collectItems();
    const rights='Verlesen von: '+String(f.get('rightsBy')||'').trim()+(String(f.get('witness')||'').trim()?'; Zeuge: '+String(f.get('witness')).trim():'');
-   const photos=[...(idInput.files[0]?[{file:idInput.files[0],kind:'Personalausweis'}]:[]),...(inventoryInput.files[0]?[{file:inventoryInput.files[0],kind:'Inventar'}]:[]),...morePhotos.map((file,index)=>({file,kind:'Beweis '+(index+1)}))];
+   const photos=[...(idInput.files[0]?[{file:idInput.files[0],kind:'Personalausweis'}]:[]),...inventoryPhotos.map((file,index)=>({file,kind:'Inventar '+(index+1)})),...morePhotos.map((file,index)=>({file,kind:'Beweis '+(index+1)}))];
    if(photos.length>10)throw Error('Maximal 10 Bilder pro Beweissicherung (inklusive Ausweis und Inventar).');
    const uploaded=[];
    try{
